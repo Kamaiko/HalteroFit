@@ -31,7 +31,7 @@
     "@sentry/react-native": "~7.5.0",
     "@shopify/flash-list": "2.2.0",
     "@shopify/react-native-skia": "2.4.3",
-    "@supabase/supabase-js": "^2.81.0",
+    "@supabase/supabase-js": "^2.84.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "expo": "54.0.23",
