@@ -30,7 +30,7 @@
     "@rn-primitives/slot": "^1.2.0",
     "@sentry/react-native": "~7.5.0",
     "@shopify/flash-list": "2.2.0",
-    "@shopify/react-native-skia": "2.3.10",
+    "@shopify/react-native-skia": "2.4.3",
     "@supabase/supabase-js": "^2.81.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
