@@ -14,7 +14,7 @@ This document captures strategic design insights, competitor analysis, and desig
 
 ### Research Methodology
 
-Analyzed 3 leading workout tracking apps (Strong, Hevy, and general fitness patterns) to identify successful UI/UX patterns and visual design choices.
+Analyzed 3 leading workout tracking apps (Strong, Hevy, Jefit) to identify successful UI/UX patterns and visual design choices.
 
 ### Key Findings
 
@@ -50,6 +50,27 @@ Analyzed 3 leading workout tracking apps (Strong, Hevy, and general fitness patt
 - Rest timer with skip/adjust controls
 - Dark/light theme support
 - Notification system for rest timer completion
+
+#### Jefit App (1.4M+ users)
+
+**Strengths:**
+
+- Comprehensive exercise library (1,400+ exercises with filters: body part, equipment, type)
+- Previous workout data pre-loaded in set logging table
+- Workout programs library (Find Workouts vs My Plans distinction)
+- Swipe navigation between exercises during active workout
+
+**UI Patterns:**
+
+- Tri-section active workout layout: exercise video (top), set table (middle), rest timer (bottom)
+- Minimizable rest timer (swipe down for low-profile mode)
+- "W" marker for warmup sets in logging table
+- Bottom tab navigation (Workout, Exercises, Progress, Community, Profile)
+
+**UX Trade-offs:**
+
+- Feature-rich but "crowded/overwhelming" for new users
+- Learning curve exists (prioritizes functionality over minimalism)
 
 #### General Fitness App Best Practices
 
