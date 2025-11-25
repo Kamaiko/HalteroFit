@@ -1,284 +1,284 @@
 # Design System - Halterofit
 
-This document captures strategic design insights, competitor analysis, and design principles for Halterofit. It focuses on high-level guidance rather than detailed wireframes, following an agile approach where detailed specs are created just-in-time during implementation.
+Strategic design guidelines and UI/UX patterns for building Halterofit's mobile interface.
 
 ## Table of Contents
 
-1. [Competitor Analysis](#competitor-analysis)
+1. [Competitor UX Patterns](#competitor-ux-patterns)
 2. [Design Principles](#design-principles)
 3. [Color System](#color-system)
-4. [Component Strategy](#component-strategy)
-5. [Interaction Principles](#interaction-principles)
+4. [Typography](#typography)
+5. [Spacing System](#spacing-system)
+6. [Components](#components)
+7. [Navigation Patterns](#navigation-patterns)
+8. [Form Patterns](#form-patterns)
+9. [UI States](#ui-states)
+10. [Iconography](#iconography)
 
-## Competitor Analysis
+---
 
-### Research Methodology
+## Competitor UX Patterns
 
-Analyzed 3 leading workout tracking apps (Strong, Hevy, Jefit) to identify successful UI/UX patterns and visual design choices.
+### Comparison Table
 
-### Key Findings
+| Pattern                   | Strong                  | Hevy                      | Jefit                                |
+| ------------------------- | ----------------------- | ------------------------- | ------------------------------------ |
+| **Active Workout Layout** | Single exercise focus   | Exercise cards with tabs  | Tri-section (video/table/timer)      |
+| **Set Logging**           | Checkmark → complete    | Checkmark → auto-timer    | Table with previous data pre-loaded  |
+| **Rest Timer**            | Auto-start, skip/adjust | Auto-start, notifications | Auto-start, minimizable (swipe down) |
+| **Exercise Library**      | Basic search            | Search + filters          | 1,400+ exercises, advanced filters   |
+| **Navigation**            | Minimal tabs            | Bottom tabs               | Bottom tabs (5 tabs)                 |
+| **Warmup Sets**           | Not highlighted         | "W" marker                | "W" marker in table                  |
+| **Design Philosophy**     | Minimalist, fast        | Modern, balanced          | Feature-rich, comprehensive          |
 
-#### Strong App (1.2M+ users)
+### Key Patterns to Adopt
 
-**Strengths:**
+**1. Pre-loaded Previous Data**
 
-- Clean, minimalist interface
-- One action per screen approach
-- Blue accent color for calendar/active states
-- Simple, intuitive workout logging
-- Full user control over reps/weight/rest
+- Show last workout's weight/reps in set logging table
+- Enable one-tap to copy previous set
+- Source: Jefit, Hevy
 
-**UI Patterns:**
+**2. Checkmark → Auto-Timer Flow**
 
-- Checkmark to complete sets
-- Distraction-free workout screen (no nav bar, no pop-ups)
-- Large, tappable buttons suitable for gym use
+- Tap checkmark to complete set
+- Automatically trigger rest timer
+- Source: Hevy (rated "most intuitive")
 
-#### Hevy App (9M+ users)
+**3. Minimizable Rest Timer**
 
-**Strengths:**
+- Timer auto-starts after set completion
+- Swipe down for low-profile mode
+- Sound + vibration alerts
+- Source: Jefit
 
-- "Most intuitive tracker" (user feedback)
-- Seamless logging experience
-- Customizable rest timers (5s-5min, 15s increments)
-- Live activity widget integration
-- Set type markers (Warmup, Normal, Drop, Failure, Superset)
+**4. Distraction-Free Active Workout**
 
-**UI Patterns:**
+- One primary action per screen
+- No nav bar during active workout
+- Large touch targets (56x56px)
+- Source: Strong
 
-- Tap checkmark → complete set → trigger rest timer (elegant flow)
-- Rest timer with skip/adjust controls
-- Dark/light theme support
-- Notification system for rest timer completion
+**5. Exercise Filters**
 
-#### Jefit App (1.4M+ users)
+- Filter by: Body Part, Equipment, Type
+- Multiple selection support
+- Real-time search
+- Source: Jefit
 
-**Strengths:**
+**6. Swipe Navigation Between Exercises**
 
-- Comprehensive exercise library (1,400+ exercises with filters: body part, equipment, type)
-- Previous workout data pre-loaded in set logging table
-- Workout programs library (Find Workouts vs My Plans distinction)
-- Swipe navigation between exercises during active workout
+- Swipe left/right to navigate exercises during active workout
+- No need to exit screen
+- Source: Jefit
 
-**UI Patterns:**
-
-- Tri-section active workout layout: exercise video (top), set table (middle), rest timer (bottom)
-- Minimizable rest timer (swipe down for low-profile mode)
-- "W" marker for warmup sets in logging table
-- Bottom tab navigation (Workout, Exercises, Progress, Community, Profile)
-
-**UX Trade-offs:**
-
-- Feature-rich but "crowded/overwhelming" for new users
-- Learning curve exists (prioritizes functionality over minimalism)
-
-#### General Fitness App Best Practices
-
-**Critical UX Principles:**
-
-1. **Distraction-Free Design**: One action per screen, no clutter during workouts
-2. **Large Touch Targets**: Buttons optimized for in-motion use (minimum 44x44px, preferably 56x56px)
-3. **Multi-Modal Feedback**: Visual + auditory + haptic (users don't constantly look at screen)
-4. **Quick Logging**: Goal → plan → start workflow in <60 seconds
-5. **Progress Visualization**: Charts, pyramids, stats (90% retention with good UX)
-
-**Notification/Modal Patterns:**
-
-- **High-contrast modals**: Critical alerts, confirmations
-- **Low-contrast inline**: Supplemental info, non-urgent
-- **Snackbars/Toasts**: Quick feedback without interruption
-- **Timed properly**: Minimize frustration, easy to dismiss
+---
 
 ## Design Principles
 
-### 1. **Offline-First Clarity**
+### 1. Offline-First Reliability
 
-- Always show data state (synced, pending, offline)
-- No spinners or loading states that block interaction
-- Immediate feedback for all actions
+- Immediate feedback for all actions (no spinners blocking UI)
+- Always show sync status (synced/pending/offline)
+- No data loss, ever
 
-### 2. **Gym-Optimized Interface**
+### 2. Gym-Optimized Interface
 
-- Large touch targets (minimum 44x44px, preferably 56x56px)
-- High contrast for readability in various lighting
-- One primary action per screen
-- Minimal text input (use pickers/steppers when possible)
+- **Touch targets:** 56x56px minimum for primary actions
+- **High contrast:** Readable in bright/dim gym lighting
+- **One action per screen:** No clutter during workouts
+- **Minimal keyboard:** Use pickers/steppers for numeric input
 
-### 3. **Context-Aware Intelligence**
+### 3. Quick Logging Flow
 
-- Show relevant data based on workout phase
-- Adapt UI based on nutrition phase (bulk/cut/maintenance)
-- Smart defaults based on history
+- Goal: 1-2 taps per set logged
+- Pre-filled forms with smart defaults
+- Previous workout data visible for reference
 
-### 4. **Progressive Disclosure**
+### 4. Progressive Disclosure
 
 - Basic features upfront (weight, reps)
-- Advanced features accessible but not prominent (RIR, tempo, notes)
+- Advanced features accessible but hidden (RIR, tempo, notes)
 - Analytics revealed after sufficient data collected
+
+---
 
 ## Color System
 
-### Design Rationale
+### Backgrounds
 
-**Primary Color Decision: #4299e1 (Blue)**
+- `background.DEFAULT`: `#0A0A0A` (deep black, OLED-friendly)
+- `background.surface`: `#1A1A1A` (cards)
+- `background.elevated`: `#2A2A2A` (modals, overlays)
 
-**Rationale:**
+### Brand Colors
 
-- **Trust & Focus**: Blue universally signals reliability, calm, focus (critical during intense workouts)
-- **Industry Standard**: Strong app (1.2M users) uses blue for active states/calendar
-- **Accessibility**: Better contrast against dark backgrounds (#0A0A0A) than cyan
-- **Emotional Association**: Blue = discipline, consistency, progress (core bodybuilding values)
+- `primary.DEFAULT`: `#4299e1` (brand blue)
+- `primary.dark`: `#2b6cb0` (pressed states)
+- `primary.light`: `#63b3ed` (highlights)
 
-**Rejected Alternative: #00E5FF (Cyan)**
+### Semantic Colors
 
-- Too vibrant/distracting during workouts
-- Less contrast against dark backgrounds
-- Lacks trust/reliability association
-- No competitive precedent in fitness apps
+- `success`: `#38a169` (completed sets, achievements)
+- `warning`: `#d69e2e` (plateau warnings)
+- `danger`: `#e53e3e` (overtraining alerts, delete actions)
+- `info`: `#3182ce` (tooltips, help)
 
-### Color Palette
+### Text Colors
 
-**Backgrounds:**
+- `foreground.DEFAULT`: `#e2e8f0` (primary text)
+- `foreground.secondary`: `#a0aec0` (labels, metadata)
+- `foreground.tertiary`: `#718096` (placeholders, disabled)
 
-- `background.DEFAULT`: `#0A0A0A` - Deep black (OLED-friendly, reduces eye strain)
-- `background.surface`: `#1A1A1A` - Card backgrounds (subtle elevation)
-- `background.elevated`: `#2A2A2A` - Elevated cards (modals, overlays)
+### RPE Colors
 
-**Brand Colors:**
+- `rpe.low`: `#38a169` (RPE 1-5, green)
+- `rpe.medium`: `#d69e2e` (RPE 6-7, amber)
+- `rpe.high`: `#e53e3e` (RPE 8-9, red)
+- `rpe.max`: `#c53030` (RPE 10, dark red)
 
-- `primary.DEFAULT`: `#4299e1` - Brand blue (buttons, active states)
-- `primary.dark`: `#2b6cb0` - Pressed states, hover
-- `primary.light`: `#63b3ed` - Highlights, accents
+---
 
-**Semantic Colors:**
+## Typography
 
-- `success`: `#38a169` - Progress green (completed sets, achievements)
-- `warning`: `#d69e2e` - Caution amber (plateau warnings)
-- `danger`: `#e53e3e` - Critical red (overtraining alerts, delete actions)
-- `info`: `#3182ce` - Information blue (tooltips, help)
+**Status:** To be defined during Phase 2 implementation
 
-**Text Colors:**
+**Suggestions:**
 
-- `foreground.DEFAULT`: `#e2e8f0` - Primary text (high contrast)
-- `foreground.secondary`: `#a0aec0` - Secondary text (labels, metadata)
-- `foreground.tertiary`: `#718096` - Tertiary text (placeholders, disabled)
+- Font family: System default (San Francisco iOS, Roboto Android)
+- Type scale: 12/14/16/18/24/32/48px
+- Line heights: 1.2 (headings), 1.5 (body)
+- Weights: 400 (regular), 600 (semibold), 700 (bold)
 
-**RPE Colors** (Rate of Perceived Exertion):
+---
 
-- `rpe.low`: `#38a169` - RPE 1-5 (Easy - green)
-- `rpe.medium`: `#d69e2e` - RPE 6-7 (Moderate - amber)
-- `rpe.high`: `#e53e3e` - RPE 8-9 (Hard - red)
-- `rpe.max`: `#c53030` - RPE 10 (Maximum - dark red)
+## Spacing System
 
-## Component Strategy
+**Status:** To be defined during Phase 2 implementation
+
+**Suggestions:**
+
+- Base unit: 4px
+- Scale: 4/8/12/16/24/32/48/64px
+- Component padding: 16px (default), 24px (cards)
+- Screen margins: 16px horizontal
+
+---
+
+## Components
+
+### Touch Targets
+
+- **Primary actions:** 56x56px minimum (gym-friendly)
+- **Secondary actions:** 44x44px minimum (Apple HIG standard)
+- **Text inputs:** 48px height minimum
+
+### Visual Hierarchy
+
+- **Primary action:** Solid fill, `primary` color, high contrast
+- **Secondary action:** Outline, `border` color
+- **Tertiary action:** Ghost (no border), subtle press
+
+### Feedback Patterns
+
+- **Haptic:** Light impact on all button presses
+- **Visual:** 90% opacity on press (`activeOpacity={0.9}`)
+- **Loading:** Skeleton loaders (no blocking spinners)
+
+### Animation Timing
+
+- **Quick interactions:** 200ms (button press, toggle)
+- **Content transitions:** 300ms (screen navigation, modal open)
+- **Background updates:** 400-600ms (charts, progress bars)
+
+### Animation Curves
+
+- **Ease-out:** Entering elements (start fast, slow down)
+- **Ease-in-out:** Transitioning elements
+- **Spring:** Interactive elements (physics-based, natural)
 
 ### Current Stack
 
-- **Base Library**: React Native Reusables (shadcn/ui port)
-- **Icons**: @expo/vector-icons (Material, Ionicons, FontAwesome)
-- **Styling**: NativeWind v4 (Tailwind CSS for React Native)
-- **Animations**: Reanimated v4 (when needed)
+- **Base Library:** React Native Reusables (shadcn/ui port)
+- **Styling:** NativeWind v4 (Tailwind CSS for RN)
+- **Animations:** Reanimated v4 (Skia-based, 60fps)
+- **Icons:** @expo/vector-icons (Material, Ionicons, FontAwesome)
 
-### Installed Components
+---
 
-**Phase 1 Ready (Auth Screens):**
+## Navigation Patterns
 
-- Button, Input, Label → Login/Register forms
-- Card → Form wrappers, content containers
-- Alert → Error/success messages
-- Text → Base text component
+**Status:** To be defined during Phase 1 implementation
 
-**Phase 2+ Ready (Workout Logging):**
+**Technology:** React Navigation v6
 
-- Progress → Set completion indicators, goal tracking
-- Skeleton → Loading states for exercise lists
+**Planned Structure:**
 
-### Component Design Guidelines
+- Auth Stack (login, register, forgot password)
+- Main Tab Navigator (workouts, exercises, profile)
+- Workout Stack (workout list, active workout, workout history)
+- Modal Stack (exercise picker, settings)
 
-**Touch Targets:**
+---
 
-- Primary actions: 56x56px minimum (gym-friendly)
-- Secondary actions: 44x44px minimum (Apple HIG standard)
-- Text inputs: 48px height minimum (easy tapping with gloves)
+## Form Patterns
 
-**Visual Hierarchy:**
+**Status:** To be defined during Phase 1 implementation
 
-- Primary action: Solid fill, `primary` color, high contrast
-- Secondary action: Outline, `border` color, lower contrast
-- Tertiary action: Ghost (no border), subtle hover/press
+**Planned Patterns:**
 
-**Feedback:**
+- Validation: Real-time for critical fields, on-submit for forms
+- Error display: Inline below input field (red text + icon)
+- Success feedback: Green checkmark + haptic
+- Placeholders: Show example values, not instructions
 
-- Haptic feedback on all button presses (light impact)
-- Visual feedback: 90% opacity on press (activeOpacity={0.9})
-- Loading states: Skeleton loaders (no spinners that block UI)
+---
 
-## Interaction Principles
+## UI States
 
-### Core Patterns (From Competitor Analysis)
+**Status:** To be defined during Phase 2 implementation
 
-**1. Quick Add with Progressive Disclosure**
+**Planned States:**
 
-- Pre-filled forms with smart defaults (last set's values)
-- Advanced options hidden behind "Advanced" toggle
-- Goal: 1-tap logging for 80% of use cases
+### Empty States
 
-**2. Inline Editing**
+- No workouts yet → CTA: "Create Your First Workout"
+- No exercises in plan → CTA: "Add Exercises"
+- No history → Illustration + encouraging message
 
-- Tap to modify values without modal dialogs
-- Steppers for numeric inputs (±5 lbs, ±1 rep)
-- Minimal keyboard usage during workouts
+### Loading States
 
-**3. Swipe Actions**
+- Skeleton loaders for lists (exercise lists, workout history)
+- Spinner only for full-screen operations (initial sync)
 
-- Left swipe: Edit action (yellow/amber accent)
-- Right swipe: Delete action (red/danger accent)
-- Pattern inspired by iOS Mail app (familiar UX)
+### Error States
 
-**4. Multi-Modal Feedback**
+- Network errors → Retry button + offline mode explanation
+- Validation errors → Inline below field
+- Critical errors → Modal with contact support option
 
-- Visual: Color change, animation
-- Auditory: Completion sounds (optional, user-controlled)
-- Haptic: Buzz on set completion, timer expiry
+---
 
-### Animation Strategy
+## Iconography
 
-**Timing:**
+**Status:** Partially implemented
 
-- Quick interactions: 200ms (button press, toggle)
-- Content transitions: 300ms (screen navigation, modal open)
-- Background updates: 400-600ms (chart animations, progress bars)
+**Current Library:** @expo/vector-icons
 
-**Curves:**
+**Icon Families:**
 
-- Ease-out: Entering elements (start fast, slow down)
-- Ease-in-out: Transitioning elements (smooth both ends)
-- Spring: Interactive elements (natural, physics-based)
+- **Material Icons:** Primary (workout, exercises, settings)
+- **Ionicons:** Secondary (navigation, actions)
+- **FontAwesome:** Specialty (social, advanced features)
 
-**Library:**
+**Sizes:**
 
-- Reanimated v4 for complex animations (Skia-based, 60fps guaranteed)
-- NativeWind transitions for simple opacity/scale (CSS-based, lightweight)
+- Small: 16px (inline, badges)
+- Medium: 24px (buttons, tabs)
+- Large: 32px (empty states, headers)
 
-## Implementation Notes
+**Usage:**
 
-### Agile Approach
-
-This design system documents strategic insights and principles discovered during competitor analysis. **Detailed wireframes and interaction specs are intentionally deferred until implementation phase** to avoid premature design work that will change based on user testing and technical constraints.
-
-### Design-First Workflow
-
-When implementing new features:
-
-1. Review competitor patterns (this document)
-2. Create low-fi wireframes just-in-time (in feature branch)
-3. Build functional prototype
-4. User test and iterate
-5. Document final patterns here (post-implementation)
-
-### References
-
-- Strong App: https://www.strong.app/
-- Hevy App: https://www.hevyapp.com/
-- Apple Human Interface Guidelines: https://developer.apple.com/design/human-interface-guidelines/
-- Material Design (Fitness): https://m3.material.io/
+- Use outlined icons for inactive states
+- Use filled icons for active/selected states
+- Maintain consistent icon family per feature area
