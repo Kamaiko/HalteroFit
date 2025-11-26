@@ -7,13 +7,13 @@ This document explains how Halterofit's codebase is organized. It covers folder 
 - [📐 Overview](#overview)
 - [📂 Detailed Structure](#detailed-structure)
   - [1. `/app` - Navigation (Expo Router)](#1-app---navigation-expo-router)
-  - [2. `/scripts` - Utility Scripts](#2-scripts---utility-scripts)
-  - [3. `/components` - UI Components](#3-components---ui-components)
-  - [4. `/hooks` - Custom React Hooks](#4-hooks---custom-react-hooks)
-  - [5. `/services` - Business Logic](#5-services---business-logic)
-  - [6. `/stores` - Global State (Zustand)](#6-stores---global-state-zustand)
-  - [7. `/types` - TypeScript Definitions](#7-types---typescript-definitions)
-  - [8. `/utils` - Pure Utility Functions](#8-utils---pure-utility-functions)
+  - [2. `/components` - UI Components](#2-components---ui-components)
+  - [3. `/hooks` - Custom React Hooks](#3-hooks---custom-react-hooks)
+  - [4. `/services` - Business Logic](#4-services---business-logic)
+  - [5. `/stores` - Global State (Zustand)](#5-stores---global-state-zustand)
+  - [6. `/types` - TypeScript Definitions](#6-types---typescript-definitions)
+  - [7. `/utils` - Pure Utility Functions](#7-utils---pure-utility-functions)
+  - [8. `/lib` - UI Utility Helpers](#8-lib---ui-utility-helpers)
   - [9. `/tests` - Test Infrastructure](#9-tests---test-infrastructure)
   - [10. `/constants` - App-wide Constants](#10-constants---app-wide-constants)
 - [🔄 Data Flow](#data-flow)
@@ -429,7 +429,47 @@ export function calculateOneRepMax(weight: number, reps: number): number {
 
 ---
 
-### 8. `/__tests__` & `/e2e` - Testing Infrastructure
+### 8. `/lib` - UI Utility Helpers
+
+**Purpose**: UI-specific utility functions (React Native Reusables convention)
+
+```
+lib/
+└── utils.ts  # cn() helper (clsx + tailwind-merge)
+```
+
+**Conventions**:
+
+- UI/styling utilities only
+- Follows React Native Reusables (shadcn/ui) patterns
+- For business logic utilities → use `/utils` instead
+
+**Example**:
+
+```typescript
+// lib/utils.ts
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+/**
+ * Combines and merges Tailwind CSS classes intelligently
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+// Usage in components:
+<Button className={cn("px-4 py-2", isActive && "bg-primary")} />
+```
+
+**Why separate from `/utils`?**
+
+- `lib/` = UI/styling helpers (shadcn/ui convention)
+- `utils/` = Business logic (calculations, formatters, validators)
+
+---
+
+### 9. `/__tests__` & `/e2e` - Testing Infrastructure
 
 **Purpose**: Centralized test infrastructure, E2E automation
 
@@ -512,7 +552,7 @@ e2e/                            # E2E tests (manual + automated)
 
 ---
 
-### 9. `/constants` - App Constants
+### 10. `/constants` - App Constants
 
 **Purpose**: Configuration values, colors, sizes
 

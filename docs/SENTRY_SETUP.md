@@ -36,7 +36,38 @@ Sentry is a production error monitoring service that:
 2. Create a free account (Developer plan - 5k errors/month free)
 3. Verify your email
 
-## Step 2: Create React Native Project
+## Step 2: Setup with Sentry Wizard (Recommended)
+
+**Recommended:** Use the Sentry wizard to automatically configure everything.
+
+### Run the Wizard
+
+```bash
+npx @sentry/wizard@latest -i reactNative --saas --org halterofit --project halterofit
+```
+
+**What the wizard does:**
+
+- ✅ Creates Sentry project (or uses existing)
+- ✅ Configures SDK with your DSN
+- ✅ Adds source maps upload to build
+- ✅ Adds debug symbols upload
+- ✅ Patches `app.json` with Sentry config
+
+**After wizard completes:**
+
+1. Verify `.env` has: `EXPO_PUBLIC_SENTRY_DSN=https://...`
+2. Check `app.json` has Sentry config added
+3. Verify `src/utils/sentry.ts` unchanged (already configured)
+
+---
+
+## Step 3: Manual Setup (Alternative)
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+### Create React Native Project (Manual)
 
 1. After login, click **"Create Project"**
 2. Select platform: **React Native**
@@ -45,7 +76,7 @@ Sentry is a production error monitoring service that:
 5. Team: Default (or create new)
 6. Click **"Create Project"**
 
-## Step 3: Get Your DSN
+### Get Your DSN (Manual)
 
 After creating the project:
 
@@ -59,7 +90,21 @@ After creating the project:
 
 **Note:** The DSN is in `.env` (gitignored). Never commit it to git!
 
-## Step 4: Verify Installation
+</details>
+
+---
+
+## Step 4: Find Your DSN (If Already Created)
+
+If you already created the project or ran the wizard:
+
+1. Go to: https://sentry.io
+2. Select your organization → project: `halterofit`
+3. Go to **Settings** → **Client Keys (DSN)**
+4. Copy the DSN
+5. Add to `.env`: `EXPO_PUBLIC_SENTRY_DSN=your-dsn-here`
+
+## Step 5: Verify Installation
 
 Sentry is already integrated in the codebase. You just need the DSN!
 
@@ -69,7 +114,7 @@ Sentry is already integrated in the codebase. You just need the DSN!
 - `app/_layout.tsx` - Initialization at app startup
 - `src/hooks/ui/useErrorHandler.ts` - Automatic error reporting
 
-## Step 5: Test in Development
+## Step 6: Test in Development
 
 ### Test 1: Verify Sentry is Disabled in Dev
 
@@ -100,7 +145,7 @@ handleError(new Error('Test error'), 'testContext');
 - Error logged to console
 - NOT sent to Sentry (dev mode)
 
-## Step 6: Test in Production Build
+## Step 7: Test in Production Build
 
 ### Build Production Version
 
@@ -120,7 +165,7 @@ eas build --platform ios --profile production
 
 **Expected:** Error appears in Sentry dashboard within ~30 seconds
 
-## Step 7: Monitoring in Production
+## Step 8: Monitoring in Production
 
 ### Viewing Errors
 

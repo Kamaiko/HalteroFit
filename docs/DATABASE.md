@@ -476,4 +476,92 @@ Typical operation times on modern devices:
 
 ---
 
+## Migration Rollback (Emergency Only)
+
+### When to Rollback
+
+Use rollback procedures only in emergency situations where a migration causes production-breaking issues that prevent users from using the app.
+
+### Supabase Cloud Rollback
+
+**Steps:**
+
+1. **Identify problematic migration:**
+
+   ```bash
+   supabase migration list
+   ```
+
+2. **Create reverse migration:**
+
+   ```bash
+   supabase migration new rollback_vX
+   ```
+
+3. **Write SQL to undo changes:**
+
+   ```sql
+   -- Example: Undo column addition
+   ALTER TABLE workouts DROP COLUMN IF EXISTS problematic_column;
+
+   -- Example: Restore deleted column
+   ALTER TABLE workouts ADD COLUMN restored_column TEXT;
+
+   -- Example: Revert type change
+   ALTER TABLE workouts ALTER COLUMN duration TYPE INTEGER USING duration::integer;
+   ```
+
+4. **Apply rollback:**
+
+   ```bash
+   supabase db push
+   ```
+
+5. **Deploy hotfix app version if schema incompatible with current app**
+
+**Example Rollback Scenario:**
+
+```sql
+-- Original migration (v8): Added wrong column type
+ALTER TABLE workouts ADD COLUMN duration INTEGER;
+
+-- Users can't save workouts → Production DOWN 🔥
+
+-- Rollback migration (v9): Remove problematic column
+ALTER TABLE workouts DROP COLUMN duration;
+
+-- Then create new migration (v10) with correct implementation
+ALTER TABLE workouts ADD COLUMN duration_seconds INTEGER;
+```
+
+### WatermelonDB Local Rollback
+
+**❌ NOT POSSIBLE** - Local SQLite databases on user devices cannot be rolled back remotely.
+
+**Mitigation Strategies:**
+
+1. **Version Checking:**
+   - WatermelonDB sync protocol has built-in version checking
+   - Old app versions continue working with previous schema
+   - Sync protocol handles graceful degradation
+
+2. **Thorough Testing:**
+   - Test all migrations with `supabase db reset` before committing
+   - Manual E2E testing on development build before deployment
+   - Phased rollout (beta users first)
+
+3. **Worst Case Recovery:**
+   - Users uninstall/reinstall app (loses local data but recovers functionality)
+   - Cloud data preserved in Supabase (re-syncs after reinstall)
+
+### Prevention Best Practices
+
+- **Validate Before Commit:** Run `supabase db reset` to test migration from scratch
+- **Schema Version Hook:** `.husky/check-schema-version.sh` validates version incremented
+- **Code Review:** Review all migrations before merge
+- **Backward Compatibility:** Design migrations to be backward-compatible when possible
+- **Staging Environment:** Test migrations in staging before production (Phase 2+)
+
+---
+
 **Schema Version:** v7 (GitHub ExerciseDB dataset with animated GIFs)
