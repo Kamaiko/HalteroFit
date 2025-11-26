@@ -79,6 +79,15 @@ This document lists features deferred from the MVP roadmap. These enhancements w
   - Rate limit management (free tier: 10,000 req/month)
   - **Estimated effort:** ~6-8h (serverless architecture)
   - **Dependencies:** MVP complete, validated user adoption
+- **Task ID Validation Script** (CI Automation)
+  - Lightweight bash script to validate task ID format in CI
+  - Check regex compliance: `^[0-9]+\.[0-9]+\.[0-9]+$`
+  - Verify no duplicate IDs across TASKS.md
+  - Non-blocking warnings (doesn't fail CI, just alerts)
+  - **Files:** `.github/scripts/validate-task-ids.sh`
+  - **Trigger:** Manual run or weekly cron (not on every commit)
+  - **Estimated effort:** ~1-2h (simple grep/awk script)
+  - **Dependencies:** None (can implement anytime)
 - **React Query / TanStack Query** (Server State Caching)
   - Consider for advanced analytics queries (Phase 4+)
   - Useful if implementing web dashboard or complex data fetching

@@ -19,25 +19,25 @@ This document tracks completed development milestones and major changes across a
 
 ### 0.6.1: Component Library Setup
 
-- [x] **0.6.1.1** Install React Native Reusables + Dependencies (M - 2h) _2025-01-30_
+- [x] Install React Native Reusables + Dependencies (M - 2h) _2025-01-30_
 
-- [x] **0.6.1.2** Configure @expo/vector-icons (S - 30min) _2025-01-30_
+- [x] Configure @expo/vector-icons (S - 30min) _2025-01-30_
 
-- [x] **0.6.1.3** Validate Dark Theme Configuration (M - 1h) _2025-01-30_
+- [x] Validate Dark Theme Configuration (M - 1h) _2025-01-30_
 
 ### 0.6.2: Core Components Installation
 
-- [x] **0.6.2.1** Install Phase 1 Components (Auth) (M - 1.5h) _2025-01-30_
+- [x] Install Phase 1 Components (Auth) (M - 1.5h) _2025-01-30_
 
 ### 0.6.3: Foundation Infrastructure
 
-- [x] **0.6.3.1** Setup Environment Variables (S - 10min) _2025-02-01_
+- [x] Setup Environment Variables (S - 10min) _2025-02-01_
 
-- [x] **0.6.3.2** Bulk Import ExerciseDB Library (1,500+ exercises) (L - 4h) _2025-11-06_
+- [x] Bulk Import ExerciseDB Library (1,500+ exercises) (L - 4h) _2025-11-06_
 
-- [x] **0.6.3.3** Design Brainstorming: Fitness Components (M - 2-3h) _2025-01-30_
+- [x] Design Brainstorming: Fitness Components (M - 2-3h) _2025-01-30_
 
-- [x] **0.6.3.4** Fix nutrition*phase schema mismatch (XS - 1h) 🔥 \_2025-11-04*
+- [x] Fix nutrition*phase schema mismatch (XS - 1h) 🔥 \_2025-11-04*
 
 </details>
 
@@ -65,53 +65,53 @@ This document tracks completed development milestones and major changes across a
 
 ### 0.5.1: Initial Setup & Analysis
 
-- [x] **0.5.1.1** Setup database with Supabase sync (M - 4h)
+- [x] Setup database with Supabase sync (M - 4h)
 
-- [x] **0.5.1.2** Complete modular architecture refactor (M - 3h)
+- [x] Complete modular architecture refactor (M - 3h)
 
-- [x] **0.5.1.3** Technical audit and corrections planning (M - 2h)
+- [x] Technical audit and corrections planning (M - 2h)
 
-- [x] **0.5.1.4** Setup professional dev tools (S - 30min)
+- [x] Setup professional dev tools (S - 30min)
 
-- [x] **0.5.1.5** Setup Jest testing infrastructure (S - 1h)
+- [x] Setup Jest testing infrastructure (S - 1h)
 
 ### 0.5.2: Development Build Migration
 
-- [x] **0.5.2.1** Setup EAS Build Account & CLI (S - 30min)
+- [x] Setup EAS Build Account & CLI (S - 30min)
 
-- [x] **0.5.2.2** Create eas.json Configuration (S - 30min)
+- [x] Create eas.json Configuration (S - 30min)
 
-- [x] **0.5.2.3** Install Native Packages & Build Development Build (L - 2-3h)
+- [x] Install Native Packages & Build Development Build (L - 2-3h)
 
-- [x] **0.5.2.4** Create WatermelonDB Models & Schema (L - 2h)
+- [x] Create WatermelonDB Models & Schema (L - 2h)
 
-- [x] **0.5.2.5** Phase 1 Critical Fixes (Post-Analysis) (M - 1.5h)
+- [x] Phase 1 Critical Fixes (Post-Analysis) (M - 1.5h)
 
-- [x] **0.5.2.6** Migrate Database Operations to WatermelonDB (L - 1.5h)
+- [x] Migrate Database Operations to WatermelonDB (L - 1.5h)
 
-- [x] **0.5.2.7** Migrate Storage to MMKV (M - 1h)
+- [x] Migrate Storage to MMKV (M - 1h)
 
-- [x] **0.5.2.8** Migrate Charts to Victory Native (M - 1h)
+- [x] Migrate Charts to Victory Native (M - 1h)
 
-- [x] **0.5.2.9** Create Supabase Schema & Sync Functions (L - 1.5h) _2025-01-31_
+- [x] Create Supabase Schema & Sync Functions (L - 1.5h) _2025-01-31_
 
-- [x] **0.5.2.10** Verify Development Build Launch (S - 15min) _2025-01-31_
+- [x] Verify Development Build Launch (S - 15min) _2025-01-31_
 
 ### 0.5.3: Critical Corrections - Blockers
 
-- [x] **0.5.3.1** User ID Persistence with Zustand Persist (M - 2.5h)
+- [x] User ID Persistence with Zustand Persist (M - 2.5h)
 
-- [x] **0.5.3.2** Zustand Persist for Workout Store (S - 1h)
+- [x] Zustand Persist for Workout Store (S - 1h)
 
-- [x] **0.5.3.3** Error Handling Layer (M - 3h)
+- [x] Error Handling Layer (M - 3h)
 
-- [x] **0.5.3.4** Configure Sentry for error monitoring (M - 2h)
+- [x] Configure Sentry for error monitoring (M - 2h)
 
 ### 0.5.4: Infrastructure Completion
 
-- [x] **0.5.4.1** Configure FlashList for optimized lists (S - 1h)
+- [x] Configure FlashList for optimized lists (S - 1h)
 
-- [x] **0.5.4.2** Configure expo-image with caching (S - 1h) _2025-01-31_
+- [x] Configure expo-image with caching (S - 1h) _2025-01-31_
 
 </details>
 

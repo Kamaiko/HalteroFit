@@ -84,7 +84,7 @@ supabase db reset              # Reset database
 
 # Git
 /commit                # Smart commit (slash command)
-/task-update           # Update TASKS.md (slash command)
+/tasks-update          # Update TASKS.md (slash command)
 ```
 
 **For complete workflow:** See [CONTRIBUTING.md](../docs/CONTRIBUTING.md)
@@ -110,7 +110,7 @@ supabase db reset              # Reset database
 Custom slash commands in `.claude/commands/`:
 
 - **/commit** - Smart git commit with strict commitlint validation
-- **/task-update** - Auto-magic task completion with cascade updates
+- **/tasks-update** - Auto-magic task completion with cascade updates
 
 ---
 

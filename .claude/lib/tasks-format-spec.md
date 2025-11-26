@@ -1,7 +1,6 @@
-# TASKS.md Format Specification v5.0
+# Task & Documentation Format Specification
 
-**Purpose**: Clean, maintainable project roadmap with CHANGELOG migration
-**Philosophy**: Zero counters, zero duplication, maximum clarity
+**Purpose**: Clean, maintainable project roadmap (TASKS.md) and changelog (CHANGELOG.md) with consistent formatting
 
 ---
 
@@ -9,64 +8,56 @@
 
 ### Valid Pattern
 
-**Regex:** `^[0-9]+\.[0-9]+$`
+**Regex:** `^[0-9]+\.[0-9]+\.[0-9]+$`
 
-**Format:** `X.Y0` where:
+**Format:** `X.Y.Z` where:
 
-- `X` = Phase number (0-9)
-- `Y0` = Task number in **multiples of 10** (10, 20, 30, 40...)
-- Insert between tasks using Y1-Y9 or Y5 (e.g., 1.15, 1.11-1.19)
+- `X` = Phase number (1, 2, 3...)
+- `Y` = Sub-section number (1, 2, 3...) - for organizing related tasks
+- `Z` = Task number within sub-section (1, 2, 3...)
 
-**Rationale:** Spacing by 10 allows insertion of up to 9 tasks between any two existing tasks without renumbering chaos.
+**Rationale:** Three-level hierarchy provides clear organization while remaining readable. Sub-sections group related tasks logically (e.g., 1.1 = Auth UI, 1.2 = Testing).
 
 **Rules:**
 
-- ✅ Use multiples of 10 for initial task numbering (1.10, 1.20, 1.30...)
-- ✅ Insert between tasks with intermediate numbers (1.15, 1.25, 1.11-1.19)
-- ✅ Scalable: Up to 90 tasks per phase (1.10 through 1.900)
-- ✅ Examples: `1.10`, `1.20`, `2.100`, `3.15` (inserted)
-- ❌ NO letter suffixes: `0.5bis`, `0.5b`, `0.5a`
-- ❌ NO sub-levels: `0.5.10.1`, `0.5.B.1`
-- ❌ NO dashes: `0.5-10`, `1-3`
+- ✅ Sequential numbering by 1: `1.1.1, 1.1.2, 1.1.3...`
+- ✅ Sub-sections for large phases: `### 1.1: Auth UI`, `### 1.2: Testing`
+- ✅ Flat structure for small phases: `2.1, 2.2, 2.3` (no sub-sections needed)
+- ✅ Examples: `1.1.1` (Phase 1, Section 1, Task 1), `2.1` (Phase 2, Task 1)
+- ❌ NO letter suffixes: `1.1.1a`, `1.1bis`
+- ❌ NO four levels: `1.1.1.1` (too deep)
+- ❌ NO dashes: `1-1-1`, `1.1-1`
 
 **Examples:**
 
 ```markdown
-✅ VALID (Initial numbering):
+✅ VALID (Phase with sub-sections):
 
-- [ ] **1.10** Create login screen UI
-- [ ] **1.20** Create register screen UI
-- [ ] **1.30** Implement Supabase Auth
-- [ ] **1.40** Password reset flow
+### 1.1: Auth UI & Screens
 
-✅ VALID (Insertion between tasks):
-Initial state:
+- [ ] **1.1.1** Create login screen UI
+- [ ] **1.1.2** Create register screen UI
+- [ ] **1.1.3** Implement password reset flow
 
-- [ ] **1.10** Create login screen
-- [ ] **1.20** Create register screen
-- [ ] **1.30** Implement auth
+### 1.2: Testing Infrastructure
 
-Add task between 1.20 and 1.30:
+- [ ] **1.2.1** Create auth test infrastructure
+- [ ] **1.2.2** Write auth service tests
 
-- [ ] **1.10** Create login screen
-- [ ] **1.20** Create register screen
-- [ ] **1.25** Add password validation (NEW - inserted)
-- [ ] **1.30** Implement auth
+✅ VALID (Phase without sub-sections):
 
-✅ VALID (Multiple insertions):
+## Phase 2: Workout Plans
 
-- [ ] **1.10** Create login screen
-- [ ] **1.11** Add email validation (inserted)
-- [ ] **1.12** Add password strength meter (inserted)
-- [ ] **1.13** Add form error handling (inserted)
-- [ ] **1.20** Create register screen
+- [ ] **2.1** Create bottom tab navigation
+- [ ] **2.2** Create workout sub-tabs
+- [ ] **2.3** Implement plan CRUD operations
 
 ❌ INVALID:
 
-- [ ] **1.5** (not multiple of 10 for initial numbering)
-- [ ] **0.5bis.1** (letter suffix)
-- [ ] **0.5.B.1** (subsection in ID)
-- [ ] **0.5-10** (dash instead of dot)
+- [ ] **1.1** (only 2 levels - missing task number)
+- [ ] **1.1.1.1** (4 levels - too deep)
+- [ ] **1.1bis.1** (letter suffix)
+- [ ] **1-1-1** (dashes instead of dots)
 ```
 
 ---
@@ -197,24 +188,25 @@ Simple 3-column table with auto-rotation:
 
 ### 1.1: Auth UI & Screens
 
-- [ ] 1.10 Create login screen
-- [ ] 1.20 Create register screen
+- [ ] **1.1.1** Create login screen
+- [ ] **1.1.2** Create register screen
+- [ ] **1.1.3** Implement password reset flow
 
 ### 1.2: Testing Infrastructure
 
-- [ ] 1.21 Test infrastructure
-- [ ] 1.22 Auth tests
+- [ ] **1.2.1** Create auth test infrastructure
+- [ ] **1.2.2** Write auth service tests
 
 ### 1.3: Database Enhancements
 
-- [ ] 1.30 Cascading deletes
-- [ ] 1.31 User model enhancements
+- [ ] **1.3.1** Implement cascading deletes
+- [ ] **1.3.2** Enhance User model with relations
 ```
 
 **Task IDs within sub-sections:**
 
-- 1.10, 1.20, 1.30 (multiples of 10)
-- Insert: 1.15, 1.25, 1.11-1.19
+- Sequential by 1: `1.1.1, 1.1.2, 1.1.3...`
+- Sub-section changes trigger CHANGELOG migration when 100% complete
 
 ### Migration Trigger
 
@@ -235,8 +227,10 @@ Simple 3-column table with auto-rotation:
 
 ### CHANGELOG Format
 
+**Key Difference**: CHANGELOG tasks have **NO task IDs** (archive simplicity). Only sub-section headings are numbered for organization.
+
 ```markdown
-## YYYY-MM-DD - Phase X.Y: Title ✅
+## YYYY-MM-DD - Phase X: Title ✅
 
 **Status**: Complete
 **Stack**: Technologies used (e.g., React Native Reusables, WatermelonDB)
@@ -244,9 +238,9 @@ Simple 3-column table with auto-rotation:
 <details>
 <summary>📋 Completed Tasks (N - Click to expand)</summary>
 
-### X.Y.1: Sub-section Title
+### X.Y: Sub-section Title
 
-- [x] **X.Y.Z** Task title (Size - Time) _YYYY-MM-DD_
+- [x] Task title (Size - Time) _YYYY-MM-DD_
       Full description (if available)
       **Files:** paths
       **Acceptance Criteria:**
@@ -276,12 +270,13 @@ Simple 3-column table with auto-rotation:
 
 ### 0.6.1: Component Library Setup
 
-- [x] **0.6.1.1** Install React Native Reusables (M - 2h) _2025-01-30_
-- [x] **0.6.1.2** Configure @expo/vector-icons (S - 30min) _2025-01-30_
+- [x] Install React Native Reusables + Dependencies (M - 2h) _2025-01-30_
+- [x] Configure @expo/vector-icons (S - 30min) _2025-01-30_
+- [x] Validate Dark Theme Configuration (M - 1h) _2025-01-30_
 
 ### 0.6.2: Core Components Installation
 
-- [x] **0.6.2.1** Install Phase 1 Components (M - 1.5h) _2025-01-30_
+- [x] Install Phase 1 Components (Auth screens) (M - 1.5h) _2025-01-30_
 
 </details>
 
@@ -327,7 +322,7 @@ When marking task complete:
 
 ### Format (Must Fix)
 
-- [ ] Task IDs match pattern `^[0-9]+\.[0-9]+$`
+- [ ] Task IDs match pattern `^[0-9]+\.[0-9]+\.[0-9]+$`
 - [ ] Unique task IDs (no duplicates)
 - [ ] Checkboxes: `- [ ]` or `- [x]` (space required)
 - [ ] TOC links point to existing headers
@@ -387,7 +382,7 @@ git log --all -- docs/CHANGELOG.md
 **✅ GOOD**:
 
 ```markdown
-- [ ] **1.10** Implement database schema in Supabase `[M]` 🔴
+- [ ] **1.3.1** Implement database schema in Supabase `[M]` 🔴
       Create SQL migration matching SQLite schema.
       Files: supabase/migrations/001_initial_schema.sql
 ```
@@ -395,15 +390,15 @@ git log --all -- docs/CHANGELOG.md
 **❌ BAD**:
 
 ```markdown
-- [ ] 1.10 Do database stuff
+- [ ] 1.3.1 Do database stuff
 ```
 
 ### Kanban Updates
 
-**Auto via /task-update**:
+**Auto via /tasks-update**:
 
 ```bash
-/task-update              # Detects completion, updates all
+/tasks-update              # Detects completion, updates all
 ```
 
 **Manual (if needed)**:
@@ -412,29 +407,9 @@ git log --all -- docs/CHANGELOG.md
 - Keep DONE ≤ 5 tasks
 - Keep table aligned
 
-### Zero Counter Maintenance
+### Counter Policy
 
-**Philosophy:**
-
-- Counters become outdated quickly
-- Manual sync is error-prone
-- Validation scripts block productivity
-- **Solution:** Eliminate counters entirely
-
-**What was removed:**
-
-- Progress lines (X/Y tasks, %)
-- Velocity tracking (~N tasks/week)
-- ETA calculations
-- Phase completion percentages
-- Task count summaries
-
-**What remains:**
-
-- Phase headers (title only)
-- Task checkboxes ([x] or [ ])
-- Last Updated date
-- Kanban status
+**Note**: Counters requiring constant maintenance (progress %, velocity, ETA, task summaries) have been removed to eliminate maintenance burden. Only static metadata remains: task checkboxes `[x]`, Last Updated date, and Kanban status.
 
 ---
 
@@ -492,13 +467,13 @@ N. [Phase Title](#anchor-link)
 ```markdown
 ## Kanban
 
-| TODO (Top 5)                      | DOING | DONE (Last 5)               |
-| --------------------------------- | ----- | --------------------------- |
-| **1.10** Login screen `[M]`       |       | **0.6.8** ExerciseDB import |
-| **1.11** Register screen `[M]`    |       | **0.6.10** Schema fix 🔥    |
-| **1.14** Supabase auth `[M]`      |       | **0.6.9** Design system     |
-| **1.13** Protected routes `[S]`   |       | **0.6.6** Environment vars  |
-| **1.15** Auth test infra `[S]` 🔥 |       | **0.6.4** Core components   |
+| TODO (Top 5)                       | DOING | DONE (Last 5)               |
+| ---------------------------------- | ----- | --------------------------- |
+| **1.1.1** Login screen `[M]`       |       | **0.6.8** ExerciseDB import |
+| **1.1.2** Register screen `[M]`    |       | **0.6.7** Schema fix 🔥     |
+| **1.1.5** Supabase auth `[M]`      |       | **0.6.6** Design system     |
+| **1.1.4** Protected routes `[S]`   |       | **0.6.5** Environment vars  |
+| **1.2.1** Auth test infra `[S]` 🔥 |       | **0.6.4** Core components   |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 ```
@@ -522,27 +497,27 @@ Auth follows **Hooks + Services + Store** pattern for optimal testability.
 
 ### 1.1: Auth UI & Screens
 
-- [ ] 1.10 **Create login screen UI** (M - 2h) `[src/app/(auth)/login.tsx]`
+- [ ] **1.1.1** Create login screen UI (M - 2h) `[src/app/(auth)/login.tsx]`
   - Email/password inputs with validation
   - Login button with loading state
   - Uses: Button, Input, Label, Alert (React Native Reusables)
 
-- [ ] 1.11 **Create register screen UI** (M - 2h) `[src/app/(auth)/register.tsx]`
+- [ ] **1.1.2** Create register screen UI (M - 2h) `[src/app/(auth)/register.tsx]`
   - Email/password inputs with confirmation field
   - Validation: email format, password ≥8 chars
 
 ### 1.2: Testing Infrastructure
 
-- [ ] 1.15 **Create auth test infrastructure** (S - 2h) 🔥 HIGH
+- [ ] **1.2.1** Create auth test infrastructure (S - 2h) 🔥 HIGH
   - Reusable test utilities for auth testing
   - Deliverables: `__tests__/__helpers__/auth/`
 ```
 
 ---
 
-## 🔧 /task-update Integration
+## 🔧 /tasks-update Integration
 
-This format is designed for `/task-update` command automation:
+This format is designed for `/tasks-update` command automation:
 
 ```bash
 # Command reads this spec for:
@@ -552,34 +527,8 @@ This format is designed for `/task-update` command automation:
 4. CHANGELOG migration trigger (sub-section complete)
 ```
 
-See `.claude/commands/task-update.md` for command usage.
+See `.claude/commands/tasks-update.md` for command usage.
 
 ---
 
-## 📝 Change Log
-
-### v5.0 (2025-11-20) - Zero Counters
-
-- **BREAKING**: Removed ALL task counters (progress, %, velocity, ETA)
-- **BREAKING**: Removed Executive Summary section
-- **BREAKING**: Removed validation git hooks
-- Added: CHANGELOG migration workflow with `<details>` collapse
-- Added: Sub-section numbering convention (X.1, X.2, X.3)
-- Added: "Completed Phase Management" section
-- Simplified: Kanban (removed Progress/Velocity/NEXT lines)
-- Simplified: Update cascade (16 → 6 levels)
-- Simplified: Validation (no counter checks)
-- Rationale: Eliminate counter maintenance burden, zero duplication with CHANGELOG
-
-### v4.2 (2025-10-29) - Rigorous
-
-- Added Task ID Format section with regex validation
-- Moved Kanban before TOC for immediate visibility
-- Expanded cascade updates: 7 → 16 levels
-- Restructured validation: CRITICAL/WARNINGS/IGNORED levels
-
----
-
-**Version**: 5.0 (Zero Counters)
-**Last Updated**: 2025-11-20
-**Philosophy**: Zero counters, zero duplication, maximum clarity
+**Last Updated**: 2025-11-26

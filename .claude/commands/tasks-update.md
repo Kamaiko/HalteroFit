@@ -4,7 +4,7 @@ allowed-tools: Bash(git log:*), Bash(git diff:*), Read, Edit, Grep
 argument-hint: [next|status]
 ---
 
-# /task-update - Auto-Magic Task Completion
+# /tasks-update - Auto-Magic Task Completion
 
 Auto-detects completed work and cascades 6 levels of updates automatically.
 
@@ -13,9 +13,9 @@ Auto-detects completed work and cascades 6 levels of updates automatically.
 ## 🎯 Usage
 
 ```bash
-/task-update              # Auto-detect & update
-/task-update next         # Suggest next task
-/task-update status       # Show kanban
+/tasks-update              # Auto-detect & update
+/tasks-update next         # Suggest next task
+/tasks-update status       # Show kanban
 ```
 
 ---
@@ -67,7 +67,7 @@ One command updates **6 levels automatically:**
 ## 📋 Example
 
 ```bash
-/task-update
+/tasks-update
 ```
 
 **Success:**
@@ -75,15 +75,15 @@ One command updates **6 levels automatically:**
 ```
 🔍 Analyzing recent work...
 
-✅ Detected: 1.10 Create login screen UI
+✅ Detected: 1.1.1 Create login screen UI
    Evidence: 3 commits, src/app/(auth)/login.tsx ✓
 
 📊 Auto-updated:
    ✓ Task marked [x] in TASKS.md
-   ✓ Kanban: 1.10 moved DOING → DONE
+   ✓ Kanban: 1.1.1 moved DOING → DONE
    ✓ Last Updated: 2025-11-20
 
-⏭️ Next: 1.11 Register screen UI [M - 2h]
+⏭️ Next: 1.1.2 Register screen UI [M - 2h]
 
 Start this task? [Y/n]
 ```
@@ -94,8 +94,8 @@ Start this task? [Y/n]
 🤔 Multiple tasks detected:
 
 Which task did you complete?
-1. 1.10 Login screen (4 commits, login.tsx)
-2. 1.20 Register screen (2 commits, register.tsx)
+1. 1.1.1 Login screen (4 commits, login.tsx)
+2. 1.1.2 Register screen (2 commits, register.tsx)
 
 [1/2]: _
 ```
@@ -121,7 +121,7 @@ When sub-section reaches 100%:
 ⏭️ Next: Phase 1.2 Testing Infrastructure
 ```
 
-**Format:** See `.claude/lib/tasks-format-spec.md` § CHANGELOG Format (lines 236-294)
+**Format:** See [Task & Documentation Format Specification](../.claude/lib/tasks-format-spec.md) § CHANGELOG Format
 
 ---
 
@@ -142,7 +142,7 @@ When sub-section reaches 100%:
 
 ### Scope - DO NOT
 
-- Calculate task counters or progress % (Zero Counters v5.0)
+- Calculate task counters or progress %
 - Modify git history
 - Read files outside project directory
 
@@ -158,16 +158,16 @@ When sub-section reaches 100%:
 
 ## ⚠️ Error Handling
 
-| Scenario              | Response                                                                   |
-| --------------------- | -------------------------------------------------------------------------- |
-| No recent commits     | "ℹ️ No recent commits (last 24h). Still working? Or mark specific task?"   |
-| Task already complete | "✓ Task 1.10 already complete (2025-11-18). Next: 1.11..."                 |
-| Blocked dependencies  | "⚠️ Cannot start 1.30 - Dependencies: 1.10 (pending). Complete 1.10 first" |
+| Scenario              | Response                                                                      |
+| --------------------- | ----------------------------------------------------------------------------- |
+| No recent commits     | "ℹ️ No recent commits (last 24h). Still working? Or mark specific task?"      |
+| Task already complete | "✓ Task 1.1.1 already complete (2025-11-18). Next: 1.1.2..."                  |
+| Blocked dependencies  | "⚠️ Cannot start 1.3.1 - Dependencies: 1.1.1 (pending). Complete 1.1.1 first" |
 
 ---
 
 ## 📚 Reference
 
-- **Format Spec**: `.claude/lib/tasks-format-spec.md` (v5.0)
+- **Format Spec**: `.claude/lib/tasks-format-spec.md`
 - **Kanban Structure**: `TASKS.md` § Kanban
 - **CHANGELOG Format**: `CHANGELOG.md`
