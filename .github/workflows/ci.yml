@@ -356,21 +356,21 @@ jobs:
             const bundleSize = '${{ steps.bundle-size.outputs.bundle_size_mb }}';
             const threshold = '3.0';
             const status = parseFloat(bundleSize) <= parseFloat(threshold) ? '✅' : '❌';
+            const analysis = parseFloat(bundleSize) > parseFloat(threshold)
+              ? '⚠️ Bundle size exceeds threshold. Consider optimizing dependencies or enabling code splitting.'
+              : '✅ Bundle size is within acceptable limits.';
+
+            const body = '## ' + status + ' Bundle Size Check\n\n' +
+              '**JS Bundle Size:** ' + bundleSize + 'MB\n' +
+              '**Threshold:** ' + threshold + 'MB\n\n' +
+              analysis;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## ${status} Bundle Size Check
-
-**JS Bundle Size:** ${bundleSize}MB
-**Threshold:** ${threshold}MB
-
-${parseFloat(bundleSize) > parseFloat(threshold) ?
-  '⚠️ Bundle size exceeds threshold. Consider optimizing dependencies or enabling code splitting.' :
-  '✅ Bundle size is within acceptable limits.'}
-              `
-            })
+              body: body
+            });
 
   # ============================================================================
   # Job 5: Secrets Scanning
