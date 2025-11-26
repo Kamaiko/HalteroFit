@@ -173,6 +173,29 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 **Migration Status:** All native modules (WatermelonDB, MMKV, Victory Native) migrated in Phase 0.5.B (Tasks 0.5.20-0.5.26).
 
+### AI-Assisted Development Tools
+
+**MCP Servers (Model Context Protocol):**
+
+| Server                  | Tokens | Scope   | Purpose                                            |
+| ----------------------- | ------ | ------- | -------------------------------------------------- |
+| **Supabase**            | 13.7k  | Project | Database management, migrations, SQL queries, logs |
+| **Sentry**              | 6k     | Project | Error monitoring and investigation (Phase 5+)      |
+| **Maestro**             | 4k     | Project | E2E test generation and execution (Phase 3+)       |
+| **Context7**            | 1.8k   | Global  | Library documentation lookup                       |
+| **Filesystem**          | 9.4k   | Global  | File operations (read, write, edit, search)        |
+| **Sequential Thinking** | 1.6k   | Global  | Complex problem analysis                           |
+
+**CLI Tools:**
+
+| Tool             | Installation              | Usage          | Purpose                    |
+| ---------------- | ------------------------- | -------------- | -------------------------- |
+| **Supabase CLI** | Local (devDep v2.58.5)    | `npx supabase` | Migrations, SQL, local dev |
+| **Maestro CLI**  | Global (required for MCP) | `maestro`      | E2E testing (Phase 3+)     |
+| **EAS CLI**      | Global                    | `eas`          | Native builds, submissions |
+
+**See:** [.claude/CLAUDE.md](.claude/CLAUDE.md) for quick command reference.
+
 ---
 
 ## Architecture Decisions (ADRs)

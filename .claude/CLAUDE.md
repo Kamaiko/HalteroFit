@@ -78,9 +78,13 @@ npm run type-check     # TypeScript validation
 npm test               # Run Jest tests
 
 # Database
-supabase migration new <name>  # Create new migration
-supabase db push               # Apply migrations
-supabase db reset              # Reset database
+npx supabase migration new <name>  # Create new migration
+npx supabase db push               # Apply migrations
+npx supabase db reset              # Reset database
+
+# Testing
+maestro test .maestro/         # Run E2E tests (Phase 3+)
+maestro studio                 # Interactive test recorder
 
 # Git
 /commit                # Smart commit (slash command)
