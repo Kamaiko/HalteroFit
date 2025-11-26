@@ -388,9 +388,9 @@ jobs:
           fetch-depth: 0  # Full history for TruffleHog
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@4c00aea1ddc46c0fe5fd8c6e00f91d3c90a9a4c1 # v3.87.0
+        uses: trufflesecurity/trufflehog@main
         with:
           path: ./
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
-          extra_args: --debug --only-verified
+          extra_args: --only-verified
