@@ -615,7 +615,11 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for complete workflow (commit conventio
 
 ## Deployment
 
-**Current:** Expo Go (development) | **Future:** EAS Build → TestFlight/Google Play → App Stores
+**Current:** Development Build (EAS Build) - Required for native modules (WatermelonDB, MMKV, Victory Native)
+
+**Distribution:** TestFlight (iOS) / Play Store Internal Testing (Android)
+
+See [DEVOPS_PIPELINE.md](./DEVOPS_PIPELINE.md) for build configuration and CI/CD details.
 
 ---
 

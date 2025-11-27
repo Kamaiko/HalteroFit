@@ -674,6 +674,4 @@ If issue not listed here:
 
 2. **Search Metro logs** carefully - error messages often explain the issue
 
-3. **Review [AUDIT_FIXES.md](./AUDIT_FIXES.md)** - your issue might be a known problem with planned correction
-
-4. **Add it to this guide** once solved - help future you!
+3. **Add it to this guide** once solved - help future you!

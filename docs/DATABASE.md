@@ -14,49 +14,17 @@ This document covers Halterofit's hybrid database architecture (WatermelonDB + S
 
 ## Architecture Overview
 
-### Hybrid Approach
+> 📖 **For complete architecture details:** See [TECHNICAL.md § Storage Stack](./TECHNICAL.md#storage-stack)
 
-Halterofit uses a two-tier database architecture combining local-first storage with cloud synchronization:
+**Quick Reference:**
 
-**Local Tier (WatermelonDB)**
+| Layer   | Technology            | Purpose                              |
+| ------- | --------------------- | ------------------------------------ |
+| Local   | WatermelonDB (SQLite) | Offline-first, reactive queries      |
+| Cloud   | Supabase PostgreSQL   | Sync + RLS + Backup                  |
+| Storage | MMKV                  | Auth tokens, preferences (encrypted) |
 
-- SQLite database via WatermelonDB
-- Instant reads/writes without network dependency
-- Reactive queries with automatic UI updates
-- Runs on user device (offline-capable)
-
-**Cloud Tier (Supabase)**
-
-- PostgreSQL backend with Row-Level Security (RLS)
-- Cross-device data synchronization
-- Automatic conflict resolution (last-write-wins)
-- Backup and data persistence
-
-**Storage (MMKV)**
-
-- Encrypted local storage for auth tokens and preferences
-- High-performance key-value storage optimized for mobile
-
-### Sync Strategy
-
-**How it works:**
-
-1. User performs action (create workout, log set) → WatermelonDB writes locally (instant)
-2. WatermelonDB marks record as changed
-3. When internet available → automatic background sync to Supabase
-4. Conflicts resolved via timestamp comparison (last write wins)
-5. Remote changes pulled back to local database
-
-**User experience:** All operations work offline. Sync happens transparently in background when connection available.
-
-### Technology Stack
-
-| Component         | Technology          | Purpose                                          |
-| ----------------- | ------------------- | ------------------------------------------------ |
-| Local Database    | WatermelonDB        | Offline-first reactive database (SQLite wrapper) |
-| Cloud Database    | Supabase PostgreSQL | Remote storage + sync + RLS                      |
-| Encrypted Storage | MMKV                | Auth tokens, user preferences                    |
-| Sync Protocol     | WatermelonDB Sync   | Bidirectional sync with conflict resolution      |
+**Sync:** Local-first → Background sync when online → Last-write-wins conflict resolution
 
 ---
 
