@@ -305,6 +305,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    # Required for PR comments (works for regular PRs)
+    # Dependabot PRs have restricted tokens regardless - handled by continue-on-error below
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
@@ -348,9 +354,10 @@ jobs:
             echo "✅ Bundle size ${BUNDLE_SIZE_MB}MB is within ${THRESHOLD_MB}MB threshold"
           fi
 
+      # Informational comment - actual check passes/fails in previous step
       - name: Comment bundle size on PR
         if: github.event_name == 'pull_request'
-        continue-on-error: true # Dependabot PRs have read-only GITHUB_TOKEN
+        continue-on-error: true # Dependabot has restricted token regardless of job permissions
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
