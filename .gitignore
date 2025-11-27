@@ -1,102 +1,118 @@
+# ===================
 # Dependencies
+# ===================
 node_modules/
 
-# Environment Variables
+# ===================
+# Environment
+# ===================
 .env
-.env.local
-.env.production
-.env.development
-.env.staging
+.env.*
 
-# Expo
+# ===================
+# Expo / React Native
+# ===================
 .expo/
 dist/
 web-build/
 expo-env.d.ts
-
-# React Native
 *.orig.*
 *.jsbundle
 /ios/Pods/
 /android/app/debug.keystore
 
-# Native Signing
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-
-# Metro
-.metro-health-check*
-
-# Testing
-coverage/
-*.lcov
-.nyc_output
-.jest-cache/
-
-# Build Outputs
+# ===================
+# Build & Output
+# ===================
 build/
+coverage/
 *.tgz
 *.tar.gz
+*.lcov
+.nyc_output
 
+# ===================
 # Caches
+# ===================
+.cache/
+.jest-cache/
 .eslintcache
 *.tsbuildinfo
+.metro-health-check*
 
+# ===================
 # Logs
+# ===================
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# ===================
 # Temporary Files
+# ===================
 *.tmp
 *.temp
 *.backup
 *.bak
-.cache/
-/*.py
 
-# OS
+# ===================
+# OS Files
+# ===================
 .DS_Store
-*.pem
 Thumbs.db
 
+# ===================
 # IDE
+# ===================
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# EAS
+# ===================
+# Secrets & Credentials
+# ===================
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+*.credentials
 android-service-account.json
 ios-distribution.p12
-*.credentials
 
+# ===================
 # Supabase
+# ===================
 supabase/.branches
 supabase/.temp
 
-# MCP Configuration (contains access tokens)
+# ===================
+# Claude Code
+# ===================
+.claude/
 .mcp.json
 
-# Claude Code (machine-specific settings)
-.claude/settings.local.json
-
-# Tools
-storybook-static/
-patches/
-.detox/
-.flipper/
-
-# SQLite Databases
+# ===================
+# Database
+# ===================
 *.db
 *.db-shm
 *.db-wal
 
+# ===================
 # Lock Files
+# ===================
 package-lock.json
 *.lock
+
+# ===================
+# Tools & Misc
+# ===================
+storybook-static/
+patches/
+.detox/
+.flipper/
