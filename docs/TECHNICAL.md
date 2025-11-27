@@ -200,6 +200,32 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 ## Architecture Decisions (ADRs)
 
+<details>
+<summary><strong>ADR Index (Click to expand)</strong></summary>
+
+| ADR     | Title                                                                                     | Status      |
+| ------- | ----------------------------------------------------------------------------------------- | ----------- |
+| ADR-001 | [Expo SDK 54 Managed Workflow](#adr-001-expo-sdk-54-managed-workflow)                     | Implemented |
+| ADR-002 | [Zustand for State Management](#adr-002-zustand-for-state-management)                     | Implemented |
+| ADR-004 | [WatermelonDB for Offline-First Storage](#adr-004-watermelondb-for-offline-first-storage) | Completed   |
+| ADR-005 | [NativeWind v4 for Styling](#adr-005-nativewind-v4-for-styling)                           | Implemented |
+| ADR-006 | [Path Aliases with TypeScript](#adr-006-path-aliases-with-typescript)                     | Implemented |
+| ADR-007 | [Three-Tier Testing Strategy](#adr-007-three-tier-testing-strategy)                       | Implemented |
+| ADR-008 | [Supabase Backend](#adr-008-supabase-backend)                                             | Implemented |
+| ADR-009 | [MMKV for Encrypted Storage](#adr-009-mmkv-for-encrypted-storage)                         | Completed   |
+| ADR-010 | [Performance Libraries](#adr-010-performance-libraries)                                   | Completed   |
+| ADR-011 | [Victory Native for Charts](#adr-011-victory-native-for-charts)                           | Completed   |
+| ADR-012 | [Development Build Strategy](#adr-012-development-build-strategy)                         | Completed   |
+| ADR-013 | [ExerciseDB Dataset Integration](#adr-013-exercisedb-dataset-integration)                 | Completed   |
+| ADR-014 | [React Native Reusables for UI](#adr-014-react-native-reusables-for-ui)                   | Implemented |
+| ADR-015 | [Single Dark Mode Design](#adr-015-single-dark-mode-design)                               | Implemented |
+| ADR-016 | [Expo Vector Icons](#adr-016-expo-vector-icons)                                           | Implemented |
+| ADR-020 | [REST API Strategy (Supabase RPC)](#adr-020-rest-api-strategy-supabase-rpc)               | Implemented |
+
+</details>
+
+---
+
 ### ADR-001: Expo SDK 54 Managed Workflow
 
 **Decision:** Expo managed workflow for rapid MVP development
@@ -224,119 +250,60 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 ---
 
-### ADR-004: WatermelonDB for Offline-First Storage (Phase 0.5+)
+### ADR-004: WatermelonDB for Offline-First Storage
 
-**Decision:** WatermelonDB with Supabase sync from Day 1 (Development Build required)
-
-**Implementation (Phase 0.5+):**
-
-- `src/models/` - WatermelonDB models (Workout, Exercise, WorkoutExercise, ExerciseSet)
-- `src/services/database/watermelon/` - Database setup, schema, sync protocol
-- Used for: workouts, exercises, sets (offline-first relational data)
-- ⚠️ Requires Development Build (native SQLite module)
-- ✅ Production-ready performance (optimized for 2000+ workouts)
-- ✅ Reactive queries (auto-update UI on data changes)
-- ✅ Built-in sync protocol (~20 lines vs 200 lines manual)
-
-**Storage Architecture:**
-| Storage | Speed | Use Case | Phase | Dev Build |
-| ---------------- | ---------- | ------------------------- | ----- | --------- |
-| **WatermelonDB** | Very Fast | Workouts, exercises, sets | 0.5+ | ✅ |
-| **MMKV** | Very Fast | Auth tokens, preferences | 0.5+ | ✅ |
-| **Zustand** | Instant | Temporary UI state | 0+ | ❌ |
-
-**Why WatermelonDB from Day 1:**
-
-- ✅ Offline-first required (CRITICAL priority in PRD)
-- ✅ Production architecture (no migration needed later)
-- ✅ Reactive queries (better DX, less boilerplate)
-- ✅ Built-in sync (robust conflict resolution)
-- ✅ Performance optimized for scale (2000+ workouts)
-- ⚠️ Requires Development Build (acceptable trade-off)
-
-**Sync Protocol:**
-
-```typescript
-// WatermelonDB sync (~20 lines vs 200 lines manual)
-await synchronize({
-  database,
-  pullChanges: async ({ lastPulledAt }) => {
-    const { data } = await supabase.rpc('pull_changes', { lastPulledAt });
-    return { changes: data.changes, timestamp: data.timestamp };
-  },
-  pushChanges: async ({ changes }) => {
-    await supabase.rpc('push_changes', { changes });
-  },
-});
-```
-
-**Benefits:**
-
-- Automatic conflict resolution (smart merge)
-- Reactive queries (`.observe()` auto-updates UI)
-- Lazy loading (only load what's needed)
-- Batch operations (optimized performance)
-
-**Trade-offs:**
-
-- ⚠️ Requires Development Build (can't use Expo Go)
-- ✅ No future migration needed (production-ready from day 1)
-- ✅ Better architecture for MVP scale
-- ✅ Early migration avoided 40-60% code rewrite later
-
-**Status:** ✅ **COMPLETED** (Phase 0.5.B - Tasks 0.5.22-0.5.26)
-
----
-
-### ADR-005: NativeWind (Tailwind CSS) for Styling
-
-**Decision:** NativeWind v4 for all styling (switched from StyleSheet in Phase 0.5)
+**Decision:** WatermelonDB with Supabase sync (requires Development Build)
 
 **Rationale:**
 
-- 2-3x faster development (className vs StyleSheet.create)
-- Easier maintenance and modifications
-- Industry standard (massive documentation, community)
-- Solo developer doing all coding = no learning curve issue
-- Timing perfect (minimal UI code written)
+- Offline-first is a critical requirement (PRD priority)
+- Reactive queries with `.observe()` for auto-updating UI
+- Built-in sync protocol with automatic conflict resolution
+- Optimized for scale (2000+ workouts)
+
+**Implementation:**
+
+- `src/models/` - WatermelonDB models
+- `src/services/database/watermelon/` - Schema and sync protocol
 
 **Trade-offs:**
 
-- Initial setup: 2-3 hours
-- Slightly larger bundle (+50KB)
-- Peer dependency warnings (React 19.1 vs 19.2, non-blocking)
+- Requires Development Build (cannot use Expo Go)
+- Production-ready architecture from start (no migration needed)
 
-**ROI:** 2-3h investment vs 10-20h saved over 12-13 weeks
+**Status:** Completed
 
-**Status:** ✅ Implemented (Phase 0.5)
+---
+
+### ADR-005: NativeWind v4 for Styling
+
+**Decision:** NativeWind v4 (Tailwind CSS for React Native)
+
+**Rationale:**
+
+- Faster development with utility-first CSS
+- Industry standard with extensive documentation
+- Better maintainability than StyleSheet.create
+
+**Trade-offs:** +50KB bundle size, initial setup required
+
+**Status:** Implemented
 
 ---
 
 ### ADR-006: Path Aliases with TypeScript
 
-**Decision:** Use `@/` path aliases for imports (TypeScript native)
+**Decision:** Use `@/` path aliases for imports
 
 **Rationale:**
 
-- Codebase exceeded 50 files (68 TS/TSX files as of Phase 0.6)
-- TypeScript `paths` in tsconfig.json (no babel plugin needed)
 - Cleaner imports: `import { Button } from '@/components/ui/button'`
-- Better refactoring support (rename/move files)
+- TypeScript native (no babel plugin needed)
+- Better refactoring support
 
-**Configuration:**
+**Configuration:** `tsconfig.json` with `"paths": { "@/*": ["./src/*"] }`
 
-```json
-// tsconfig.json
-{
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
-}
-```
-
-**Status:** ✅ Implemented (Phase 0.5)
+**Status:** Implemented
 
 ---
 
@@ -346,18 +313,15 @@ await synchronize({
 
 **Rationale:**
 
-- **Jest + LokiJS:** Fast unit tests for CRUD/queries (36 tests, 60-65% coverage)
-- **Manual E2E:** Validate sync protocol (LokiJS limitation) before automation
-- **Maestro:** Automate critical flows after manual validation (Phase 3+)
+- **Jest + LokiJS:** Fast unit tests for CRUD/queries
+- **Manual E2E:** Validate sync protocol before automation
+- **Maestro:** Automate critical flows (Phase 3+)
 
-**Key Limitation:** WatermelonDB sync protocol (`_changed`, `_status`) requires real SQLite - cannot be tested in Jest
+**Limitation:** WatermelonDB sync protocol requires real SQLite (cannot be tested in Jest)
 
-**Status:** ✅ **IMPLEMENTED** (Phase 0.5.28)
+**Status:** Implemented
 
-**References:**
-
-- [Testing Guide](./TESTING.md) - Complete strategy and navigation
-- [Test Infrastructure](../tests/README.md) - Helpers, fixtures, mocks
+**Reference:** [TESTING.md](./TESTING.md)
 
 ---
 
@@ -373,92 +337,29 @@ await synchronize({
 
 ---
 
-### ADR-009: MMKV for Encrypted Storage (Phase 0.5+)
+### ADR-009: MMKV for Encrypted Storage
 
-**Decision:** MMKV for key-value storage (auth tokens, user preferences) from Day 1
+**Decision:** MMKV for key-value storage (auth tokens, preferences)
 
-**Implementation:**
+**Rationale:**
 
-- `src/services/storage/mmkvStorage.ts` - MMKV wrapper with TypeScript safety
-- Used for: Auth tokens, user settings, app preferences
-- ⚠️ Requires Development Build (native C++ module)
-- ✅ 10-30x faster than AsyncStorage
-- ✅ Native encryption (secure by default)
-- ✅ Synchronous API (instant reads)
+- 10-30x faster than AsyncStorage
+- Native encryption (secure by default)
+- Synchronous API (instant reads)
 
-**Why MMKV from Day 1:**
-
-- ✅ Security first (encrypted auth tokens)
-- ✅ Performance (instant settings load vs AsyncStorage delay)
-- ✅ Production-ready (no migration needed)
-- ✅ Small API surface (easy to learn)
-- ⚠️ Requires Development Build (acceptable trade-off)
+**Implementation:** `src/services/storage/mmkvStorage.ts`
 
 **Storage Strategy:**
 
-| Layer            | Purpose                             | Examples                  | Performance        | Native Module |
-| ---------------- | ----------------------------------- | ------------------------- | ------------------ | ------------- |
-| **WatermelonDB** | Relational data (syncs to Supabase) | Workouts, exercises, sets | 20x > AsyncStorage | ✅ SQLite     |
-| **MMKV**         | Key-value data (local only)         | Auth tokens, preferences  | 30x > AsyncStorage | ✅ C++        |
-| **Zustand**      | Temporary UI state                  | `isWorkoutActive`, forms  | In-memory          | ❌            |
+| Layer            | Purpose           | Examples                  |
+| ---------------- | ----------------- | ------------------------- |
+| **WatermelonDB** | Relational data   | Workouts, exercises, sets |
+| **MMKV**         | Key-value storage | Auth tokens, preferences  |
+| **Zustand**      | Temporary UI      | Active workout state      |
 
-**Integration with Zustand:**
+**Trade-offs:** Requires Development Build, key-value only
 
-Zustand stores use MMKV for persistence via `zustandMMKVStorage` adapter:
-
-```typescript
-// src/stores/auth/authStore.ts
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { zustandMMKVStorage } from '@/services/storage';
-
-export const useAuthStore = create(
-  persist((set) => ({ user: null /* ... */ }), {
-    name: 'auth-storage',
-    storage: createJSONStorage(() => zustandMMKVStorage), // MMKV backend
-  })
-);
-```
-
-**Data Flow:**
-
-```
-Auth session, preferences → Zustand persist → MMKV (encrypted, instant)
-Workouts, exercises       → WatermelonDB (reactive, synced)
-Active workout state      → Zustand in-memory (ephemeral)
-```
-
-**Benefits:**
-
-- Encrypted by default (secure auth tokens)
-- Synchronous API (instant reads, no async overhead)
-- Tiny bundle size (<100KB)
-- Cross-platform (iOS, Android, Web support)
-
-**Trade-offs:**
-
-- ⚠️ Requires Development Build
-- ⚠️ Key-value only (not for relational data)
-- ✅ Better security and performance than AsyncStorage
-
-**Implementation Example:**
-
-```typescript
-// src/services/storage/mmkvStorage.ts
-import { MMKV } from 'react-native-mmkv';
-
-export const storage = new MMKV({
-  id: 'halterofit-storage',
-  encryptionKey: process.env.MMKV_ENCRYPTION_KEY,
-});
-
-export const authStorage = {
-  getToken: () => storage.getString('authToken'),
-  setToken: (token: string) => storage.set('authToken', token),
-  clearToken: () => storage.delete('authToken'),
-};
-```
-
-**Status:** ✅ **COMPLETED** (Phase 0.5.B - Task 0.5.25)
+**Status:** Completed
 
 ---
 
@@ -474,25 +375,13 @@ Performance-critical libraries for smooth UX on low-end devices.
 
 **Rationale:**
 
-- 54% FPS improvement (36.9 → 56.9 FPS), 82% CPU reduction
+- 54% FPS improvement, 82% CPU reduction vs FlatList
 - Cell recycling (10x faster than FlatList virtualization)
-- Critical for 500+ exercise library on Android low-end devices
+- Critical for 500+ exercise library on low-end devices
 
-**Implementation:**
+**Trade-offs:** +50KB bundle, requires `estimatedItemSize` prop
 
-```typescript
-// src/components/lists/WorkoutList.tsx
-<FlashList
-  data={workouts}
-  renderItem={renderItem}
-  estimatedItemSize={88}
-  keyExtractor={keyExtractor}
-/>
-```
-
-**Trade-offs:** +50KB bundle, requires manual item height estimation
-
-**Status:** ✅ **COMPLETED** (Phase 0.5.3)
+**Status:** Completed
 
 ---
 
@@ -502,215 +391,57 @@ Performance-critical libraries for smooth UX on low-end devices.
 
 **Rationale:**
 
-- **PRD Requirement:** Exercise GIFs must load from cache in <200ms
-- 1,500+ exercise GIFs from GitHub ExerciseDB require aggressive caching
-- Built-in memory + disk cache (no custom implementation needed)
-- Better performance than React Native Image (10-30x faster)
+- Exercise GIFs must load from cache in <200ms (PRD requirement)
+- 1,500+ exercise GIFs require aggressive caching
+- Built-in memory + disk cache (no custom implementation)
+- 10-30x faster than React Native Image
 
-**Implementation:**
+**Implementation:** `src/components/ui/CachedImage.tsx` with `cachePolicy="memory-disk"`
 
-```typescript
-// src/components/ui/CachedImage.tsx
-import { CachedImage } from '@/components/ui';
+**Trade-offs:** +100KB bundle size, but eliminates custom cache implementation
 
-<CachedImage
-  source={{ uri: exercise.imageUrl }}
-  cachePolicy="memory-disk" // Default: fastest retrieval
-  placeholder={require('@/assets/exercise-placeholder.png')}
-  fallback={require('@/assets/error-image.png')}
-  priority="high" // Preload critical images
-/>
-```
+**Status:** Completed
 
-**Features:**
+### ADR-011: Victory Native for Charts
 
-- Default `cachePolicy="memory-disk"` (PRD <200ms requirement)
-- Skeleton placeholder support (better perceived performance)
-- Error handling with fallback images
-- Smooth fade-in transitions (300ms default)
-- Preload priority for above-fold images
-- Pre-built styles for common use cases (avatar, thumbnail, banner)
+**Decision:** Victory Native v41 (Skia-based) for all data visualization
 
-**Configuration:**
+**Rationale:**
 
-- **Component:** `src/components/ui/CachedImage.tsx`
-- **Documentation:** `src/components/ui/README.md`
-- **Export:** `import { CachedImage } from '@/components/ui'`
+- Skia rendering: 60fps with 1000+ data points
+- Advanced gestures: zoom, pan, crosshairs
+- Fully themeable with dark mode integration
+- Well-maintained by Formidable Labs
 
-**Use Cases:**
+**Implementation:** `src/components/charts/` (LineChart, BarChart, ProgressChart)
 
-- Exercise GIFs (Phase 2.7.1, 3.11.2) - 1,500 animated GIFs
-- User avatars (Phase 1.4)
-- Workout template thumbnails (Phase 5)
+**Trade-offs:** Requires Development Build, +200KB bundle vs react-native-chart-kit
 
-**Trade-offs:**
-
-- ✅ Production-ready caching (no custom implementation)
-- ✅ Meets PRD performance requirements (<200ms)
-- ⚠️ +100KB bundle size vs React Native Image
-- ✅ Saves ~40h of custom cache implementation
-
-## **Status:** ✅ **COMPLETED** (Phase 0.5.4)
-
-### ADR-011: Charts Strategy - Victory Native
-
-**Decision:** Use Victory Native from Day 1 (Development Build required)
-
-**Implementation:**
-
-- **Library:** Victory Native v41 (Skia-based rendering)
-- `src/components/charts/` - Reusable chart components (LineChart, BarChart, ProgressChart)
-- Used for: Volume analytics, progression graphs, 1RM tracking
-- ⚠️ Requires Development Build (react-native-skia native module)
-- ✅ Production-grade performance (1000+ data points, smooth)
-- ✅ Advanced gestures (zoom, pan, crosshairs)
-- ✅ Fully customizable (theme integration)
-
-**Why Victory Native from Day 1:**
-
-- ✅ Professional UX (smooth gestures, animations)
-- ✅ Performance (Skia rendering, 60fps with 1000+ points)
-- ✅ Flexible (multi-line charts, custom tooltips)
-- ✅ Well-maintained (Formidable Labs)
-- ⚠️ Requires Development Build (acceptable trade-off)
-
-**Features Used in MVP:**
-
-- **Line Charts:** Progression tracking (volume over time, 1RM progression)
-- **Bar Charts:** Weekly volume comparison
-- **Custom Tooltips:** Show exact values on tap
-- **Zoom/Pan:** Explore historical data (3 months+)
-- **Themeable:** Integrated with dark theme
-
-**Implementation Example:**
-
-```typescript
-// src/components/charts/VolumeLineChart.tsx
-import { VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
-
-<VictoryChart theme={darkTheme}>
-  <VictoryAxis />
-  <VictoryLine
-    data={volumeData}
-    x="date"
-    y="volume"
-    interpolation="monotoneX"
-    style={{ data: { stroke: theme.colors.primary } }}
-  />
-</VictoryChart>;
-```
-
-**Benefits:**
-
-- Skia rendering (native performance)
-- Advanced gestures (zoom, pan, crosshairs)
-- Fully themeable (matches app design)
-- Multi-line support (compare exercises)
-- Animation support (smooth transitions)
-
-**Trade-offs:**
-
-- ⚠️ Requires Development Build
-- ⚠️ Larger bundle size (+200KB vs react-native-chart-kit)
-- ✅ Production-ready from day 1 (no migration needed)
-- ✅ Better UX for analytics-focused app
-
-**Status:** ✅ **COMPLETED** (Phase 0.5.B - Task 0.5.26)
+**Status:** Completed
 
 ---
 
 ### ADR-012: Development Build Strategy
 
-**Decision:** Use Development Build (EAS Build) from Day 1 instead of Expo Go
+**Decision:** Use EAS Development Build from Day 1 instead of Expo Go
 
 **Rationale:**
 
-Instead of starting with Expo Go and migrating later (costly 1-2 week refactor), we're building with production-grade architecture from the start:
-
-**Why Development Build from Day 1:**
-
-- ✅ WatermelonDB (reactive database, better than expo-sqlite)
-- ✅ MMKV (10-30x faster + encrypted vs AsyncStorage)
-- ✅ Victory Native (professional charts vs basic charts)
-- ✅ No future migration (avoid 1-2 weeks refactoring later)
-- ✅ Production-ready architecture for MVP scale
+- Enables native modules: WatermelonDB, MMKV, Victory Native
+- Avoids costly migration later (Expo Go → Dev Build)
+- Production-ready architecture from start
 
 **Trade-offs:**
 
-| Aspect             | Expo Go                   | Development Build                            |
-| ------------------ | ------------------------- | -------------------------------------------- |
-| **Setup Time**     | 5 minutes                 | ~3-4 hours (one-time)                        |
-| **Iteration**      | Instant (scan QR)         | ~15-20 min rebuild (only for native changes) |
-| **Native Modules** | Limited (Expo SDK only)   | Any module (WatermelonDB, MMKV, Victory)     |
-| **Performance**    | Good                      | Production-optimized                         |
-| **Future Work**    | 1-2 week migration needed | Already production-ready                     |
+| Aspect             | Expo Go            | Development Build              |
+| ------------------ | ------------------ | ------------------------------ |
+| **Setup**          | 5 minutes          | 3-4 hours (one-time)           |
+| **Native Modules** | Limited (Expo SDK) | Any module                     |
+| **Rebuild**        | N/A                | Only for native changes (rare) |
 
-**Daily Development Workflow:**
+**Workflow:** Hot reload works normally after initial build. Only rebuild when adding native modules or changing `app.json` native config.
 
-```bash
-# ONE-TIME SETUP (3-4 hours)
-npm install
-eas build --profile development --platform android  # ~15-20 min
-# Install dev build on device (scan QR from EAS)
-
-# DAILY DEVELOPMENT (same as Expo Go!)
-npm start
-# Scan QR with dev build app
-# Hot reload works normally ✅
-
-# ONLY rebuild if:
-# - Installing new native module (rare, ~1-2x/week max)
-# - Changing app.json native config (rare)
-```
-
-**Development Build Workflow:**
-
-1. **Create EAS account** (free tier: unlimited dev builds)
-2. **Configure eas.json** (development, preview, production profiles)
-3. **Build dev client** (iOS + Android, ~15-20 min each)
-4. **Install on device** (scan QR code from EAS dashboard)
-5. **Develop normally** (npm start, hot reload works)
-
-**Rebuild triggers** (rare, ~1-2x per week):
-
-- ❌ Code changes (JS/TS) → NO rebuild needed (hot reload)
-- ❌ Style changes → NO rebuild needed
-- ❌ Component changes → NO rebuild needed
-- ✅ New native module → YES, rebuild (15-20 min)
-- ✅ app.json native config → YES, rebuild
-
-**EAS Build Configuration:**
-
-```json
-// eas.json
-{
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {
-      "ios": {
-        "simulator": false
-      }
-    }
-  }
-}
-```
-
-**Cost Analysis:**
-
-| Option                | Upfront Cost | Future Cost | Total     |
-| --------------------- | ------------ | ----------- | --------- |
-| **Expo Go → Migrate** | 1 hour       | 1-2 weeks   | ~80 hours |
-| **Dev Build Day 1**   | 4 hours      | 0 hours     | 4 hours   |
-
-**Savings:** ~76 hours by avoiding future migration
-
-**Status:** ✅ **COMPLETED** (Phase 0.5.B - Tasks 0.5.20-0.5.26)
+**Status:** Completed
 
 ---
 
@@ -720,189 +451,85 @@ npm start
 
 **Rationale:**
 
-- **Time savings:** 190 hours (200h manual creation → 10h integration)
-- **Quality:** Professional GIFs, instructions, categorization
-- **Coverage:** Exceeds 500 exercise target
+- Professional GIFs, instructions, categorization included
+- Exceeds 500 exercise target with minimal effort
+- One-time seed to Supabase, then local WatermelonDB queries (no API calls at runtime)
 
-**Implementation:**
+**Trade-offs:** License compliance required, initial API dependency (one-time)
 
-```typescript
-// One-time seed: GitHub dataset → Supabase → WatermelonDB
-// Runtime: No API calls (local WatermelonDB search/filtering)
-```
-
-**Data Ownership:** Seeded to our Supabase (full control), users add custom exercises
-
-**Trade-offs:** Initial API dependency (one-time), license compliance required
-
-**Alternatives:** Wger API (200 exercises), API Ninjas (1,000)
-
-**Status:** ✅ **COMPLETED** (Phase 0.6.8 - 2025-11-06)
+**Status:** Completed
 
 ---
 
 ### ADR-014: React Native Reusables for UI Components
 
-**Decision:** Use React Native Reusables (shadcn/ui port) as base component library
-
-**Context:** Phase 1 requires authentication UI (Login, Register screens). Need decision on component library vs custom components.
+**Decision:** React Native Reusables (shadcn/ui port) as base component library
 
 **Rationale:**
 
-- Pre-built accessible components (Button, Input, Card, Form, Alert, Toast, etc.)
+- Pre-built accessible components (Button, Input, Card, Form, etc.)
 - Built with NativeWind v4 (already in stack)
-- Source code installed in project (full customization control)
-- Class Variance Authority for type-safe variant management
-- Active maintenance and community support
+- Source code in project (full customization control)
+- Class Variance Authority for type-safe variants
 
-**Alternatives Considered:**
+**Trade-offs:** +50KB bundle, shadcn/ui learning curve
 
-- Custom components only: 20-30h additional development time
-- NativeBase: Material Design aesthetic not ideal for fitness app
-- Tamagui: Excellent but adds complexity with new styling system
-
-**Trade-offs:**
-
-- Additional ~50KB bundle size
-- Learning curve for shadcn/ui patterns
-- Some components may need fitness-specific customization
-
-**Status:** Phase 0.6 (Tasks 0.6.1, 0.6.4, 0.6.5)
+**Status:** Implemented
 
 ---
 
 ### ADR-015: Single Dark Mode Design
 
-**Decision:** Implement single dark mode only (no light mode toggle)
-
-**Context:** Fitness apps are primarily used in gyms with low lighting. Need to decide on theming strategy.
+**Decision:** Dark mode only (no light mode toggle)
 
 **Rationale:**
 
-- 95%+ of gym usage occurs in low-light environments
-- Simplifies implementation (no theme switching logic)
-- Reduces bundle size (single theme CSS)
-- Faster development (one design system to maintain)
+- Gym usage in low-light environments
+- Simpler implementation (no theme switching)
 - Better battery life on OLED screens
 
-**Design Tokens:**
+**Design Tokens:** See `tailwind.config.ts` for colors (Background #0A0A0A, Primary #00E5FF, Success #00FF88)
 
-- Background: #0A0A0A (near black)
-- Surface: #1A1A1A (cards, elevated elements)
-- Primary: #00E5FF (electric cyan - energy/motivation)
-- Success: #00FF88 (neon green)
-- Text: #FFFFFF with opacity variations
+**Trade-offs:** No light mode option, cannot use system theme preferences
 
-**Trade-offs:**
-
-- No light mode for users who prefer it
-- Cannot leverage system theme preferences
-
-**Status:** Phase 0.6 (Task 0.6.3)
+**Status:** Implemented
 
 ---
 
 ### ADR-016: Expo Vector Icons
 
-**Decision:** Use @expo/vector-icons for iconography
-
-**Context:** Need comprehensive icon library for fitness app UI. With Development Build strategy, need to choose between @expo/vector-icons and react-native-vector-icons.
+**Decision:** @expo/vector-icons for iconography
 
 **Rationale:**
 
-- 10,000+ icons across 10+ icon packs (Material, Ionicons, FontAwesome, etc.)
-- Excellent fitness-specific icons (dumbbell, timer, trending-up, etc.)
+- 10,000+ icons (Material, Ionicons, FontAwesome)
+- Included by default in Expo SDK (zero setup)
 - Native font rendering (better performance than SVG)
-- Modular loading (only include needed packs)
-- **Included by default in Expo SDK** (zero setup required)
-- **Wrapper around react-native-vector-icons** (same API, Expo-optimized asset system)
-- Works seamlessly with Development Build
-- Better compatibility with Expo ecosystem (tested with each Expo release)
 
-**Primary Icon Packs:**
+**Primary Packs:** MaterialIcons (primary), Ionicons (secondary), FontAwesome (accents)
 
-- MaterialIcons (primary): Modern, comprehensive
-- Ionicons (secondary): Beautiful iOS/Android styles
-- FontAwesome (accents): Unique specialty icons
+**Trade-offs:** ~500KB for all packs (can optimize by selective imports)
 
-**Alternatives Considered:**
-
-- react-native-vector-icons: Same library under the hood, but requires manual native linking
-- Lucide React Native: Limited icon count (~1,400), fewer fitness icons
-- Custom SVG icons: Requires design work, less performant
-
-**Trade-offs:**
-
-- ✅ No native linking required (already included in Expo)
-- ✅ Zero installation friction (built into expo package)
-- Slightly larger app size (~500KB for all packs, can optimize)
-
-**Status:** Phase 0.6 (Task 0.6.2)
+**Status:** Implemented
 
 ---
 
 ### ADR-020: REST API Strategy (Supabase RPC)
 
-**Decision:** Use REST API via Supabase client library for all backend communication
-
-**Context:**
-
-Halterofit needs reliable data sync between WatermelonDB (local) and Supabase (cloud). Two main options:
-
-- REST API (via `supabase-js` client + RPC functions)
-- GraphQL (via Supabase GraphQL extensions or custom server)
+**Decision:** REST API via `supabase-js` client for all backend communication
 
 **Rationale:**
 
-**Why REST for this project:**
+- Native Supabase support (`supabase.rpc()` for sync protocol)
+- Simpler architecture (no GraphQL layer needed)
+- WatermelonDB sync uses simple pull/push RPC calls
+- Adequate for mobile workout tracking use case
 
-1. **Native Supabase Support**
-   - `supabase-js` provides REST API out-of-the-box
-   - `supabase.rpc()` for custom functions (sync protocol)
-   - Built-in auth, RLS, real-time subscriptions
+**Implementation:** See [src/services/database/remote/sync.ts](../src/services/database/remote/sync.ts)
 
-2. **Simpler Architecture**
-   - No additional GraphQL layer needed
-   - Direct Supabase client integration
-   - Less code, fewer concepts
+**Trade-offs:** Possible overfetching vs GraphQL precision (acceptable for mobile app)
 
-3. **WatermelonDB Sync Protocol**
-   - Official sync uses simple pull/push RPC calls
-   - REST perfectly suited for batch operations
-   - See [src/services/database/remote/sync.ts](../src/services/database/remote/sync.ts)
-
-4. **MVP Efficiency**
-   - Solo developer: minimize learning curve
-   - Faster development (no schema definitions, resolvers)
-   - Adequate for workout tracking use case
-
-**Trade-offs:**
-
-| Aspect              | REST (Chosen) | GraphQL (Rejected)             |
-| ------------------- | ------------- | ------------------------------ |
-| **Setup**           | ✅ Minimal    | ❌ Complex (schema, resolvers) |
-| **Supabase**        | ✅ Native     | ⚠️ Via extensions              |
-| **Learning Curve**  | ✅ Simple     | ❌ Steep                       |
-| **Overfetching**    | ⚠️ Possible   | ✅ Precise                     |
-| **Mobile Use Case** | ✅ Perfect    | ⚠️ Overkill                    |
-
-**When to Consider GraphQL:**
-
-Post-MVP ONLY if:
-
-- Web dashboard with complex nested data (4+ levels deep)
-- Analytics queries requiring precise field selection
-- Multiple frontend clients with different data needs
-- Team size justifies added complexity (5+ developers)
-
-For mobile workout tracking, REST is the correct choice.
-
-**Status:** ✅ Implemented (Phase 0.5)
-
-**References:**
-
-- Supabase Docs: https://supabase.com/docs/reference/javascript
-- WatermelonDB Sync: https://nozbe.github.io/WatermelonDB/Advanced/Sync.html
+**Status:** Implemented
 
 ---
 
