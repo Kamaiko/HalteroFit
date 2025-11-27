@@ -4,18 +4,69 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 ## Table of Contents
 
-1. [Architecture Overview](#architecture-overview)
-2. [Technology Stack](#technology-stack)
+1. [Technology Stack](#technology-stack)
+2. [Architecture Overview](#architecture-overview)
 3. [Architecture Decisions (ADRs)](#architecture-decisions-adrs)
 4. [Project Structure](#project-structure)
 5. [Design System](#design-system)
 6. [Database Schema](#database-schema)
-7. [Analytics & Algorithms](#analytics--algorithms)
-8. [Security & Monitoring](#security--monitoring)
-9. [Performance Guidelines](#performance-guidelines)
-10. [Coding Standards](#coding-standards)
-11. [UX Best Practices](#ux-best-practices)
-12. [Resources](#resources)
+7. [Security & Monitoring](#security--monitoring)
+8. [Performance Guidelines](#performance-guidelines)
+9. [Coding Standards](#coding-standards)
+10. [UX Best Practices](#ux-best-practices)
+11. [Resources](#resources)
+
+---
+
+## Technology Stack
+
+**Current Production Stack (Development Build):**
+
+| Category             | Technology                | Version | Purpose                                      |
+| -------------------- | ------------------------- | ------- | -------------------------------------------- |
+| **Framework**        | Expo SDK                  | 54.0.21 | React Native framework with managed workflow |
+| **Language**         | TypeScript                | 5.9     | Type-safe development                        |
+| **UI Library**       | React Native              | 0.81.5  | Mobile UI framework                          |
+| **Styling**          | NativeWind                | v4      | Tailwind CSS for React Native                |
+| **UI Components**    | React Native Reusables    | Latest  | shadcn/ui for React Native                   |
+| **Icons**            | React Native Vector Icons | Latest  | 10,000+ icons (Material, Ionicons, FA)       |
+| **Database**         | WatermelonDB              | 0.28.0  | Offline-first reactive database              |
+| **Storage**          | MMKV                      | 4.0.0   | Encrypted key-value storage                  |
+| **State Management** | Zustand                   | 5.0.8   | Lightweight global state                     |
+| **Backend**          | Supabase                  | 2.78.0  | PostgreSQL + Auth + Storage                  |
+| **Charts**           | Victory Native            | 41.20.1 | Data visualization (Skia-based)              |
+| **Lists**            | FlashList                 | 2.2.0   | High-performance lists                       |
+| **Images**           | expo-image                | 3.0.10  | Optimized image loading with caching ✅      |
+| **Navigation**       | Expo Router               | 6.0.14  | File-based routing                           |
+| **Error Monitoring** | Sentry                    | 7.4.0   | Crash reporting and monitoring               |
+| **Build**            | EAS Build                 | Latest  | Cloud-based native builds                    |
+| **Testing**          | Jest + RNTL + Maestro     | Latest  | Unit, integration, and E2E testing           |
+| **Linting**          | ESLint + Prettier         | Latest  | Code quality and formatting                  |
+
+**Migration Status:** All native modules (WatermelonDB, MMKV, Victory Native) migrated in Phase 0.5.B (Tasks 0.5.20-0.5.26).
+
+### AI-Assisted Development Tools
+
+**MCP Servers (Model Context Protocol):**
+
+| Server                  | Tokens | Scope   | Purpose                                            |
+| ----------------------- | ------ | ------- | -------------------------------------------------- |
+| **Supabase**            | 13.7k  | Project | Database management, migrations, SQL queries, logs |
+| **Sentry**              | 6k     | Project | Error monitoring and investigation (Phase 5+)      |
+| **Maestro**             | 4k     | Project | E2E test generation and execution (Phase 3+)       |
+| **Context7**            | 1.8k   | Global  | Library documentation lookup                       |
+| **Filesystem**          | 9.4k   | Global  | File operations (read, write, edit, search)        |
+| **Sequential Thinking** | 1.6k   | Global  | Complex problem analysis                           |
+
+**CLI Tools:**
+
+| Tool             | Installation              | Usage          | Purpose                    |
+| ---------------- | ------------------------- | -------------- | -------------------------- |
+| **Supabase CLI** | Local (devDep v2.58.5)    | `npx supabase` | Migrations, SQL, local dev |
+| **Maestro CLI**  | Global (required for MCP) | `maestro`      | E2E testing (Phase 3+)     |
+| **EAS CLI**      | Global                    | `eas`          | Native builds, submissions |
+
+**See:** [.claude/CLAUDE.md](.claude/CLAUDE.md) for quick command reference.
 
 ---
 
@@ -73,91 +124,6 @@ This document covers all technical architecture decisions (ADRs), technology sta
 │    - Encrypted, 10-30x faster           │
 └─────────────────────────────────────────┘
 ```
-
-**Component Rationale:**
-
-| Component        | Role               | Why This Choice                                       |
-| ---------------- | ------------------ | ----------------------------------------------------- |
-| **WatermelonDB** | Main database      | Reactive queries + Auto sync + Production performance |
-| **MMKV**         | Key-value storage  | Encrypted + 10-30x faster than AsyncStorage           |
-| **Supabase**     | Cloud sync         | No custom backend + RLS + Realtime                    |
-| **Zustand**      | Temporary UI state | Minimal (1KB) + Simple + TypeScript                   |
-
-### Data Flow: Logging a Set
-
-```
-1. User taps "Log Set"
-   └─> Component: <SetLogger />
-
-2. ZUSTAND update (instant UI)
-   └─> workoutStore.addSet({ weight: 100, reps: 8 })
-
-3. WATERMELONDB save (instant, <5ms)
-   └─> await exerciseSet.create({ weight: 100, reps: 8 })
-   └─> Reactive query auto-updates UI
-
-4. UI shows success ✅ (instant, reactive!)
-
-5. AUTOMATIC SYNC (WatermelonDB built-in)
-   └─> synchronize({ pullChanges, pushChanges })
-       ├─> Pull remote changes (smart merge)
-       ├─> Push local changes (batch upload)
-       └─> Resolve conflicts automatically
-```
-
-**User Experience:** <5ms (instant), Sync: 1-2s (invisible, automatic)
-
----
-
-## Technology Stack
-
-**Current Production Stack (Development Build):**
-
-| Category             | Technology                | Version | Purpose                                      |
-| -------------------- | ------------------------- | ------- | -------------------------------------------- |
-| **Framework**        | Expo SDK                  | 54.0.21 | React Native framework with managed workflow |
-| **Language**         | TypeScript                | 5.9     | Type-safe development                        |
-| **UI Library**       | React Native              | 0.81.5  | Mobile UI framework                          |
-| **Styling**          | NativeWind                | v4      | Tailwind CSS for React Native                |
-| **UI Components**    | React Native Reusables    | Latest  | shadcn/ui for React Native                   |
-| **Icons**            | React Native Vector Icons | Latest  | 10,000+ icons (Material, Ionicons, FA)       |
-| **Database**         | WatermelonDB              | 0.28.0  | Offline-first reactive database              |
-| **Storage**          | MMKV                      | 4.0.0   | Encrypted key-value storage                  |
-| **State Management** | Zustand                   | 5.0.8   | Lightweight global state                     |
-| **Backend**          | Supabase                  | 2.78.0  | PostgreSQL + Auth + Storage                  |
-| **Charts**           | Victory Native            | 41.20.1 | Data visualization (Skia-based)              |
-| **Lists**            | FlashList                 | 2.2.0   | High-performance lists                       |
-| **Images**           | expo-image                | 3.0.10  | Optimized image loading with caching ✅      |
-| **Navigation**       | Expo Router               | 6.0.14  | File-based routing                           |
-| **Error Monitoring** | Sentry                    | 7.4.0   | Crash reporting and monitoring               |
-| **Build**            | EAS Build                 | Latest  | Cloud-based native builds                    |
-| **Testing**          | Jest + RNTL + Maestro     | Latest  | Unit, integration, and E2E testing           |
-| **Linting**          | ESLint + Prettier         | Latest  | Code quality and formatting                  |
-
-**Migration Status:** All native modules (WatermelonDB, MMKV, Victory Native) migrated in Phase 0.5.B (Tasks 0.5.20-0.5.26).
-
-### AI-Assisted Development Tools
-
-**MCP Servers (Model Context Protocol):**
-
-| Server                  | Tokens | Scope   | Purpose                                            |
-| ----------------------- | ------ | ------- | -------------------------------------------------- |
-| **Supabase**            | 13.7k  | Project | Database management, migrations, SQL queries, logs |
-| **Sentry**              | 6k     | Project | Error monitoring and investigation (Phase 5+)      |
-| **Maestro**             | 4k     | Project | E2E test generation and execution (Phase 3+)       |
-| **Context7**            | 1.8k   | Global  | Library documentation lookup                       |
-| **Filesystem**          | 9.4k   | Global  | File operations (read, write, edit, search)        |
-| **Sequential Thinking** | 1.6k   | Global  | Complex problem analysis                           |
-
-**CLI Tools:**
-
-| Tool             | Installation              | Usage          | Purpose                    |
-| ---------------- | ------------------------- | -------------- | -------------------------- |
-| **Supabase CLI** | Local (devDep v2.58.5)    | `npx supabase` | Migrations, SQL, local dev |
-| **Maestro CLI**  | Global (required for MCP) | `maestro`      | E2E testing (Phase 3+)     |
-| **EAS CLI**      | Global                    | `eas`          | Native builds, submissions |
-
-**See:** [.claude/CLAUDE.md](.claude/CLAUDE.md) for quick command reference.
 
 ---
 
@@ -474,106 +440,6 @@ See `tailwind.config.ts` for complete theme configuration (colors, spacing, typo
 ## Database Schema
 
 See [DATABASE.md](./DATABASE.md) for complete schema documentation (WatermelonDB + Supabase sync).
-
----
-
-## Analytics & Algorithms (Post-MVP)
-
-**Status:** 🔮 Post-MVP - All analytics features deferred to Post-MVP
-
-**Principle:** Use scientifically validated formulas (no reinventing). Science-based, context-aware analytics. Avoid AI/ML complexity.
-
-### Core Calculations
-
-| Metric                | Formula                                                  | Implementation                                   |
-| --------------------- | -------------------------------------------------------- | ------------------------------------------------ |
-| **Personalized 1RM**  | Average of Epley, Brzycki, Lombardi **+ RIR adjustment** | `weight * (1 + reps/30) * (1 + RIR * 0.033)`     |
-| **Volume**            | Sets × Reps × Weight (context-aware)                     | Compound: 1.5x multiplier, warmups excluded      |
-| **Acute Load**        | Sum of volume (last 7 days)                              | Rolling 7-day window                             |
-| **Chronic Load**      | Average volume (last 28 days)                            | 4-week baseline                                  |
-| **Fatigue Ratio**     | Acute Load / Chronic Load                                | >1.5 = high fatigue, <0.8 = detraining           |
-| **Plateau Detection** | Mann-Kendall + nutrition context                         | `slope < 0.5 && pValue > 0.05 && phase != 'cut'` |
-
-### Advanced Analytics Implementation
-
-**Personalized 1RM with RIR Adjustment:**
-
-```typescript
-// Traditional formula doesn't account for proximity to failure
-// 100kg × 8 @ RIR2 > 105kg × 6 @ RIR0 (more strength capacity)
-function calculatePersonalized1RM(weight, reps, rir) {
-  const epley = weight * (1 + reps / 30);
-  const brzycki = weight * (36 / (37 - reps));
-  const lombardi = weight * Math.pow(reps, 0.1);
-  const baseEstimate = (epley + brzycki + lombardi) / 3;
-
-  // RIR adjustment: each RIR = ~3.3% additional capacity
-  const rirAdjustment = 1 + rir * 0.033;
-  return baseEstimate * rirAdjustment;
-}
-```
-
-**Load Management & Fatigue:**
-
-```typescript
-function calculateFatigueMetrics(recentWorkouts) {
-  const acuteLoad = sumVolume(last7Days);
-  const chronicLoad = avgVolume(last28Days);
-  const fatigueRatio = acuteLoad / chronicLoad;
-
-  // Ratios from sports science literature
-  if (fatigueRatio > 1.5) return { status: 'HIGH_FATIGUE', recommendation: 'Consider deload' };
-  if (fatigueRatio < 0.8) return { status: 'DETRAINING', recommendation: 'Increase volume' };
-  return { status: 'OPTIMAL', recommendation: 'Continue current training' };
-}
-```
-
-**Context-Aware Plateau Detection:**
-
-```typescript
-function detectPlateauWithContext(exerciseHistory, user) {
-  const mannKendall = performMannKendallTest(exerciseHistory, 28); // 4 weeks
-  const isStatisticalPlateau = mannKendall.slope < 0.5 && mannKendall.pValue > 0.05;
-
-  // Context matters: exercise order affects performance
-  const isFirstExercise = exerciseOrder === 1;
-  const isLateExercise = exerciseOrder > 3;
-
-  if (isStatisticalPlateau && isLateExercise) {
-    return { isPlateau: false, message: 'Performance drop expected for later exercises - normal fatigue' };
-  }
-
-  if (isStatisticalPlateau && isFirstExercise) {
-    return { isPlateau: true, message: 'True plateau detected on primary lift. Consider variation or deload.' };
-  }
-
-  return { isPlateau: isStatisticalPlateau };
-}
-```
-
-**Progressive Overload Metrics:**
-
-- Weight progression (increase kg/lbs)
-- Volume progression (sets × reps × weight)
-- Intensity progression (RPE/RIR improvement, better performance at same RIR)
-- Density progression (reduce rest time while maintaining performance)
-
-### Features to Avoid (Over-Engineering)
-
-| ❌ Avoid                   | Why                          | ✅ Alternative                                            |
-| -------------------------- | ---------------------------- | --------------------------------------------------------- |
-| "Energy Readiness Score"   | Needs wearables (HRV, sleep) | Fatigue ratio from load management                        |
-| "AI/ML Recommendations"    | No training data at launch   | Science-based rules (RIR, load ratios, nutrition context) |
-| "Automatic Program Design" | Too complex for MVP          | Template system + suggestions                             |
-
-**Core Features (Science-Based, Not AI):**
-
-- **Personalized 1RM** (RIR-adjusted formulas)
-- **Load management** (acute/chronic ratios)
-- **Context-aware plateau detection** (Mann-Kendall + nutrition phase)
-- **Workout Reports** (performance score, fatigue estimate, recommendations)
-- **Weekly Summaries** (volume trends, consistency, deload suggestions)
-- **Progressive overload suggestions** (based on RIR, fatigue, nutrition phase)
 
 ---
 

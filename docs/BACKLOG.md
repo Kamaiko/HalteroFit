@@ -26,6 +26,107 @@ This document lists features deferred from the MVP roadmap. These enhancements w
 
 **Estimated effort:** ~35-45h (Phase 4 from original roadmap)
 
+### Implementation Details
+
+<details>
+<summary><strong>Core Formulas & Code</strong></summary>
+
+**Principle:** Use scientifically validated formulas (no reinventing). Science-based, context-aware analytics. Avoid AI/ML complexity.
+
+#### Core Calculations
+
+| Metric                | Formula                                                  | Implementation                                   |
+| --------------------- | -------------------------------------------------------- | ------------------------------------------------ |
+| **Personalized 1RM**  | Average of Epley, Brzycki, Lombardi **+ RIR adjustment** | `weight * (1 + reps/30) * (1 + RIR * 0.033)`     |
+| **Volume**            | Sets × Reps × Weight (context-aware)                     | Compound: 1.5x multiplier, warmups excluded      |
+| **Acute Load**        | Sum of volume (last 7 days)                              | Rolling 7-day window                             |
+| **Chronic Load**      | Average volume (last 28 days)                            | 4-week baseline                                  |
+| **Fatigue Ratio**     | Acute Load / Chronic Load                                | >1.5 = high fatigue, <0.8 = detraining           |
+| **Plateau Detection** | Mann-Kendall + nutrition context                         | `slope < 0.5 && pValue > 0.05 && phase != 'cut'` |
+
+#### Advanced Analytics Implementation
+
+**Personalized 1RM with RIR Adjustment:**
+
+```typescript
+// Traditional formula doesn't account for proximity to failure
+// 100kg × 8 @ RIR2 > 105kg × 6 @ RIR0 (more strength capacity)
+function calculatePersonalized1RM(weight, reps, rir) {
+  const epley = weight * (1 + reps / 30);
+  const brzycki = weight * (36 / (37 - reps));
+  const lombardi = weight * Math.pow(reps, 0.1);
+  const baseEstimate = (epley + brzycki + lombardi) / 3;
+
+  // RIR adjustment: each RIR = ~3.3% additional capacity
+  const rirAdjustment = 1 + rir * 0.033;
+  return baseEstimate * rirAdjustment;
+}
+```
+
+**Load Management & Fatigue:**
+
+```typescript
+function calculateFatigueMetrics(recentWorkouts) {
+  const acuteLoad = sumVolume(last7Days);
+  const chronicLoad = avgVolume(last28Days);
+  const fatigueRatio = acuteLoad / chronicLoad;
+
+  // Ratios from sports science literature
+  if (fatigueRatio > 1.5) return { status: 'HIGH_FATIGUE', recommendation: 'Consider deload' };
+  if (fatigueRatio < 0.8) return { status: 'DETRAINING', recommendation: 'Increase volume' };
+  return { status: 'OPTIMAL', recommendation: 'Continue current training' };
+}
+```
+
+**Context-Aware Plateau Detection:**
+
+```typescript
+function detectPlateauWithContext(exerciseHistory, user) {
+  const mannKendall = performMannKendallTest(exerciseHistory, 28); // 4 weeks
+  const isStatisticalPlateau = mannKendall.slope < 0.5 && mannKendall.pValue > 0.05;
+
+  // Context matters: exercise order affects performance
+  const isFirstExercise = exerciseOrder === 1;
+  const isLateExercise = exerciseOrder > 3;
+
+  if (isStatisticalPlateau && isLateExercise) {
+    return { isPlateau: false, message: 'Performance drop expected for later exercises - normal fatigue' };
+  }
+
+  if (isStatisticalPlateau && isFirstExercise) {
+    return { isPlateau: true, message: 'True plateau detected on primary lift. Consider variation or deload.' };
+  }
+
+  return { isPlateau: isStatisticalPlateau };
+}
+```
+
+**Progressive Overload Metrics:**
+
+- Weight progression (increase kg/lbs)
+- Volume progression (sets × reps × weight)
+- Intensity progression (RPE/RIR improvement, better performance at same RIR)
+- Density progression (reduce rest time while maintaining performance)
+
+</details>
+
+### Features to Avoid (Over-Engineering)
+
+| ❌ Avoid                   | Why                          | ✅ Alternative                                            |
+| -------------------------- | ---------------------------- | --------------------------------------------------------- |
+| "Energy Readiness Score"   | Needs wearables (HRV, sleep) | Fatigue ratio from load management                        |
+| "AI/ML Recommendations"    | No training data at launch   | Science-based rules (RIR, load ratios, nutrition context) |
+| "Automatic Program Design" | Too complex for MVP          | Template system + suggestions                             |
+
+**Core Features (Science-Based, Not AI):**
+
+- **Personalized 1RM** (RIR-adjusted formulas)
+- **Load management** (acute/chronic ratios)
+- **Context-aware plateau detection** (Mann-Kendall + nutrition phase)
+- **Workout Reports** (performance score, fatigue estimate, recommendations)
+- **Weekly Summaries** (volume trends, consistency, deload suggestions)
+- **Progressive overload suggestions** (based on RIR, fatigue, nutrition phase)
+
 ---
 
 ## UX Enhancements
