@@ -60,11 +60,11 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 **CLI Tools:**
 
-| Tool             | Installation              | Usage          | Purpose                    |
-| ---------------- | ------------------------- | -------------- | -------------------------- |
-| **Supabase CLI** | Local (devDep v2.58.5)    | `npx supabase` | Migrations, SQL, local dev |
-| **Maestro CLI**  | Global (required for MCP) | `maestro`      | E2E testing (Phase 3+)     |
-| **EAS CLI**      | Global                    | `eas`          | Native builds, submissions |
+| Tool             | Installation              | Usage      | Purpose                    |
+| ---------------- | ------------------------- | ---------- | -------------------------- |
+| **Supabase CLI** | Global (scoop v2.62.10)   | `supabase` | Migrations, SQL, local dev |
+| **Maestro CLI**  | Global (required for MCP) | `maestro`  | E2E testing (Phase 3+)     |
+| **EAS CLI**      | Global                    | `eas`      | Native builds, submissions |
 
 **See:** [.claude/CLAUDE.md](.claude/CLAUDE.md) for quick command reference.
 
