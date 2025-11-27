@@ -273,6 +273,18 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Auto-merge indirect dependencies (patch/minor)
+        # Indirect (transitive) dependencies: tested via project tests
+        # Security patches often come as indirect updates (e.g., node-forge via expo)
+        if: |
+          steps.metadata.outputs.dependency-type == 'indirect' &&
+          (steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+           steps.metadata.outputs.update-type == 'version-update:semver-minor')
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Comment on MAJOR updates requiring review
         # Major updates (X.0.0): Breaking changes - ALWAYS require manual review
         # Post helpful comment with action items
@@ -291,6 +303,24 @@ jobs:
           4. Check for required code changes
 
           ⚠️ Do NOT auto-merge this PR without careful review!"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on indirect MAJOR updates
+        # Major updates for transitive deps may indicate breaking changes in parent
+        if: |
+          steps.metadata.outputs.dependency-type == 'indirect' &&
+          steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr comment "$PR_URL" --body "⚠️ **INDIRECT MAJOR UPDATE**
+
+          This is a major version update for a transitive dependency.
+
+          **Action required:**
+          1. Check if this breaks any direct dependencies
+          2. Run the app locally to verify functionality
+          3. Merge manually after verification"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
