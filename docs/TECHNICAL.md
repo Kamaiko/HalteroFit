@@ -2,57 +2,20 @@
 
 This document covers all technical architecture decisions (ADRs), technology stack choices, performance guidelines, and coding standards. Reference this when making technology or architecture decisions for the project.
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [Architecture Overview](#architecture-overview)
-  - [Philosophy](#philosophy)
-  - [Key Decision: WatermelonDB + Supabase Sync](#key-decision-watermelondb--supabase-sync)
-  - [Storage Stack](#storage-stack)
-  - [Data Flow: Logging a Set](#data-flow-logging-a-set)
-- [Technology Stack](#technology-stack)
-- [Architecture Decisions (ADRs)](#architecture-decisions-adrs)
-  - [ADR-001: Expo SDK 54 Managed Workflow](#adr-001-expo-sdk-54-managed-workflow)
-  - [ADR-002: Zustand for State Management](#adr-002-zustand-for-state-management)
-  - [ADR-004: WatermelonDB for Offline-First Storage](#adr-004-watermelondb-for-offline-first-storage-phase-05)
-  - [ADR-005: NativeWind (Tailwind CSS) for Styling](#adr-005-nativewind-tailwind-css-for-styling)
-  - [ADR-006: Relative Imports (No Path Aliases)](#adr-006-relative-imports-no-path-aliases)
-  - [ADR-007: Three-Tier Testing Strategy](#adr-007-three-tier-testing-strategy)
-  - [ADR-008: Supabase Backend](#adr-008-supabase-backend)
-  - [ADR-009: MMKV for Encrypted Storage](#adr-009-mmkv-for-encrypted-storage-phase-05)
-  - [ADR-010: Performance Libraries](#adr-010-performance-libraries)
-    - [ADR-010a: FlashList for High-Performance Lists](#adr-010a-flashlist-for-high-performance-lists)
-    - [ADR-010b: expo-image for Optimized Image Caching](#adr-010b-expo-image-for-optimized-image-caching)
-  - [ADR-011: Charts Strategy - Victory Native](#adr-011-charts-strategy---victory-native)
-  - [ADR-012: Development Build Strategy](#adr-012-development-build-strategy)
-  - [ADR-013: ExerciseDB API Integration](#adr-013-exercisedb-api-integration)
-  - [ADR-014: React Native Reusables for UI Components](#adr-014-react-native-reusables-for-ui-components)
-  - [ADR-015: Single Dark Mode Design](#adr-015-single-dark-mode-design)
-  - [ADR-016: React Native Vector Icons](#adr-016-react-native-vector-icons)
-- [Project Structure](#project-structure)
-  - [ADR-020: REST API Strategy (Supabase RPC)](#adr-020-rest-api-strategy-supabase-rpc)
-- [Design System](#design-system)
-- [Database Schema](#database-schema)
-- [Analytics & Algorithms](#analytics--algorithms)
-  - [Core Calculations](#core-calculations)
-  - [Advanced Analytics Implementation](#advanced-analytics-implementation)
-  - [Features to Avoid (Over-Engineering)](#features-to-avoid-over-engineering)
-- [Security & Monitoring](#security--monitoring)
-  - [Authentication & Data Protection](#authentication--data-protection)
-  - [Error Monitoring & Performance Tracking](#error-monitoring--performance-tracking)
-  - [Compliance & Privacy](#compliance--privacy)
-- [Performance Guidelines](#performance-guidelines)
-  - [Bundle Size](#bundle-size)
-  - [Cold Start](#cold-start)
-  - [Runtime Performance](#runtime-performance)
-  - [Specific Performance Targets](#specific-performance-targets)
-- [Coding Standards](#coding-standards)
-- [Runtime Validation & Type Safety](#runtime-validation--type-safety)
-- [Development Workflow](#development-workflow)
-- [Deployment](#deployment)
-- [UX Best Practices](#ux-best-practices-from-strong-hevy-jefit)
-  - [Core Patterns](#core-patterns)
-  - [Mobile-Specific](#mobile-specific)
-- [Resources](#resources)
+1. [Architecture Overview](#architecture-overview)
+2. [Technology Stack](#technology-stack)
+3. [Architecture Decisions (ADRs)](#architecture-decisions-adrs)
+4. [Project Structure](#project-structure)
+5. [Design System](#design-system)
+6. [Database Schema](#database-schema)
+7. [Analytics & Algorithms](#analytics--algorithms)
+8. [Security & Monitoring](#security--monitoring)
+9. [Performance Guidelines](#performance-guidelines)
+10. [Coding Standards](#coding-standards)
+11. [UX Best Practices](#ux-best-practices)
+12. [Resources](#resources)
 
 ---
 
@@ -201,143 +164,102 @@ This document covers all technical architecture decisions (ADRs), technology sta
 ## Architecture Decisions (ADRs)
 
 <details>
-<summary><strong>ADR Index (Click to expand)</strong></summary>
+<summary><strong>ADR Index (15 decisions)</strong></summary>
 
-| ADR     | Title                                                                                     | Status      |
-| ------- | ----------------------------------------------------------------------------------------- | ----------- |
-| ADR-001 | [Expo SDK 54 Managed Workflow](#adr-001-expo-sdk-54-managed-workflow)                     | Implemented |
-| ADR-002 | [Zustand for State Management](#adr-002-zustand-for-state-management)                     | Implemented |
-| ADR-004 | [WatermelonDB for Offline-First Storage](#adr-004-watermelondb-for-offline-first-storage) | Completed   |
-| ADR-005 | [NativeWind v4 for Styling](#adr-005-nativewind-v4-for-styling)                           | Implemented |
-| ADR-006 | [Path Aliases with TypeScript](#adr-006-path-aliases-with-typescript)                     | Implemented |
-| ADR-007 | [Three-Tier Testing Strategy](#adr-007-three-tier-testing-strategy)                       | Implemented |
-| ADR-008 | [Supabase Backend](#adr-008-supabase-backend)                                             | Implemented |
-| ADR-009 | [MMKV for Encrypted Storage](#adr-009-mmkv-for-encrypted-storage)                         | Completed   |
-| ADR-010 | [Performance Libraries](#adr-010-performance-libraries)                                   | Completed   |
-| ADR-011 | [Victory Native for Charts](#adr-011-victory-native-for-charts)                           | Completed   |
-| ADR-012 | [Development Build Strategy](#adr-012-development-build-strategy)                         | Completed   |
-| ADR-013 | [ExerciseDB Dataset Integration](#adr-013-exercisedb-dataset-integration)                 | Completed   |
-| ADR-014 | [React Native Reusables for UI](#adr-014-react-native-reusables-for-ui)                   | Implemented |
-| ADR-015 | [Single Dark Mode Design](#adr-015-single-dark-mode-design)                               | Implemented |
-| ADR-016 | [Expo Vector Icons](#adr-016-expo-vector-icons)                                           | Implemented |
-| ADR-020 | [REST API Strategy (Supabase RPC)](#adr-020-rest-api-strategy-supabase-rpc)               | Implemented |
+**Platform**
+| ADR | Decision |
+|-----|----------|
+| [ADR-001](#adr-001-expo-sdk-54--development-build) | Expo SDK 54 + Development Build |
+| [ADR-002](#adr-002-three-tier-testing-strategy) | Three-Tier Testing Strategy |
+
+**Data Layer**
+| ADR | Decision |
+|-----|----------|
+| [ADR-003](#adr-003-watermelondb-offline-first) | WatermelonDB Offline-First |
+| [ADR-004](#adr-004-mmkv-encrypted-storage) | MMKV Encrypted Storage |
+| [ADR-005](#adr-005-supabase-backend) | Supabase Backend |
+| [ADR-006](#adr-006-rest-api-strategy) | REST API Strategy |
+
+**UI Layer**
+| ADR | Decision |
+|-----|----------|
+| [ADR-007](#adr-007-nativewind-v4-styling) | NativeWind v4 Styling |
+| [ADR-008](#adr-008-react-native-reusables) | React Native Reusables |
+| [ADR-009](#adr-009-single-dark-mode) | Single Dark Mode |
+| [ADR-010](#adr-010-expo-vector-icons) | Expo Vector Icons |
+
+**Performance**
+| ADR | Decision |
+|-----|----------|
+| [ADR-011](#adr-011-flashlist) | FlashList for Lists |
+| [ADR-012](#adr-012-expo-image) | expo-image Caching |
+| [ADR-013](#adr-013-victory-native) | Victory Native Charts |
+
+**State & Content**
+| ADR | Decision |
+|-----|----------|
+| [ADR-014](#adr-014-zustand-state-management) | Zustand State Management |
+| [ADR-015](#adr-015-exercisedb-dataset) | ExerciseDB Dataset |
 
 </details>
 
 ---
 
-### ADR-001: Expo SDK 54 Managed Workflow
+### ADR-001: Expo SDK 54 + Development Build
 
-**Decision:** Expo managed workflow for rapid MVP development
-
-**Rationale:** No native configuration, built-in tools (Expo Go, EAS Build), faster iteration
-
-**Trade-offs:** Limited to Expo-compatible libraries, ~500KB larger bundle vs bare workflow
-
-**Status:** ✅ Implemented
-
----
-
-### ADR-002: Zustand for State Management
-
-**Decision:** Zustand for global state (auth, workout session)
-
-**Rationale:** Minimal boilerplate (~1KB vs Redux 20KB), excellent TypeScript support, sufficient for MVP scope
-
-**Trade-offs:** Smaller ecosystem than Redux, fewer middleware options
-
-**Status:** ✅ Implemented
-
----
-
-### ADR-004: WatermelonDB for Offline-First Storage
-
-**Decision:** WatermelonDB with Supabase sync (requires Development Build)
+**Decision:** Expo SDK 54 with EAS Development Build from Day 1
 
 **Rationale:**
 
-- Offline-first is a critical requirement (PRD priority)
-- Reactive queries with `.observe()` for auto-updating UI
-- Built-in sync protocol with automatic conflict resolution
-- Optimized for scale (2000+ workouts)
+- Expo managed workflow for rapid MVP development
+- Development Build enables native modules (WatermelonDB, MMKV, Victory Native)
+- Avoids costly Expo Go → Dev Build migration later
+- Hot reload works normally; only rebuild for native module changes
 
-**Implementation:**
-
-- `src/models/` - WatermelonDB models
-- `src/services/database/watermelon/` - Schema and sync protocol
-
-**Trade-offs:**
-
-- Requires Development Build (cannot use Expo Go)
-- Production-ready architecture from start (no migration needed)
-
-**Status:** Completed
-
----
-
-### ADR-005: NativeWind v4 for Styling
-
-**Decision:** NativeWind v4 (Tailwind CSS for React Native)
-
-**Rationale:**
-
-- Faster development with utility-first CSS
-- Industry standard with extensive documentation
-- Better maintainability than StyleSheet.create
-
-**Trade-offs:** +50KB bundle size, initial setup required
+**Trade-offs:** 3-4h initial setup vs 5min Expo Go, but saves weeks of migration later
 
 **Status:** Implemented
 
 ---
 
-### ADR-006: Path Aliases with TypeScript
-
-**Decision:** Use `@/` path aliases for imports
-
-**Rationale:**
-
-- Cleaner imports: `import { Button } from '@/components/ui/button'`
-- TypeScript native (no babel plugin needed)
-- Better refactoring support
-
-**Configuration:** `tsconfig.json` with `"paths": { "@/*": ["./src/*"] }`
-
-**Status:** Implemented
-
----
-
-### ADR-007: Three-Tier Testing Strategy
+### ADR-002: Three-Tier Testing Strategy
 
 **Decision:** Jest (Unit) + Manual E2E (Phase 1) + Maestro (Phase 3+)
 
 **Rationale:**
 
-- **Jest + LokiJS:** Fast unit tests for CRUD/queries
-- **Manual E2E:** Validate sync protocol before automation
-- **Maestro:** Automate critical flows (Phase 3+)
+- Jest + LokiJS for fast unit tests (CRUD/queries)
+- Manual E2E to validate sync protocol before automation
+- Maestro for automated critical flows (Phase 3+)
 
-**Limitation:** WatermelonDB sync protocol requires real SQLite (cannot be tested in Jest)
-
-**Status:** Implemented
+**Limitation:** WatermelonDB sync requires real SQLite (cannot test in Jest)
 
 **Reference:** [TESTING.md](./TESTING.md)
 
----
-
-### ADR-008: Supabase Backend
-
-**Decision:** Supabase for auth, database, storage, real-time
-
-**Rationale:** No backend code, Row Level Security, free tier generous (500MB DB, 50K monthly active users)
-
-**Trade-offs:** Vendor lock-in (mitigated: PostgreSQL is portable)
-
-**Status:** ✅ Implemented
+**Status:** Implemented
 
 ---
 
-### ADR-009: MMKV for Encrypted Storage
+### ADR-003: WatermelonDB Offline-First
+
+**Decision:** WatermelonDB with Supabase sync
+
+**Rationale:**
+
+- Offline-first is critical (PRD priority)
+- Reactive queries with `.observe()` for auto-updating UI
+- Built-in sync protocol with automatic conflict resolution
+- Optimized for scale (2000+ workouts)
+
+**Implementation:** `src/models/`, `src/services/database/watermelon/`
+
+**Trade-offs:** Requires Development Build
+
+**Status:** Implemented
+
+---
+
+### ADR-004: MMKV Encrypted Storage
 
 **Decision:** MMKV for key-value storage (auth tokens, preferences)
 
@@ -349,127 +271,67 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 **Implementation:** `src/services/storage/mmkvStorage.ts`
 
-**Storage Strategy:**
-
-| Layer            | Purpose           | Examples                  |
-| ---------------- | ----------------- | ------------------------- |
-| **WatermelonDB** | Relational data   | Workouts, exercises, sets |
-| **MMKV**         | Key-value storage | Auth tokens, preferences  |
-| **Zustand**      | Temporary UI      | Active workout state      |
-
 **Trade-offs:** Requires Development Build, key-value only
 
-**Status:** Completed
+**Status:** Implemented
 
 ---
 
-### ADR-010: Performance Libraries
+### ADR-005: Supabase Backend
 
-Performance-critical libraries for smooth UX on low-end devices.
+**Decision:** Supabase for auth, database, storage, real-time
 
----
+**Rationale:** No backend code needed, Row Level Security, generous free tier (500MB DB, 50K MAU)
 
-#### ADR-010a: FlashList for High-Performance Lists
+**Trade-offs:** Vendor lock-in (mitigated: PostgreSQL is portable)
 
-**Decision:** FlashList for all lists (exercise library, workout history)
-
-**Rationale:**
-
-- 54% FPS improvement, 82% CPU reduction vs FlatList
-- Cell recycling (10x faster than FlatList virtualization)
-- Critical for 500+ exercise library on low-end devices
-
-**Trade-offs:** +50KB bundle, requires `estimatedItemSize` prop
-
-**Status:** Completed
+**Status:** Implemented
 
 ---
 
-#### ADR-010b: expo-image for Optimized Image Caching
+### ADR-006: REST API Strategy
 
-**Decision:** CachedImage wrapper around expo-image for all remote images
-
-**Rationale:**
-
-- Exercise GIFs must load from cache in <200ms (PRD requirement)
-- 1,500+ exercise GIFs require aggressive caching
-- Built-in memory + disk cache (no custom implementation)
-- 10-30x faster than React Native Image
-
-**Implementation:** `src/components/ui/CachedImage.tsx` with `cachePolicy="memory-disk"`
-
-**Trade-offs:** +100KB bundle size, but eliminates custom cache implementation
-
-**Status:** Completed
-
-### ADR-011: Victory Native for Charts
-
-**Decision:** Victory Native v41 (Skia-based) for all data visualization
+**Decision:** REST API via `supabase-js` client
 
 **Rationale:**
 
-- Skia rendering: 60fps with 1000+ data points
-- Advanced gestures: zoom, pan, crosshairs
-- Fully themeable with dark mode integration
-- Well-maintained by Formidable Labs
+- Native Supabase support (`supabase.rpc()` for sync)
+- Simpler than GraphQL (no schema/resolvers)
+- WatermelonDB sync uses simple pull/push RPC calls
 
-**Implementation:** `src/components/charts/` (LineChart, BarChart, ProgressChart)
+**Implementation:** [src/services/database/remote/sync.ts](../src/services/database/remote/sync.ts)
 
-**Trade-offs:** Requires Development Build, +200KB bundle vs react-native-chart-kit
+**Trade-offs:** Possible overfetching vs GraphQL (acceptable for mobile)
 
-**Status:** Completed
+**Status:** Implemented
 
 ---
 
-### ADR-012: Development Build Strategy
+### ADR-007: NativeWind v4 Styling
 
-**Decision:** Use EAS Development Build from Day 1 instead of Expo Go
+**Decision:** NativeWind v4 (Tailwind CSS for React Native)
 
 **Rationale:**
 
-- Enables native modules: WatermelonDB, MMKV, Victory Native
-- Avoids costly migration later (Expo Go → Dev Build)
-- Production-ready architecture from start
+- Utility-first CSS for faster development
+- Industry standard with extensive documentation
+- Better maintainability than StyleSheet.create
 
-**Trade-offs:**
+**Trade-offs:** +50KB bundle size
 
-| Aspect             | Expo Go            | Development Build              |
-| ------------------ | ------------------ | ------------------------------ |
-| **Setup**          | 5 minutes          | 3-4 hours (one-time)           |
-| **Native Modules** | Limited (Expo SDK) | Any module                     |
-| **Rebuild**        | N/A                | Only for native changes (rare) |
-
-**Workflow:** Hot reload works normally after initial build. Only rebuild when adding native modules or changing `app.json` native config.
-
-**Status:** Completed
+**Status:** Implemented
 
 ---
 
-### ADR-013: ExerciseDB Dataset Integration
+### ADR-008: React Native Reusables
 
-**Decision:** Seed exercise library from GitHub ExerciseDB dataset (1,500+ exercises)
-
-**Rationale:**
-
-- Professional GIFs, instructions, categorization included
-- Exceeds 500 exercise target with minimal effort
-- One-time seed to Supabase, then local WatermelonDB queries (no API calls at runtime)
-
-**Trade-offs:** License compliance required, initial API dependency (one-time)
-
-**Status:** Completed
-
----
-
-### ADR-014: React Native Reusables for UI Components
-
-**Decision:** React Native Reusables (shadcn/ui port) as base component library
+**Decision:** React Native Reusables (shadcn/ui port) as component library
 
 **Rationale:**
 
-- Pre-built accessible components (Button, Input, Card, Form, etc.)
+- Pre-built accessible components (Button, Input, Card, Form)
 - Built with NativeWind v4 (already in stack)
-- Source code in project (full customization control)
+- Source code in project (full customization)
 - Class Variance Authority for type-safe variants
 
 **Trade-offs:** +50KB bundle, shadcn/ui learning curve
@@ -478,7 +340,7 @@ Performance-critical libraries for smooth UX on low-end devices.
 
 ---
 
-### ADR-015: Single Dark Mode Design
+### ADR-009: Single Dark Mode
 
 **Decision:** Dark mode only (no light mode toggle)
 
@@ -488,46 +350,108 @@ Performance-critical libraries for smooth UX on low-end devices.
 - Simpler implementation (no theme switching)
 - Better battery life on OLED screens
 
-**Design Tokens:** See `tailwind.config.ts` for colors (Background #0A0A0A, Primary #00E5FF, Success #00FF88)
+**Design Tokens:** See `tailwind.config.ts` (#0A0A0A background, #00E5FF primary)
 
-**Trade-offs:** No light mode option, cannot use system theme preferences
+**Trade-offs:** No light mode option
 
 **Status:** Implemented
 
 ---
 
-### ADR-016: Expo Vector Icons
+### ADR-010: Expo Vector Icons
 
 **Decision:** @expo/vector-icons for iconography
 
 **Rationale:**
 
 - 10,000+ icons (Material, Ionicons, FontAwesome)
-- Included by default in Expo SDK (zero setup)
-- Native font rendering (better performance than SVG)
+- Included by default in Expo SDK
+- Native font rendering (better than SVG)
 
-**Primary Packs:** MaterialIcons (primary), Ionicons (secondary), FontAwesome (accents)
-
-**Trade-offs:** ~500KB for all packs (can optimize by selective imports)
+**Trade-offs:** ~500KB for all packs (can optimize)
 
 **Status:** Implemented
 
 ---
 
-### ADR-020: REST API Strategy (Supabase RPC)
+### ADR-011: FlashList
 
-**Decision:** REST API via `supabase-js` client for all backend communication
+**Decision:** FlashList for all lists (exercise library, workout history)
 
 **Rationale:**
 
-- Native Supabase support (`supabase.rpc()` for sync protocol)
-- Simpler architecture (no GraphQL layer needed)
-- WatermelonDB sync uses simple pull/push RPC calls
-- Adequate for mobile workout tracking use case
+- 54% FPS improvement, 82% CPU reduction vs FlatList
+- Cell recycling (10x faster virtualization)
+- Critical for 500+ exercise library on low-end devices
 
-**Implementation:** See [src/services/database/remote/sync.ts](../src/services/database/remote/sync.ts)
+**Trade-offs:** +50KB bundle, requires `estimatedItemSize` prop
 
-**Trade-offs:** Possible overfetching vs GraphQL precision (acceptable for mobile app)
+**Status:** Implemented
+
+---
+
+### ADR-012: expo-image
+
+**Decision:** CachedImage wrapper around expo-image
+
+**Rationale:**
+
+- Exercise GIFs must load <200ms (PRD requirement)
+- Built-in memory + disk cache
+- 10-30x faster than React Native Image
+
+**Implementation:** `src/components/ui/CachedImage.tsx`
+
+**Trade-offs:** +100KB bundle
+
+**Status:** Implemented
+
+---
+
+### ADR-013: Victory Native
+
+**Decision:** Victory Native v41 (Skia-based) for charts
+
+**Rationale:**
+
+- 60fps with 1000+ data points
+- Advanced gestures (zoom, pan, crosshairs)
+- Fully themeable with dark mode
+
+**Implementation:** `src/components/charts/`
+
+**Trade-offs:** Requires Development Build, +200KB bundle
+
+**Status:** Implemented
+
+---
+
+### ADR-014: Zustand State Management
+
+**Decision:** Zustand for global state (auth, workout session)
+
+**Rationale:**
+
+- Minimal (~1KB vs Redux 20KB)
+- Excellent TypeScript support
+- Sufficient for MVP scope
+
+**Trade-offs:** Smaller ecosystem than Redux
+
+**Status:** Implemented
+
+---
+
+### ADR-015: ExerciseDB Dataset
+
+**Decision:** Seed from GitHub ExerciseDB dataset (1,500+ exercises)
+
+**Rationale:**
+
+- Professional GIFs, instructions, categorization
+- One-time seed to Supabase, local queries at runtime
+
+**Trade-offs:** License compliance required
 
 **Status:** Implemented
 
@@ -829,7 +753,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for complete workflow (commit conventio
 
 ---
 
-## UX Best Practices (from Strong, Hevy, JEFIT)
+## UX Best Practices
 
 ### Core Patterns
 
