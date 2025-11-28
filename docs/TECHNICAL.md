@@ -21,26 +21,27 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 **Current Production Stack (Development Build):**
 
-| Category             | Technology                | Version | Purpose                                      |
-| -------------------- | ------------------------- | ------- | -------------------------------------------- |
-| **Framework**        | Expo SDK                  | 54.0.21 | React Native framework with managed workflow |
-| **Language**         | TypeScript                | 5.9     | Type-safe development                        |
-| **UI Library**       | React Native              | 0.81.5  | Mobile UI framework                          |
-| **Styling**          | NativeWind                | v4      | Tailwind CSS for React Native                |
-| **UI Components**    | React Native Reusables    | Latest  | shadcn/ui for React Native                   |
-| **Icons**            | React Native Vector Icons | Latest  | 10,000+ icons (Material, Ionicons, FA)       |
-| **Database**         | WatermelonDB              | 0.28.0  | Offline-first reactive database              |
-| **Storage**          | MMKV                      | 4.0.0   | Encrypted key-value storage                  |
-| **State Management** | Zustand                   | 5.0.8   | Lightweight global state                     |
-| **Backend**          | Supabase                  | 2.78.0  | PostgreSQL + Auth + Storage                  |
-| **Charts**           | Victory Native            | 41.20.1 | Data visualization (Skia-based)              |
-| **Lists**            | FlashList                 | 2.2.0   | High-performance lists                       |
-| **Images**           | expo-image                | 3.0.10  | Optimized image loading with caching ✅      |
-| **Navigation**       | Expo Router               | 6.0.14  | File-based routing                           |
-| **Error Monitoring** | Sentry                    | 7.4.0   | Crash reporting and monitoring               |
-| **Build**            | EAS Build                 | Latest  | Cloud-based native builds                    |
-| **Testing**          | Jest + RNTL + Maestro     | Latest  | Unit, integration, and E2E testing           |
-| **Linting**          | ESLint + Prettier         | Latest  | Code quality and formatting                  |
+| Category             | Technology                | Version | Purpose                                            |
+| -------------------- | ------------------------- | ------- | -------------------------------------------------- |
+| **Framework**        | Expo SDK                  | 54.0.21 | React Native framework with managed workflow       |
+| **Language**         | TypeScript                | 5.9     | Type-safe development                              |
+| **UI Library**       | React Native              | 0.81.5  | Mobile UI framework                                |
+| **Styling**          | NativeWind                | v4      | Tailwind CSS for React Native                      |
+| **UI Components**    | React Native Reusables    | Latest  | shadcn/ui for React Native                         |
+| **Icons**            | React Native Vector Icons | Latest  | 10,000+ icons (Material, Ionicons, FA)             |
+| **Database**         | WatermelonDB              | 0.28.0  | Offline-first reactive database                    |
+| **Storage**          | MMKV                      | 4.0.0   | Encrypted key-value storage                        |
+| **State Management** | Zustand                   | 5.0.8   | Lightweight global state                           |
+| **Backend**          | Supabase                  | 2.78.0  | PostgreSQL + Auth + Storage                        |
+| **Charts**           | Victory Native            | 41.20.1 | Data visualization (Skia-based)                    |
+| **Lists**            | FlashList                 | 2.2.0   | High-performance lists                             |
+| **Images**           | expo-image                | 3.0.10  | Optimized image loading with caching ✅            |
+| **Navigation**       | Expo Router               | 6.0.14  | File-based routing                                 |
+| **Error Monitoring** | Sentry                    | 7.4.0   | Crash reporting and monitoring                     |
+| **Build**            | EAS Build                 | Latest  | Cloud-based native builds                          |
+| **Testing**          | Jest + RNTL + Maestro     | Latest  | Unit, integration, and E2E testing                 |
+| **Linting**          | ESLint + Prettier         | Latest  | Code quality and formatting                        |
+| **CI/CD**            | GitHub Actions            | Latest  | Automated testing, linting, Dependabot, TruffleHog |
 
 **Migration Status:** All native modules (WatermelonDB, MMKV, Victory Native) migrated in Phase 0.5.B (Tasks 0.5.20-0.5.26).
 
@@ -48,14 +49,16 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 **MCP Servers (Model Context Protocol):**
 
-| Server                  | Tokens | Scope   | Purpose                                            |
-| ----------------------- | ------ | ------- | -------------------------------------------------- |
-| **Supabase**            | 13.7k  | Project | Database management, migrations, SQL queries, logs |
-| **Sentry**              | 6k     | Project | Error monitoring and investigation (Phase 5+)      |
-| **Maestro**             | 4k     | Project | E2E test generation and execution (Phase 3+)       |
-| **Context7**            | 1.8k   | Global  | Library documentation lookup                       |
-| **Filesystem**          | 9.4k   | Global  | File operations (read, write, edit, search)        |
-| **Sequential Thinking** | 1.6k   | Global  | Complex problem analysis                           |
+| Server                  | Status | Tokens | Scope   | Purpose                              |
+| ----------------------- | ------ | ------ | ------- | ------------------------------------ |
+| **Supabase**            | ✅     | 13.7k  | Project | Database management, migrations, SQL |
+| **Sentry**              | 🔮     | 6k     | Project | Error monitoring (Phase 5+)          |
+| **Maestro**             | 🔮     | 4k     | Project | E2E test generation (Phase 3+)       |
+| **Context7**            | ✅     | 1.8k   | Global  | Library documentation lookup         |
+| **Filesystem**          | ✅     | 9.4k   | Global  | File operations (read, write, edit)  |
+| **Sequential Thinking** | ✅     | 1.6k   | Global  | Complex problem analysis             |
+
+_Status: ✅ Active | 🔮 Future Phase_
 
 **CLI Tools:**
 
@@ -72,13 +75,17 @@ This document covers all technical architecture decisions (ADRs), technology sta
 ## Architecture Decisions (ADRs)
 
 <details>
-<summary><strong>ADR Index (15 decisions)</strong></summary>
+<summary><strong>ADR Index (20 decisions)</strong></summary>
 
 **Platform**
 | ADR | Decision |
 |-----|----------|
 | [ADR-001](#adr-001-expo-sdk-54--development-build) | Expo SDK 54 + Development Build |
 | [ADR-002](#adr-002-three-tier-testing-strategy) | Three-Tier Testing Strategy |
+| [ADR-017](#adr-017-typescript-strict-mode) | TypeScript Strict Mode |
+| [ADR-018](#adr-018-expo-router) | Expo Router |
+| [ADR-019](#adr-019-eslint--prettier) | ESLint + Prettier |
+| [ADR-020](#adr-020-github-actions-cicd) | GitHub Actions CI/CD |
 
 **Data Layer**
 | ADR | Decision |
@@ -108,6 +115,11 @@ This document covers all technical architecture decisions (ADRs), technology sta
 |-----|----------|
 | [ADR-014](#adr-014-zustand-state-management) | Zustand State Management |
 | [ADR-015](#adr-015-exercisedb-dataset) | ExerciseDB Dataset |
+
+**Monitoring**
+| ADR | Decision |
+|-----|----------|
+| [ADR-016](#adr-016-sentry-error-monitoring) | Sentry Error Monitoring |
 
 </details>
 
@@ -365,9 +377,95 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 ---
 
+### ADR-016: Sentry Error Monitoring
+
+**Decision:** Sentry for crash reporting and performance monitoring
+
+**Rationale:**
+
+- Production-only monitoring (disabled in development)
+- Automatic crash reporting with stack traces
+- Performance tracing for slow operations
+- Free tier: 5,000 errors/month
+
+**Configuration:** Production builds only, PII stripped
+
+**Status:** Implemented
+
+---
+
+### ADR-017: TypeScript Strict Mode
+
+**Decision:** TypeScript 5.x with strict mode enabled
+
+**Rationale:**
+
+- Catch errors at compile time, not runtime
+- Better IDE support (autocomplete, refactoring)
+- Self-documenting code via type annotations
+- Industry standard for React Native projects
+
+**Configuration:** `strict: true` in tsconfig.json, no `any` types allowed
+
+**Status:** Implemented
+
+---
+
+### ADR-018: Expo Router
+
+**Decision:** Expo Router for file-based navigation
+
+**Rationale:**
+
+- File-based routing (Next.js pattern)
+- Type-safe navigation with TypeScript
+- Deep linking built-in
+- Native navigation performance (react-navigation under the hood)
+
+**Trade-offs:** Learning curve vs React Navigation direct usage
+
+**Status:** Implemented
+
+---
+
+### ADR-019: ESLint + Prettier
+
+**Decision:** ESLint for linting, Prettier for formatting
+
+**Rationale:**
+
+- Consistent code style across the project
+- Catch common errors before runtime
+- Auto-fix on save (IDE integration)
+- Pre-commit hooks via Husky + lint-staged
+
+**Configuration:** Expo preset + custom rules, Prettier defaults
+
+**Status:** Implemented
+
+---
+
+### ADR-020: GitHub Actions CI/CD
+
+**Decision:** GitHub Actions for continuous integration and security scanning
+
+**Rationale:**
+
+- Native GitHub integration (no external service)
+- Automated testing on every PR
+- Dependabot for dependency updates
+- TruffleHog for secret scanning
+- Free for public repos, generous free tier for private
+
+**Workflows:** CI (test, lint, type-check), Dependabot auto-merge, secret scanning
+
+**Status:** Implemented
+
+---
+
 ## Project Structure
 
-See [ARCHITECTURE.md § Structure Détaillée](./ARCHITECTURE.md#-structure-détaillée) for complete folder organization.
+See [ARCHITECTURE.md § Detailed Structure](./ARCHITECTURE.md#detailed-structure) for complete folder organization.
 
 ---
 
@@ -539,6 +637,26 @@ return JSON.stringify({ user, workouts, exercises, exported_at });
 | Chart Render (1000 points) | <500ms      | Victory Native + memoization               |
 | Image Load                 | <200ms      | expo-image cache + pre-fetch               |
 
+#### Profiling Tools
+
+```bash
+# Bundle analysis
+npx react-native-bundle-visualizer
+
+# React DevTools (component profiler)
+npx react-devtools
+
+# Flipper (SQLite inspector, network, layout)
+# Install: https://fbflipper.com/
+flipper
+
+# Android memory profiling
+adb shell dumpsys meminfo com.halterofit.app
+
+# iOS Instruments (via Xcode)
+# Product → Profile → Time Profiler / Allocations
+```
+
 ---
 
 ## Coding Standards
@@ -548,6 +666,8 @@ return JSON.stringify({ user, workouts, exercises, exported_at });
 **React:** Functional components, TypeScript props interfaces, named exports, <200 lines
 
 **Styling:** StyleSheet.create(), theme values (Colors, Spacing), no inline styles
+
+---
 
 ## Development Workflow
 
