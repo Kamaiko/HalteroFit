@@ -5,16 +5,15 @@ This document covers all technical architecture decisions (ADRs), technology sta
 ## Table of Contents
 
 1. [Technology Stack](#technology-stack)
-2. [Architecture Overview](#architecture-overview)
-3. [Architecture Decisions (ADRs)](#architecture-decisions-adrs)
-4. [Project Structure](#project-structure)
-5. [Design System](#design-system)
-6. [Database Schema](#database-schema)
-7. [Security & Monitoring](#security--monitoring)
-8. [Performance Guidelines](#performance-guidelines)
-9. [Coding Standards](#coding-standards)
-10. [UX Best Practices](#ux-best-practices)
-11. [Resources](#resources)
+2. [Architecture Decisions (ADRs)](#architecture-decisions-adrs)
+3. [Project Structure](#project-structure)
+4. [Design System](#design-system)
+5. [Database Schema](#database-schema)
+6. [Security & Monitoring](#security--monitoring)
+7. [Performance Guidelines](#performance-guidelines)
+8. [Coding Standards](#coding-standards)
+9. [UX Best Practices](#ux-best-practices)
+10. [Resources](#resources)
 
 ---
 
@@ -67,63 +66,6 @@ This document covers all technical architecture decisions (ADRs), technology sta
 | **EAS CLI**      | Global                    | `eas`      | Native builds, submissions |
 
 **See:** [.claude/CLAUDE.md](.claude/CLAUDE.md) for quick command reference.
-
----
-
-## Architecture Overview
-
-### Philosophy
-
-- **Mobile-First:** Optimized for mobile experience
-- **Offline-First:** Works without internet connection (CRITICAL)
-- **Performance-First:** <2s cold start, 60fps animations
-- **Type-Safe:** TypeScript strict mode throughout
-- **Simple & Pragmatic:** Choose simplicity over complexity
-
-### Key Decision: WatermelonDB + Supabase Sync
-
-**Why WatermelonDB from Day 1:**
-
-- ✅ **Production-Ready Architecture** - No costly migration later
-- ✅ **Offline-First** - CRITICAL priority from PRD
-- ✅ **Reactive Queries** - Auto-update UI on data changes
-- ✅ **Performance** - Optimized for 2000+ workouts
-- ✅ **Built-in Sync** - Robust conflict resolution vs manual sync
-
-### Storage Stack
-
-```
-┌─────────────────────────────────────────┐
-│         USER ACTIONS (UI)               │
-└─────────────┬───────────────────────────┘
-              │
-              ▼
-┌─────────────────────────────────────────┐
-│    ZUSTAND (temporary UI state)         │
-│    - Active workout, form inputs        │
-└─────────────┬───────────────────────────┘
-              │
-              ▼
-┌─────────────────────────────────────────┐
-│    WATERMELONDB (offline-first)         │
-│    - Workouts, exercises, sets          │
-│    - Reactive queries, instant save     │
-│    - Built-in sync protocol             │
-└─────────────┬───────────────────────────┘
-              │
-              ▼ (automatic sync)
-┌─────────────────────────────────────────┐
-│    SUPABASE (cloud backup)              │
-│    - PostgreSQL + Row Level Security    │
-│    - Conflict: smart merge resolution   │
-└─────────────────────────────────────────┘
-
-┌─────────────────────────────────────────┐
-│    MMKV (preferences + tokens)          │
-│    - Auth tokens, user settings         │
-│    - Encrypted, 10-30x faster           │
-└─────────────────────────────────────────┘
-```
 
 ---
 
