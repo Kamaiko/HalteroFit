@@ -14,7 +14,7 @@ This document covers Halterofit's hybrid database architecture (WatermelonDB + S
 
 ## Architecture Overview
 
-> 📖 **For complete architecture details:** See [TECHNICAL.md § Storage Stack](./TECHNICAL.md#storage-stack)
+> 📖 **For complete architecture details:** See [ARCHITECTURE.md § Data Flow](./ARCHITECTURE.md#data-flow)
 
 **Quick Reference:**
 
