@@ -64,6 +64,7 @@ npm start                      # Start development server
 | **[TESTING.md](docs/TESTING.md)**                 | Understanding test strategy  | Testing strategy and practices     |
 | **[DEVOPS_PIPELINE.md](docs/DEVOPS_PIPELINE.md)** | Setting up CI/CD             | DevOps pipeline and deployment     |
 | **[CONTRIBUTING.md](docs/CONTRIBUTING.md)**       | Setup & daily development    | Developer setup and workflow       |
+| **[CODE_OF_CONDUCT.md](docs/CODE_OF_CONDUCT.md)** | Community guidelines         | Code of conduct for contributors   |
 | **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | When something breaks        | Debugging guide and fixes          |
 
 ---

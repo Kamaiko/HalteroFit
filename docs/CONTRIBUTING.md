@@ -2,6 +2,8 @@
 
 This guide covers project setup, development workflow, coding standards, and common troubleshooting steps for contributing to Halterofit.
 
+> **Note**: Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. We are committed to providing a welcoming and inclusive environment for everyone.
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
