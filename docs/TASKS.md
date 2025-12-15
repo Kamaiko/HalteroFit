@@ -13,24 +13,69 @@ Actionable tasks with Kanban tracking. For strategic overview and phase sequence
 
 ## Kanban
 
-| TODO (Top 5)                       | DOING | DONE (Last 5) |
-| ---------------------------------- | ----- | ------------- |
-| **1.1.1** Login screen `[M]`       |       |               |
-| **1.1.2** Register screen `[M]`    |       |               |
-| **1.1.5** Supabase auth `[M]`      |       |               |
-| **1.1.4** Protected routes `[S]`   |       |               |
-| **1.2.1** Auth test infra `[S]` 🔥 |       |               |
+| TODO (Top 5)                                              | DOING | DONE (Last 5) |
+| --------------------------------------------------------- | ----- | ------------- |
+| **1.0.1** Jefit screenshots `[M]` 🟠 (NOTE: User pending) |       |               |
+| **1.0.5** Typography/Spacing `[S]`                        |       |               |
+| **1.0.2** Login wireframe `[S]`                           |       |               |
+| **1.1.1** Login screen `[M]`                              |       |               |
+| **1.1.2** Register screen `[M]`                           |       |               |
 
 **Phases Overview**: See [ROADMAP.md](./ROADMAP.md) for strategic timeline and dependencies
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases and release notes
 
 ## Phase 1: Authentication & Foundation
 
-**Timeline:** Weeks 9-11
-**Est. Time:** ~31h (3 weeks)
-**Goal:** Login/Register screens + Auth testing + Database sync reliability
+**Timeline:** Weeks 9-12
+**Est. Time:** ~40h (4 weeks) [+9h with UI design]
+**Goal:** Login/Register screens + UI Design Foundation + Auth testing + Database sync reliability
 **Dependencies:** Phase 0.6 (UI components + schema)
 **Details:** [PHASE1_PLAN.md](./PHASE1_PLAN.md) (architecture, acceptance criteria)
+
+<details>
+<summary><b>1.0: UI Design Foundation</b> • 5 tasks</summary>
+
+→ **Purpose:** Design wireframes and finalize design system before implementation
+
+- [ ] **1.0.1** Analyze Jefit screenshots & document navigation flow (M - 3h)
+  - NOTE: Screenshots to be provided by user (in progress)
+  - Once received: Document exact navigation structure, page layouts, component hierarchy
+  - Deliverables: Navigation flow diagram (textual), page list with responsibilities
+  - Files: Update docs/DESIGN_SYSTEM.md § Navigation Patterns
+  - Blocks: 1.0.2, 1.0.3, 1.0.4
+
+- [ ] **1.0.2** Design Login screen wireframe (S - 1.5h)
+  - Email/password inputs layout, error display, links placement
+  - Component hierarchy: KeyboardAvoidingView > Container > Form > Inputs/Buttons
+  - Dark theme colors from DESIGN_SYSTEM.md (#0A0A0A bg, #4299e1 primary)
+  - Deliverables: Textual wireframe (component tree + spacing)
+  - Files: Create docs/wireframes/login.md (or add to PHASE1_PLAN.md § Wireframes)
+  - Blocks: 1.1.1 (Create login screen UI)
+
+- [ ] **1.0.3** Design Register screen wireframe (S - 1.5h)
+  - Email/password/confirm inputs, terms checkbox, validation errors
+  - ScrollView for keyboard handling, multiple error display pattern
+  - Deliverables: Textual wireframe
+  - Files: docs/wireframes/register.md
+  - Blocks: 1.1.2 (Create register screen UI)
+
+- [ ] **1.0.4** Design Home/Dashboard wireframe (M - 2h)
+  - Bottom Tab Navigation structure (5 tabs like Jefit), welcome message, "Start Workout" CTA
+  - Tab bar design: icons, labels, active/inactive states
+  - Empty state vs populated state
+  - Deliverables: Textual wireframe + tab structure
+  - Files: docs/wireframes/home.md
+  - Blocks: Phase 2 (Workout navigation)
+
+- [ ] **1.0.5** Finalize Typography & Spacing in DESIGN_SYSTEM.md (S - 2h)
+  - Validate suggested values: Font (SF/Roboto), Scale (12-48px), Line heights (1.2/1.5)
+  - Spacing: Base 4px, Scale 4-64px, Component padding (16/24px)
+  - Document in DESIGN_SYSTEM.md (replace "To be defined" sections)
+  - Test values on one screen (Login) to ensure readability
+  - Files: docs/DESIGN_SYSTEM.md § Typography, § Spacing
+  - Blocks: 1.1.1, 1.1.2 (need typography/spacing for implementation)
+
+</details>
 
 <details>
 <summary><b>1.1: Auth UI & Screens</b> • 5 tasks</summary>
@@ -43,6 +88,7 @@ Actionable tasks with Kanban tracking. For strategic overview and phase sequence
   - Links: "Forgot password" (→1.1.3), "Create account" (→1.1.2)
   - Error handling with Alert component
   - Uses: Button, Input, Label, Alert (React Native Reusables)
+  - Blocked by: 1.0.2 (Login wireframe), 1.0.5 (Typography/Spacing)
 
 - [ ] **1.1.2** Create register screen UI (M - 2h) `[src/app/(auth)/register.tsx]`
   - Email/password inputs with confirmation field
@@ -50,6 +96,7 @@ Actionable tasks with Kanban tracking. For strategic overview and phase sequence
   - Register button with loading state + link to login
   - Error display with Alert component
   - Uses: Button, Input, Label, Alert (React Native Reusables)
+  - Blocked by: 1.0.3 (Register wireframe), 1.0.5 (Typography/Spacing)
 
 - [ ] **1.1.3** Implement password reset flow (M - 2h) `[src/app/(auth)/reset-password.tsx]`
   - Request reset screen (email input) + deep link handler
