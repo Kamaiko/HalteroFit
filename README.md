@@ -32,7 +32,7 @@
 
 ## About
 
-Offline-first mobile fitness tracker for serious strength athletes. Track workouts, log sets, and get intelligent analytics that understand training context—not just raw numbers.
+Offline-first fitness tracker. Track every set, build consistency, document the work. Most apps track what you do. This one helps you become who you're meant to be—while you still can.
 
 ---
 
@@ -95,3 +95,5 @@ npm start                      # Start development server
 | Linting          | ESLint + Prettier         |
 
 ---
+
+> _"Your body remembers every choice. Make sure the story it tells is worth living."_

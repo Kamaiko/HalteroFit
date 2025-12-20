@@ -113,7 +113,7 @@ git checkout -b fix/bug-description
 
 ### 4. Commit
 
-Follow the convention from `.claude/CLAUDE.md`:
+Follow the commit message convention:
 
 ```bash
 # Format: <type>(<scope>): <description>
