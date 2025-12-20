@@ -30,8 +30,8 @@ This guide covers project setup, development workflow, coding standards, and com
 1. **Clone and install**
 
    ```bash
-   git clone https://github.com/Kamaiko/Fitness-Tracker-App.git
-   cd Fitness-Tracker-App
+   git clone https://github.com/Kamaiko/HalteroFit.git
+   cd HalteroFit
    npm install
    ```
 
@@ -40,6 +40,9 @@ This guide covers project setup, development workflow, coding standards, and com
    ```bash
    cp .env.example .env
    # Edit .env and add your Supabase credentials:
+   # Find these in Supabase Dashboard → Settings → API:
+   # - URL: Copy "Project URL"
+   # - Anon Key: Copy "anon public" key
    # EXPO_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
    # EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
    ```
@@ -77,7 +80,7 @@ This guide covers project setup, development workflow, coding standards, and com
 
 ### Daily Development (after initial setup)
 
-**Good news**: Once you have the dev build installed, daily development is the same as Expo Go!
+Once you have the dev build installed, daily development works as expected with hot reload.
 
 ```bash
 npm start
@@ -87,14 +90,20 @@ npm start
 
 **When do you need to rebuild?**
 
-- Only when adding a new native module (rare, ~1-2x/week max)
-- To rebuild: `eas build --profile development --platform [android|ios]`
+You need to rebuild the development build when:
+
+- Adding npm packages that require native code (e.g., react-native-_, expo-_)
+- Modifying native configuration in app.json
+- Updating Expo SDK version
+- Changing native module settings
+
+To rebuild: `eas build --profile development --platform [android|ios]`
 
 ### 1. Pick a Task
 
 - Check [TASKS.md](TASKS.md) for the next priority
 - Start with "Current Focus" tasks
-- Pick tasks from Phase 1 if you're new
+- Pick tasks from Phase 1 if you're new (see [PHASE1_PLAN.md](PHASE1_PLAN.md))
 
 ### 2. Create a Branch
 
@@ -146,8 +155,10 @@ git push origin feature/task-description
 
 - [ ] App builds without errors (`npm start`)
 - [ ] TypeScript compiles (`npm run type-check`)
-- [ ] No console.log statements (use proper logging)
-- [ ] Uses theme values (no hardcoded colors/spacing)
+- [ ] Tests pass (`npm test`)
+- [ ] Database schema version incremented (if schema changed)
+- [ ] No console.log statements (see TECHNICAL.md § Logging)
+- [ ] Uses theme values from DESIGN_SYSTEM.md (no hardcoded colors/spacing)
 - [ ] Tested on real device (Android or iOS)
 - [ ] Commit message follows convention
 - [ ] No sensitive data in code (API keys, credentials)
@@ -168,7 +179,7 @@ See [README.md § Documentation](../README.md#-documentation) for complete docum
 
 - TypeScript strict mode (no `any`)
 - Use absolute imports (`@/components` instead of `../../../components`)
-- Barrel exports (`index.ts`) for clean imports
+- Barrel exports (re-exporting from `index.ts` files) for cleaner import paths
 - Use NativeWind (Tailwind CSS) for styling
 - Functional components only
 - WatermelonDB for database operations
@@ -200,7 +211,9 @@ src/
 
 ## Common Issues
 
-### Development Build Issues
+> 📖 **For comprehensive troubleshooting**, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+
+### Critical Path Issues (First-Time Setup)
 
 **"Cannot install development build"**
 
@@ -213,43 +226,12 @@ src/
 - You need to rebuild dev build: `eas build --profile development --platform [android|ios]`
 - Wait for build and install new version
 
-**"Cannot find module"**
+**"Hot reload not working"**
 
-```bash
-npm install
-npm start -- --clear
-```
+- Press `r` in Metro console to reload
+- Or shake device → "Reload"
 
-**TypeScript errors**
-
-```bash
-npm run type-check
-```
-
-**App crashes**
-
-- Check console for errors
-- Clear cache: `npm start -- --clear`
-- Restart development build app
-- Check if native modules are properly linked (may need rebuild)
-
-**QR code not working**
-
-- Ensure same WiFi network
-- Check firewall settings
-- Use manual connection in dev build app
-
-**Database errors (WatermelonDB)**
-
-- Check [DATABASE.md](DATABASE.md) for schema
-- Verify models are properly decorated
-- Check that database is initialized in `_layout.tsx`
-
-**Storage errors (MMKV)**
-
-- MMKV requires Development Build (not Expo Go)
-- Verify `mmkvStorage.ts` wrapper is properly imported
-- Check encryption key is set
+**For database, TypeScript, Metro, storage, and other issues:** See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ---
 
@@ -278,14 +260,24 @@ eas build --profile production --platform android
 eas build --profile production --platform ios
 ```
 
-### Database & Testing
+### Testing
 
 ```bash
-# Check database schema
+npm test              # Run unit tests
+npm run test:watch    # Watch mode
+npm run type-check    # TypeScript validation
+```
+
+### Database Schema Check
+
+```bash
+# Start Metro bundler
 npm start
-# Then in Metro console:
-# import { database } from './src/services/database/watermelon';
-# await database.adapter.getLocal('schema_version');
+
+# Open debugger (press 'j' in Metro console or shake device → Debug Remote JS)
+# In browser console, paste:
+import { database } from './src/services/database/watermelon';
+await database.adapter.getLocal('schema_version');
 ```
 
 ### Database Schema Changes
@@ -375,10 +367,14 @@ schemaMigrations({
 
 ## CI/CD Architecture
 
-> 📖 **For complete CI/CD documentation** (Git hooks, GitHub Actions, Dependabot, troubleshooting):
-> → See **[DEVOPS_PIPELINE.md](DEVOPS_PIPELINE.md)**
+> 📖 **For complete CI/CD documentation**, see [DEVOPS_PIPELINE.md](DEVOPS_PIPELINE.md)
 
-**Quick Commands:**
+**Git Hooks:**
+
+- **Pre-commit**: Auto-formats staged files with Prettier
+- **Pre-push**: Runs type-check, lint, and tests
+
+**Local Pre-Push Checks** (run these before pushing):
 
 | Command              | Purpose                      |
 | -------------------- | ---------------------------- |
@@ -386,8 +382,6 @@ schemaMigrations({
 | `npm run lint:fix`   | Auto-fix linting issues      |
 | `npm test`           | Run unit tests               |
 | `npm audit`          | Security vulnerability check |
-
-**Git Hooks:** Fast commits (lint staged) → Validated pushes (full checks)
 
 **CI Jobs:** code-quality, unit-tests, security-scan (parallel) → dependabot-auto-merge
 
