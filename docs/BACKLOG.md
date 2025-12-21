@@ -1,4 +1,4 @@
-# Post-MVP Backlog
+# Post-MVP Backlog - Halterofit
 
 This document lists features deferred from the MVP roadmap. These enhancements will be prioritized post-launch based on user feedback and product-market fit validation.
 
@@ -13,7 +13,7 @@ This document lists features deferred from the MVP roadmap. These enhancements w
 
 ## Analytics & Progression
 
-**Priority:** HIGH (first post-MVP features to implement)
+**Priority:** HIGH (first Post-MVP features to implement)
 
 - Volume tracking (weekly/monthly charts with Victory Native)
 - Personal records tracking with badges and celebrations

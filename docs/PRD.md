@@ -1,4 +1,4 @@
-# Product Requirements Document: Halterofit
+# Product Requirements - Halterofit
 
 This document defines the scope, features, user stories, and success metrics for the Halterofit MVP. Use this as the authoritative reference for product requirements and design decisions.
 
@@ -48,7 +48,7 @@ Halterofit MVP delivers a reliable, fast, and straightforward workout tracking e
 - 80%+ workout completion rate (users finish what they start)
 - Zero data loss incidents (architectural promise fulfilled)
 
-### Non-goals (deferred to post-MVP)
+### Non-goals (deferred to Post-MVP)
 
 **Analytics features (Post-MVP+):**
 
@@ -56,7 +56,7 @@ Halterofit MVP delivers a reliable, fast, and straightforward workout tracking e
 - Advanced analytics: RIR/RPE-adjusted 1RM, Mann-Kendall plateau detection, acute/chronic load ratios
 - Context-aware performance interpretation, fatigue modeling, overtraining detection
 
-**UX enhancements (post-MVP):**
+**UX enhancements (Post-MVP):**
 
 - Plate calculator, set history display (last 3-5 sets), notes per workout/exercise/set
 - Onboarding flow, profile image upload, biometric authentication

@@ -1,4 +1,4 @@
-# Project Tasks
+# Tasks - Halterofit
 
 Actionable tasks with Kanban tracking. For strategic overview and phase sequence, see ROADMAP.md.
 
@@ -455,7 +455,7 @@ Actionable tasks with Kanban tracking. For strategic overview and phase sequence
 - [ ] 5.2 **Performance optimization** (M - 3h) `[bundle + cold start]`
   - Run react-native-bundle-visualizer
   - Identify large dependencies, remove unused
-  - Code splitting for heavy features (charts defer to post-MVP)
+  - Code splitting for heavy features (charts defer to Post-MVP)
   - Optimize WatermelonDB initial queries
   - Lazy load screens with React.lazy()
   - Target: <10MB bundle, <2s cold start

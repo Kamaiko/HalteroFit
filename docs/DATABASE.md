@@ -1,4 +1,4 @@
-# Database Guide - Halterofit
+# Database - Halterofit
 
 This document provides an overview of Halterofit's hybrid database architecture and practical guidance for working with data storage.
 
@@ -16,7 +16,7 @@ This document provides an overview of Halterofit's hybrid database architecture 
 
 ## Architecture Overview
 
-> 📖 **For complete architecture details:** See [ARCHITECTURE.md § Data Flow](./ARCHITECTURE.md#data-flow)
+**For complete architecture details:** See [ARCHITECTURE.md § Data Flow](./ARCHITECTURE.md#data-flow)
 
 | Layer   | Technology            | Purpose                              |
 | ------- | --------------------- | ------------------------------------ |
@@ -38,7 +38,7 @@ This document provides an overview of Halterofit's hybrid database architecture 
 | workout_exercises | Links workouts to exercises        | → exercise_sets     |
 | exercise_sets     | Individual sets within an exercise | (leaf)              |
 
-> 📖 **Schema SSoT:** `src/services/database/watermelon/schema.ts`
+**Schema SSoT:** `src/services/database/watermelon/schema.ts`
 
 **Cascade Behavior:**
 
@@ -58,7 +58,7 @@ This document provides an overview of Halterofit's hybrid database architecture 
 | Content   | Animated GIFs, instructions, muscle groups   |
 | Backup    | `docs/archives/exercisedb-full-dataset.json` |
 
-> 📖 **Field mapping:** See `src/services/database/watermelon/models/Exercise.ts`
+**Field mapping:** See `src/services/database/watermelon/models/Exercise.ts`
 
 ---
 
@@ -89,7 +89,7 @@ All database code resides in `src/services/database/`:
 | Network restored | Background sync                      |
 | Conflict         | Last-write-wins (based on timestamp) |
 
-> 📖 **Implementation:** `src/services/database/watermelon/sync.ts`
+**Implementation:** `src/services/database/remote/sync.ts`
 
 ---
 
@@ -117,7 +117,7 @@ All database code resides in `src/services/database/`:
    supabase db reset
    ```
 
-> ⚠️ Pre-commit hook validates schema version increment
+**Warning:** Pre-commit hook validates schema version increment
 
 ### Type Mapping
 

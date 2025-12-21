@@ -1,14 +1,14 @@
-# Sentry Reference
+# Sentry Monitoring - Halterofit
 
 Quick reference for Sentry error monitoring configuration and usage.
 
-**Status:** ✅ Installed & Configured (Sentry SDK v7.7.0)
+**Status:** Installed & Configured (see package.json for current version)
 **Configuration:** `src/utils/sentry.ts`
 **Dashboard:** https://sentry.io
 
 ---
 
-## 📍 Current Setup
+## Current Setup
 
 **Files configured:**
 

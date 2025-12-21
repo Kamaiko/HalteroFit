@@ -2,10 +2,10 @@
 
 This document explains how Halterofit's codebase is organized. It covers folder structure, architectural patterns, and the separation of concerns between different layers (navigation, components, services, state management).
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [📐 Overview](#overview)
-- [📂 Detailed Structure](#detailed-structure)
+- [Overview](#overview)
+- [Detailed Structure](#detailed-structure)
   - [1. `/app` - Navigation (Expo Router)](#1-app---navigation-expo-router)
   - [2. `/components` - UI Components](#2-components---ui-components)
   - [3. `/hooks` - Custom React Hooks](#3-hooks---custom-react-hooks)
@@ -16,7 +16,7 @@ This document explains how Halterofit's codebase is organized. It covers folder 
   - [8. `/lib` - UI Utility Helpers](#8-lib---ui-utility-helpers)
   - [9. `/tests` - Test Infrastructure](#9-tests---test-infrastructure)
   - [10. `/constants` - App-wide Constants](#10-constants---app-wide-constants)
-- [🔄 Data Flow](#data-flow)
+- [Data Flow](#data-flow)
   - [Offline-First Sync Flow](#3-offline-first-sync-flow)
 
 ---
@@ -166,7 +166,7 @@ hooks/
 │   ├── useActiveWorkout.ts
 │   ├── useSetLogger.ts
 │   └── index.ts
-├── analytics/        # 🔮 Post-MVP (Post-MVP)
+├── analytics/        # Post-MVP
 │   ├── useWorkoutStats.ts
 │   └── index.ts
 ├── auth/
@@ -247,7 +247,7 @@ services/
 │   ├── mmkvStorage.ts
 │   └── index.ts
 ├── api/              # External APIs (if needed)
-├── analytics/        # 🔮 Post-MVP (Post-MVP) - Analytics calculations
+├── analytics/        # Post-MVP - Analytics calculations
 └── notifications/    # Push notifications
 ```
 
@@ -299,7 +299,7 @@ stores/
 ├── workout/
 │   ├── workoutStore.ts
 │   └── index.ts
-├── analytics/        # 🔮 Post-MVP (Post-MVP)
+├── analytics/        # Post-MVP
 │   └── analyticsStore.ts
 ├── settings/
 │   └── settingsStore.ts
@@ -366,7 +366,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 ```
 types/
 ├── api/              # External API types
-│   └── exerciseDB.ts
+│   └── ExerciseDB.ts
 ├── user/             # User-related types
 │   └── profile.ts
 ├── workout/          # Workout templates, programs
@@ -547,9 +547,7 @@ e2e/                            # E2E tests (manual + automated)
 
 **Why root for mocks?** Jest convention - auto-discovers mocks adjacent to `node_modules`.
 
-**Current Coverage**: 36 unit tests (60-65% database layer)
-
-**See**: [docs/TESTING.md](TESTING.md)
+**See**: [TESTING.md](./TESTING.md) for current test coverage and strategy
 
 ---
 

@@ -1,4 +1,4 @@
-# Contributing Guide
+# Contributing - Halterofit
 
 This guide covers project setup, development workflow, coding standards, and common troubleshooting steps for contributing to Halterofit.
 
@@ -85,7 +85,7 @@ Once you have the dev build installed, daily development works as expected with 
 ```bash
 npm start
 # Scan QR code with your dev build app
-# Hot reload works normally ✅
+# Hot reload works normally
 ```
 
 **When do you need to rebuild?**
@@ -211,7 +211,7 @@ src/
 
 ## Common Issues
 
-> 📖 **For comprehensive troubleshooting**, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+**For comprehensive troubleshooting**, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ### Critical Path Issues (First-Time Setup)
 
@@ -317,7 +317,7 @@ This process ensures Supabase (PostgreSQL) and WatermelonDB (SQLite) schemas sta
    });
    ```
 
-   - ⚠️ **Pre-commit hook will block commit if you forget this step!**
+   - **Warning:** Pre-commit hook will block commit if you forget this step!
 
 6. **Create WatermelonDB migration** (if users have existing data)
    - File: `src/services/database/watermelon/migrations.ts`
@@ -367,7 +367,7 @@ schemaMigrations({
 
 ## CI/CD Architecture
 
-> 📖 **For complete CI/CD documentation**, see [DEVOPS_PIPELINE.md](DEVOPS_PIPELINE.md)
+**For complete CI/CD documentation**, see [DEVOPS_PIPELINE.md](DEVOPS_PIPELINE.md)
 
 **Git Hooks:**
 

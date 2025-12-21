@@ -1,4 +1,4 @@
-# Halterofit MVP Roadmap
+# MVP Roadmap - Halterofit
 
 Strategic overview of development phases and execution sequence. This roadmap defines the path to MVP completion through five sequential phases. For current progress and actionable tasks, see TASKS.md.
 
@@ -116,7 +116,7 @@ Phase 4 (Profile & Settings) can run parallel to Phase 3
 
 ## Post-MVP Direction
 
-Following MVP launch, development will focus on analytics and progression tracking features deferred from initial release. See BACKLOG.md for detailed post-MVP roadmap including:
+Following MVP launch, development will focus on analytics and progression tracking features deferred from initial release. See BACKLOG.md for detailed Post-MVP roadmap including:
 
 - Analytics and progression tracking (volume charts, PR tracking, 1RM estimation)
 - UX enhancements (plate calculator, set history display, notes support)

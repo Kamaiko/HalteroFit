@@ -1,8 +1,8 @@
-# Troubleshooting Guide
+# Troubleshooting - Halterofit
 
 Solutions to common development issues with Halterofit. This guide covers the Development Build stack (WatermelonDB, MMKV, Victory Native, NativeWind) and typical error scenarios encountered during development.
 
-> 💡 **Quick Start**: Most issues are solved by clearing cache (`npm start -- --clear`) or rebuilding the Development Build.
+**Quick Start**: Most issues are solved by clearing cache (`npm start -- --clear`) or rebuilding the Development Build.
 
 ## Table of Contents
 

@@ -1,8 +1,8 @@
-# DevOps Pipeline Documentation
+# DevOps Pipeline - Halterofit
 
 This document defines the complete CI/CD pipeline configuration, including git hooks, GitHub Actions workflows, Dependabot automation, and branch protection rules. Use this as the single source of truth for all DevOps behavior.
 
-## 📑 Table of Contents
+## Table of Contents
 
 1. [Quick Reference](#quick-reference)
 2. [Pipeline Overview](#1-pipeline-overview)
@@ -32,15 +32,15 @@ This document defines the complete CI/CD pipeline configuration, including git h
 
 **Dependabot Auto-Merge Rules:**
 
-- ✅ GitHub Actions: ALL versions
-- ✅ Dev dependencies: Minor + Patch
-- ✅ Runtime dependencies: Patch + Minor
-- 💬 Runtime dependencies: Major (comment only, manual review required)
+- GitHub Actions: ALL versions
+- Dev dependencies: Minor + Patch
+- Runtime dependencies: Patch + Minor
+- Runtime dependencies: Major (comment only, manual review required)
 
 **Required Status Checks (Branch Protection):**
 
 - Branch: `master`
-- Strict: ✅ (must be up to date)
+- Strict: Yes (must be up to date)
 - Checks: Jobs 1-3 only (code-quality, unit-tests, security-scan)
 
 ---

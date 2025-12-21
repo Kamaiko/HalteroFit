@@ -1,4 +1,4 @@
-# Technical Documentation
+# Technical Documentation - Halterofit
 
 This document covers all technical architecture decisions (ADRs), technology stack choices, performance guidelines, and coding standards. Reference this when making technology or architecture decisions for the project.
 
@@ -35,7 +35,7 @@ This document covers all technical architecture decisions (ADRs), technology sta
 | **Backend**          | Supabase                  | 2.78.0  | PostgreSQL + Auth + Storage                        |
 | **Charts**           | Victory Native            | 41.20.1 | Data visualization (Skia-based)                    |
 | **Lists**            | FlashList                 | 2.2.0   | High-performance lists                             |
-| **Images**           | expo-image                | 3.0.10  | Optimized image loading with caching ✅            |
+| **Images**           | expo-image                | 3.0.10  | Optimized image loading with caching               |
 | **Navigation**       | Expo Router               | 6.0.14  | File-based routing                                 |
 | **Error Monitoring** | Sentry                    | 7.4.0   | Crash reporting and monitoring                     |
 | **Build**            | EAS Build                 | Latest  | Cloud-based native builds                          |
@@ -43,22 +43,20 @@ This document covers all technical architecture decisions (ADRs), technology sta
 | **Linting**          | ESLint + Prettier         | Latest  | Code quality and formatting                        |
 | **CI/CD**            | GitHub Actions            | Latest  | Automated testing, linting, Dependabot, TruffleHog |
 
-**Migration Status:** All native modules (WatermelonDB, MMKV, Victory Native) migrated in Phase 0.5.B (Tasks 0.5.20-0.5.26).
-
 ### AI-Assisted Development Tools
 
 **MCP Servers (Model Context Protocol):**
 
 | Server                  | Status | Tokens | Scope   | Purpose                              |
 | ----------------------- | ------ | ------ | ------- | ------------------------------------ |
-| **Supabase**            | ✅     | 13.7k  | Project | Database management, migrations, SQL |
-| **Sentry**              | 🔮     | 6k     | Project | Error monitoring (Phase 5+)          |
-| **Maestro**             | 🔮     | 4k     | Project | E2E test generation (Phase 3+)       |
-| **Context7**            | ✅     | 1.8k   | Global  | Library documentation lookup         |
-| **Filesystem**          | ✅     | 9.4k   | Global  | File operations (read, write, edit)  |
-| **Sequential Thinking** | ✅     | 1.6k   | Global  | Complex problem analysis             |
+| **Supabase**            | Active | 13.7k  | Project | Database management, migrations, SQL |
+| **Sentry**              | Future | 6k     | Project | Error monitoring (Phase 5+)          |
+| **Maestro**             | Future | 4k     | Project | E2E test generation (Phase 3+)       |
+| **Context7**            | Active | 1.8k   | Global  | Library documentation lookup         |
+| **Filesystem**          | Active | 9.4k   | Global  | File operations (read, write, edit)  |
+| **Sequential Thinking** | Active | 1.6k   | Global  | Complex problem analysis             |
 
-_Status: ✅ Active | 🔮 Future Phase_
+_Status: Active or Future Phase_
 
 **CLI Tools:**
 
@@ -68,7 +66,7 @@ _Status: ✅ Active | 🔮 Future Phase_
 | **Maestro CLI**  | Global (required for MCP) | `maestro`  | E2E testing (Phase 3+)     |
 | **EAS CLI**      | Global                    | `eas`      | Native builds, submissions |
 
-**See:** [.claude/CLAUDE.md](.claude/CLAUDE.md) for quick command reference.
+**See:** [.claude/CLAUDE.md](../.claude/CLAUDE.md) for quick command reference.
 
 ---
 
@@ -735,5 +733,3 @@ See [DEVOPS_PIPELINE.md](./DEVOPS_PIPELINE.md) for build configuration and CI/CD
 **Inspiration:** Strong, Hevy, JEFIT
 
 ---
-
-**Last Updated:** November 2025 (MVP scope refinement: 79 tasks, Post-MVP analytics)

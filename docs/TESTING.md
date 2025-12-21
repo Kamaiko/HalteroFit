@@ -1,8 +1,8 @@
-# Testing Guide
+# Testing - Halterofit
 
 This document outlines the complete testing strategy for Halterofit, including unit tests (Jest), integration tests (msw), and E2E testing (Maestro). Use this as a reference for writing tests and understanding coverage requirements.
 
-## 📑 Table of Contents
+## Table of Contents
 
 1. [Overview](#overview)
 2. [Testing Strategy](#testing-strategy)
@@ -79,7 +79,7 @@ Can I test this in Jest with LokiJS (in-memory)?
 
 ### Integration Tests
 
-**Status:** ✅ 38 tests implemented (Phase 1 complete)
+**Status:** 38 tests implemented (Phase 1 complete)
 
 **When to Use:**
 
@@ -97,9 +97,9 @@ Can I test this in Jest with LokiJS (in-memory)?
 
 **Current Coverage:**
 
-- ✅ sync-basic.test.ts - 11 tests (pull/push/bidirectional)
-- ✅ conflict-resolution.test.ts - 11 tests (last write wins, multi-device)
-- ✅ schema-validation.test.ts - 16 tests (Zod validation)
+- sync-basic.test.ts - 11 tests (pull/push/bidirectional)
+- conflict-resolution.test.ts - 11 tests (last write wins, multi-device)
+- schema-validation.test.ts - 16 tests (Zod validation)
 
 **Important Limitation:**
 Integration tests use LokiJS (in-memory), NOT Real SQLite. WatermelonDB sync protocol columns (\_changed, \_status) and synchronize() method require native SQLite module, only available in E2E tests. Integration tests validate sync LOGIC, E2E tests validate sync PROTOCOL.
@@ -386,9 +386,9 @@ You may see: "A worker process has failed to exit gracefully and has been force 
 
 This is expected and beneficial:
 
-- ✅ Tests complete successfully
-- ✅ Tests run in ~5s
-- ✅ Jest exits cleanly
+- Tests complete successfully
+- Tests run in ~5s
+- Jest exits cleanly
 - Warning appears because LokiJS workers don't have close() methods
 - Without --forceExit, real memory leaks will be detected
 
