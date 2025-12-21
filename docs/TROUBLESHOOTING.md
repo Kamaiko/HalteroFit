@@ -1,89 +1,89 @@
 # Troubleshooting Guide
 
-This document provides solutions to common development issues with the Development Build stack (WatermelonDB, MMKV, Victory Native). Use this guide for debugging and resolving errors during development.
+Solutions to common development issues with Halterofit. This guide covers the Development Build stack (WatermelonDB, MMKV, Victory Native, NativeWind) and typical error scenarios encountered during development.
+
+> 💡 **Quick Start**: Most issues are solved by clearing cache (`npm start -- --clear`) or rebuilding the Development Build.
 
 ## Table of Contents
 
-- [Quick Navigation](#quick-navigation)
-- [Critical Issues (App Won't Start)](#critical-issues-app-wont-start)
-- [Expo & Metro Bundler Issues](#expo--metro-bundler-issues)
-- [WatermelonDB Issues](#watermelondb-issues)
-- [MMKV Storage Issues](#mmkv-storage-issues)
-- [Styling & UI Issues](#styling--ui-issues)
-- [Authentication Issues](#authentication-issues)
-- [npm / Dependency Issues](#npm--dependency-issues)
+- [Development Build Issues](#development-build-issues)
+- [Metro Bundler Issues](#metro-bundler-issues)
+- [Database Issues (WatermelonDB)](#database-issues-watermelondb)
+- [Storage Issues (MMKV)](#storage-issues-mmkv)
+- [Styling Issues (NativeWind)](#styling-issues-nativewind)
+- [Authentication Issues (Supabase)](#authentication-issues-supabase)
 - [TypeScript Errors](#typescript-errors)
+- [Dependency Issues](#dependency-issues)
 - [Performance Issues](#performance-issues)
-- [Adding New Issues to This Guide](#adding-new-issues-to-this-guide)
-- [Still Stuck?](#still-stuck)
+- [Getting More Help](#getting-more-help)
 
-## Quick Navigation
+---
 
-**By Severity:**
+## Development Build Issues
 
-- [Critical Issues](#critical-issues-app-wont-start) - App won't start
-- [Important Issues](#important-issues-feature-broken) - Feature broken
-- [Minor Issues](#minor-issues-cosmetic) - Cosmetic issues
-
-**By Component:**
-
-- [Expo & Metro](#expo--metro-bundler-issues)
-- [Development Build](#development-build-issues)
-- [WatermelonDB](#watermelondb-issues)
-- [MMKV Storage](#mmkv-storage-issues)
-- [Styling & UI](#styling--ui-issues)
-- [TypeScript](#typescript-errors)
-
-## Critical Issues (App Won't Start)
-
-### Development Build Not Installed
+### App Not Installing or Using Expo Go
 
 **Symptoms:**
 
-- Can't find the dev build app on device
+- Can't find dev build app on device
 - QR code opens Expo Go instead
-- App icon is Expo Go logo
+- App icon is Expo Go logo (not Halterofit icon)
 
 **Cause:**
 
-- Haven't built/installed Development Build yet
-- Using Expo Go (incompatible with native modules)
+Development Build not installed. This project requires native modules (WatermelonDB, MMKV, Victory Native) and **cannot use Expo Go**.
 
-**Solutions:**
+**Solution:**
 
 ```bash
-# 1. Build Development Build (first time, ~15-20 min)
+# Build Development Build (first time, ~15-20 min)
 eas build --profile development --platform android
-# OR for iOS: eas build --profile development --platform ios
+# OR: eas build --profile development --platform ios
 
-# 2. Install on device
-# Scan QR code from EAS Build dashboard
-# OR download APK/IPA directly
-
-# 3. Verify installation
-# Check app icon - should NOT be Expo Go icon
+# Install on device
+# 1. Scan QR code from EAS Build dashboard
+# 2. OR download APK/IPA directly from EAS dashboard
 ```
 
-**Prevention:**
+**Verify Installation:**
 
-- This project requires Development Build (WatermelonDB, MMKV, Victory Native)
-- Cannot use Expo Go
+- App icon should show Halterofit branding (NOT Expo Go)
+- App name should be "Halterofit (dev)"
 
-## Expo & Metro Bundler Issues
+**Reference:** [CONTRIBUTING.md § Setup](CONTRIBUTING.md#setup-first-time-15-20-minutes)
 
-### Metro Bundler Won't Start
+### When to Rebuild Development Build
+
+You need to rebuild when:
+
+- Adding npm packages with native code (e.g., `react-native-*`, `expo-*`)
+- Modifying native configuration in `app.json`
+- Updating Expo SDK version
+- Changing native module settings
+
+**Do NOT rebuild** for:
+
+- JavaScript/TypeScript code changes (hot reload works)
+- Styling changes
+- Database schema changes (unless adding new native modules)
+
+---
+
+## Metro Bundler Issues
+
+### Metro Won't Start
 
 **Symptoms:**
 
 - `npm start` fails
-- Port already in use error
-- Metro bundler shows errors
+- "Port already in use" error
+- Metro bundler shows persistent errors
 
 **Solutions:**
 
 ```bash
 # 1. Clear Metro cache
-npx expo start -c
+npm start -- --clear
 
 # 2. Kill process using port 8081
 # Windows:
@@ -99,15 +99,15 @@ watchman watch-del-all
 # 4. Nuclear option - full clean
 rm -rf node_modules
 npm install
-npx expo start -c --clear
+npm start -- --clear
 ```
 
-### App Won't Load / White Screen
+### White Screen or "Unable to Connect"
 
 **Symptoms:**
 
 - White screen on device
-- "Unable to connect" error
+- "Unable to connect to development server" error
 - App opens but crashes immediately
 
 **Solutions:**
@@ -116,27 +116,22 @@ npx expo start -c --clear
 # 1. Ensure Metro bundler is running
 npm start
 
-# 2. Check that device and computer are on same WiFi
-
-# 3. Clear Expo cache
-npx expo start -c
-
-# 4. Reload app
-# Shake device → Reload
+# 2. Reload app
+# Shake device → "Reload"
 # Or close app completely and reopen
 
-# 5. Check for JavaScript errors in Metro logs
-# Look for red errors in terminal
+# 3. Clear cache
+npm start -- --clear
 ```
 
 **Checklist:**
 
 - [ ] Computer and phone on same WiFi network
 - [ ] No VPN blocking connection
-- [ ] Firewall not blocking port 8081
-- [ ] Metro bundler running (see terminal output)
+- [ ] Firewall allows port 8081
+- [ ] Metro bundler running (check terminal output)
 
-### "Invariant Violation" or Module Import Errors
+### Module Import Errors
 
 **Symptoms:**
 
@@ -147,18 +142,30 @@ npx expo start -c
 
 ```bash
 # 1. Restart Metro with cache clear
-npx expo start -c
+npm start -- --clear
 
-# 2. If still failing, reinstall
+# 2. If still failing, reinstall dependencies
 rm -rf node_modules
 npm install
 
-# 3. Check import paths (should use @/ alias)
-# Bad: import { foo } from '../../../utils/foo';
-# Good: import { foo } from '@/utils/foo';
+# 3. Verify import paths use @/ alias
 ```
 
-## WatermelonDB Issues
+**Common Mistakes:**
+
+```typescript
+// Bad: Relative imports
+import { foo } from '../../../utils/foo';
+
+// Good: Absolute imports with alias
+import { foo } from '@/utils/foo';
+```
+
+**Reference:** [TECHNICAL.md § Import Paths](TECHNICAL.md)
+
+---
+
+## Database Issues (WatermelonDB)
 
 ### "Cannot Find Model" or Collection Errors
 
@@ -168,59 +175,55 @@ npm install
 - `Collection 'workouts' not found`
 - App crashes on database operations
 
-**Causes:**
+**Cause:**
 
-- Model not registered in database instance
-- Schema mismatch
-- Import path incorrect
+Model not registered in database instance or schema mismatch.
 
-**Solutions:**
+**Solution:**
 
 ```typescript
-// 1. Verify models are registered
-// In src/services/database/watermelon/index.ts
+// Verify models are registered
+// File: src/services/database/watermelon/index.ts
 import { Workout, Exercise, WorkoutExercise, ExerciseSet } from '@/models';
 
 const database = new Database({
   adapter,
   modelClasses: [
-    Workout, // ✅ Must be registered
+    Workout, // Must be registered
     Exercise,
     WorkoutExercise,
     ExerciseSet,
   ],
 });
 
-// 2. Check import paths
-// Wrong
-import { Workout } from '../models/Workout';
-
-// Correct
-import { Workout } from '@/models';
-
-// 3. Verify schema matches models
-// Check src/services/database/watermelon/schema.ts
+// Check import paths
+import { Workout } from '@/models'; // ✅ Correct
 ```
 
-### WatermelonDB Schema Outdated
+**Reference:** [DATABASE.md § Schema](DATABASE.md)
+
+### Schema Outdated / Migration Errors
 
 **Symptoms:**
 
 - `no such column` errors
-- Type errors on database operations
 - Missing tables or fields
+- Type errors on database operations
 
 **Cause:**
 
-- Schema version changed but old database still exists
+Schema version changed but old database still exists on device.
 
-**Solutions:**
+**Solution:**
 
 ```bash
-# Option 1: Delete app data (recommended)
-# Uninstall app from device, reinstall
+# Option 1: Delete app and reinstall (recommended)
+# Uninstall app from device, then reinstall dev build
 
-# Option 2: Clear WatermelonDB cache (dev only)
+# Option 2: Reset database (dev only - deletes ALL data)
+```
+
+```typescript
 import { database } from '@/services/database/watermelon';
 
 await database.write(async () => {
@@ -228,23 +231,25 @@ await database.write(async () => {
 });
 ```
 
-**WARNING:** `unsafeResetDatabase()` deletes ALL data. Use only in development!
+**⚠️ WARNING:** `unsafeResetDatabase()` deletes ALL local data. Development only.
 
-### Query Returns `undefined` or Empty Array
+**Reference:** [DATABASE.md § Migrations](DATABASE.md), [CONTRIBUTING.md § Database Schema Changes](CONTRIBUTING.md#database-schema-changes)
+
+### Empty Queries / Data Not Loading
 
 **Symptoms:**
 
-- `workout.observe()` returns empty
-- `database.collections.get('workouts').find(id)` throws
-- Data exists but queries fail
+- `database.collections.get('workouts').find(id)` throws error
+- Queries return empty arrays
+- Data exists but doesn't appear
 
 **Common Causes:**
 
 ```typescript
-// 1. Wrong user_id (user not authenticated)
+// 1. User not authenticated
 const userId = getPersistedUserId();
 if (!userId) {
-  console.log('User not authenticated');
+  console.log('User not authenticated - cannot query');
 }
 
 // 2. Using find() for non-existent records
@@ -257,13 +262,14 @@ try {
 
 // Better: Use query
 const workouts = await workoutsCollection.query(Q.where('id', 'some-id')).fetch();
+
 if (workouts.length === 0) {
   console.log('Workout not found');
 }
 
 // 3. Reactive queries not updating
-// Make sure you're using .observe()
-const workouts = workoutsCollection.query().observe(); // Returns Observable
+// Use .observe() for reactive queries
+const workouts$ = workoutsCollection.query().observe(); // Returns Observable
 ```
 
 **Debugging:**
@@ -278,9 +284,11 @@ import { Database } from '@nozbe/watermelondb';
 Database.setLogLevel('verbose');
 ```
 
-## MMKV Storage Issues
+---
 
-### "MMKV Not Found" or Native Module Error
+## Storage Issues (MMKV)
+
+### "MMKV Not Found" Error
 
 **Symptoms:**
 
@@ -290,50 +298,37 @@ Database.setLogLevel('verbose');
 
 **Cause:**
 
-- Development Build not installed (using Expo Go)
-- Native module not linked
+Using Expo Go instead of Development Build. MMKV is a native module.
 
-**Solutions:**
+**Solution:**
 
 ```bash
-# 1. Verify you're using Development Build (NOT Expo Go)
-# Check app icon - should NOT be Expo Go icon
+# 1. Verify using Development Build (NOT Expo Go)
+# Check app icon - should NOT be Expo Go logo
 
-# 2. Rebuild Development Build
+# 2. Rebuild Development Build if needed
 eas build --profile development --platform android
-# Wait for build, install new version
 
 # 3. Clear cache and restart
 npm start -- --clear
 ```
 
-**Prevention:**
-
-- MMKV requires Development Build - cannot use Expo Go
-- Always use Development Build for this project
-
-### Storage Data Not Persisting
+### Data Not Persisting Across Restarts
 
 **Symptoms:**
 
 - `mmkvStorage.set()` works but data lost after restart
 - `mmkvStorage.get()` returns null after app reload
 
-**Causes:**
-
-- Wrong key name
-- Data not being set correctly
-- Zustand persist middleware not configured
-
-**Solutions:**
+**Solution:**
 
 ```typescript
-// 1. Verify data is set
+// 1. Verify data is being set
 mmkvStorage.set('test-key', 'test-value');
 const value = mmkvStorage.get('test-key');
 console.log('Value:', value); // Should be 'test-value'
 
-// 2. Check Zustand persist config
+// 2. Check Zustand persist configuration
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandMMKVStorage } from '@/services/storage';
 
@@ -343,17 +338,18 @@ export const useStore = create(
       /* state */
     }),
     {
-      name: 'my-storage',
-      storage: createJSONStorage(() => zustandMMKVStorage), // Correct
+      name: 'my-storage-key', // Unique key for this store
+      storage: createJSONStorage(() => zustandMMKVStorage), // ✅ Correct
     }
   )
 );
-
-// 3. Verify encryption key (optional)
-// Check src/services/storage/mmkvStorage.ts
 ```
 
-## Styling & UI Issues
+**Reference:** [ARCHITECTURE.md § Storage](ARCHITECTURE.md)
+
+---
+
+## Styling Issues (NativeWind)
 
 ### Tailwind Classes Not Working
 
@@ -366,48 +362,47 @@ export const useStore = create(
 **Solutions:**
 
 ```bash
-# 1. Ensure NativeWind is configured
-# Check metro.config.js, tailwind.config.ts, babel.config.js
+# 1. Restart Metro with cache clear
+npm start -- --clear
 
-# 2. Restart Metro with cache clear
-npx expo start -c
+# 2. Verify global.css is imported
+# Check src/app/_layout.tsx
+```
 
-# 3. Check class names are valid
-# Bad: className="bg-[#ff0000]" (arbitrary values not fully supported)
-# Good: className="bg-primary"
-
-# 4. Verify global.css is imported
-# In app/_layout.tsx:
-import '../../global.css';
+```typescript
+// src/app/_layout.tsx
+import '../../global.css'; // Must be imported in root layout
 ```
 
 **Common Mistakes:**
 
 ```typescript
-// Wrong: Using style prop with className
+// ❌ Wrong: Mixing style prop with className
 <View style={{ padding: 20 }} className="bg-primary" />
 
-// Right: Use Tailwind classes
+// ✅ Right: Use Tailwind classes only
 <View className="p-5 bg-primary" />
 
-// Wrong: Invalid class names
-<View className="padding-20" /> // Not a valid Tailwind class
+// ❌ Wrong: Invalid class names
+<View className="padding-20" />
 
-// Right: Use correct Tailwind syntax
-<View className="p-5" /> // p-5 = padding 1.25rem
+// ✅ Right: Valid Tailwind syntax
+<View className="p-5" />
 ```
 
-### Colors Not Matching / Theme Issues
+**Reference:** [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
+
+### Theme Colors Not Matching
 
 **Symptoms:**
 
 - Colors look wrong
+- Inconsistent styling across app
 - Chart colors don't match theme
-- Inconsistent styling
 
 **Cause:**
 
-- `src/constants/colors.ts` not matching `tailwind.config.ts`
+Mismatch between `src/constants/colors.ts` and `tailwind.config.ts`.
 
 **Solution:**
 
@@ -433,122 +428,88 @@ module.exports = {
 };
 ```
 
-**Check:**
+**Checklist:**
 
 - [ ] Colors match between `colors.ts` and `tailwind.config.ts`
-- [ ] Using `Colors` not `COLORS` (naming changed)
-- [ ] Importing from `@/constants` not `@/constants/colors`
+- [ ] Using `Colors` export (not `COLORS`)
+- [ ] Importing from `@/constants`
 
-## Authentication Issues
+**Reference:** [DESIGN_SYSTEM.md § Color System](DESIGN_SYSTEM.md)
 
-### User Lost on App Restart
+---
 
-**Status: RESOLVED** (Tasks 0.5.9, 0.5.10)
+## Authentication Issues (Supabase)
 
-**Solution Implemented:**
+### "Invalid API Key" Error
 
-- Zustand persist middleware added to authStore and workoutStore
-- MMKV storage backend (encrypted, 10-30x faster)
-- User data persists across app restarts
+**Symptoms:**
+
+- `Supabase client error: Invalid API key`
+- Auth operations fail immediately
+
+**Solutions:**
+
+```bash
+# 1. Verify .env file exists
+ls -la .env
+
+# 2. Check credentials in Supabase Dashboard
+# Dashboard → Settings → API
+# Copy EXACT values (no spaces, quotes, etc.)
+
+# 3. Restart Metro (env changes require restart)
+# Kill Metro (Ctrl+C)
+npm start -- --clear
+```
+
+**Common Mistakes:**
+
+```bash
+# ❌ Wrong: Quotes in .env
+EXPO_PUBLIC_SUPABASE_URL="https://xxx.supabase.co"
+
+# ✅ Right: No quotes
+EXPO_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+
+# ❌ Wrong: Missing EXPO_PUBLIC_ prefix
+SUPABASE_URL=https://xxx.supabase.co
+
+# ✅ Right: Correct prefix for Expo
+EXPO_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+```
 
 **Verification:**
 
 ```typescript
-// Verify persisted user data
+// Temporarily add to src/app/_layout.tsx
+console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
+// Should print full URL (not undefined)
+```
+
+**Reference:** [CONTRIBUTING.md § Setup](CONTRIBUTING.md#setup-first-time-15-20-minutes)
+
+### User Session Not Persisting
+
+**Solution:**
+
+Zustand persist middleware is configured for auth and workout stores. User session persists using MMKV storage.
+
+**Verify:**
+
+```typescript
 import { storage } from '@/services/storage';
 
 const userId = await storage.getString('auth:user_id');
 console.log('Persisted user ID:', userId);
 ```
 
-**Reference:** Tasks 0.5.9 (Auth Persist), 0.5.10 (Workout Persist)
+If `userId` is null after login, check MMKV configuration.
 
-### Supabase "Invalid API Key" Error
-
-**Symptoms:**
-
-- `Supabase client error: Invalid API key`
-- Auth operations fail
-
-**Solutions:**
-
-```bash
-# 1. Check .env file exists
-ls -la .env
-
-# 2. Verify credentials are correct
-# Go to Supabase Dashboard → Settings → API
-# Copy EXACT values (no spaces, quotes, etc.)
-
-# 3. Restart Metro (env changes require restart)
-# Kill Metro (Ctrl+C)
-npx expo start -c
-
-# 4. Check env is loaded
-# In app/_layout.tsx temporarily:
-console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
-```
-
-**Common Mistakes:**
-
-```bash
-# Wrong: Quotes in .env
-EXPO_PUBLIC_SUPABASE_URL="https://xxx.supabase.co"
-
-# Right: No quotes
-EXPO_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-
-# Wrong: Missing EXPO_PUBLIC_ prefix
-SUPABASE_URL=https://xxx.supabase.co
-
-# Right: Correct prefix
-EXPO_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-```
-
-## npm / Dependency Issues
-
-### "Cannot Find Module" After npm install
-
-**Symptoms:**
-
-- `Error: Cannot find module 'some-package'`
-- Package installed but not found
-
-**Solutions:**
-
-```bash
-# 1. Clear npm cache and reinstall
-npm cache clean --force
-rm -rf node_modules package-lock.json
-npm install
-
-# 2. Check package.json
-# Ensure package is listed in dependencies
-
-# 3. Restart Metro
-npx expo start -c
-```
-
-### Peer Dependency Warnings
-
-**Symptoms:**
-
-- `npm install` shows peer dependency warnings
-- Different React versions
-
-**Solutions:**
-
-```bash
-# Use --legacy-peer-deps flag
-npm install --legacy-peer-deps
-
-# For Expo, this is usually safe
-# Expo manages React Native version internally
-```
+---
 
 ## TypeScript Errors
 
-### "Cannot find name" or Import Errors
+### "Cannot Find Name" / Import Errors
 
 **Symptoms:**
 
@@ -563,34 +524,85 @@ npm install --legacy-peer-deps
 # Cmd+Shift+P (macOS) or Ctrl+Shift+P (Windows)
 # → "TypeScript: Restart TS Server"
 
-# 2. Check tsconfig.json paths
-# Ensure @/* alias is configured
-
-# 3. Run type check
+# 2. Run type check
 npm run type-check
 
-# 4. Check import paths
-# Bad: import { Colors } from '@/constants/colors';
-# Good: import { Colors } from '@/constants';
+# 3. Verify import paths
 ```
 
-### Type Errors After Correction Implementations
+```typescript
+// ❌ Bad: Direct file imports
+import { Colors } from '@/constants/colors';
 
-**After implementing audit fixes:**
+// ✅ Good: Barrel exports
+import { Colors } from '@/constants';
+```
+
+**Reference:** [TECHNICAL.md § TypeScript Configuration](TECHNICAL.md)
+
+### Type Errors After Code Changes
+
+**Always run after making changes:**
 
 ```bash
-# Always run type-check after changes
 npm run type-check
-
-# Common issues:
-# 1. Missing exports in index.ts
-# 2. Incorrect type imports (type vs regular)
-# 3. Circular dependencies
 ```
+
+**Common Issues:**
+
+- Missing exports in `index.ts` barrel files
+- Incorrect type imports (`import type` vs regular `import`)
+- Circular dependencies
+
+**Reference:** [TECHNICAL.md § Coding Standards](TECHNICAL.md)
+
+---
+
+## Dependency Issues
+
+### "Cannot Find Module" After Install
+
+**Symptoms:**
+
+- `Error: Cannot find module 'some-package'`
+- Package installed but not found
+
+**Solutions:**
+
+```bash
+# 1. Clear cache and reinstall
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+
+# 2. Restart Metro
+npm start -- --clear
+
+# 3. Verify package in package.json
+cat package.json | grep "package-name"
+```
+
+### Peer Dependency Warnings
+
+**Symptoms:**
+
+- `npm install` shows peer dependency warnings
+- Version conflicts
+
+**Solution:**
+
+```bash
+# Use legacy peer deps (safe for Expo projects)
+npm install --legacy-peer-deps
+
+# Expo manages React Native version internally
+```
+
+---
 
 ## Performance Issues
 
-### App Slow / Laggy
+### App Slow or Laggy
 
 **Symptoms:**
 
@@ -601,77 +613,50 @@ npm run type-check
 **Debugging:**
 
 ```typescript
-// 1. Enable performance monitoring
+// 1. Check query performance
+const start = Date.now();
+await getWorkoutById(id);
+console.log('Query took:', Date.now() - start, 'ms');
+
+// 2. Enable performance monitoring
 import { InteractionManager } from 'react-native';
 
 InteractionManager.runAfterInteractions(() => {
   console.log('Interactions complete');
 });
-
-// 2. Profile renders (React DevTools)
-// Install React Native Debugger
-
-// 3. Check database query times
-const start = Date.now();
-await getWorkoutById(id);
-console.log('Query took:', Date.now() - start, 'ms');
 ```
 
 **Common Causes:**
 
-- Slow database queries (missing indexes → see Correction #6)
+- Slow database queries (missing indexes)
 - Too many re-renders
 - Large lists without FlashList
 - Unoptimized images
 
-## Adding New Issues to This Guide
+**Reference:** [TESTING.md § Performance Testing](TESTING.md)
 
-When you encounter and fix a new issue:
+---
 
-1. **Add a new section** with:
-   - Clear symptoms
-   - Root cause
-   - Solution (code/commands)
-   - Prevention tips
+## Getting More Help
 
-2. **Use this template:**
+If your issue isn't listed here:
 
-```markdown
-### Issue Name
-
-**Symptoms:**
-
-- What you see/experience
-
-**Cause:**
-
-- Why it happens
-
-**Solutions:**
-[bash/typescript code blocks]
-
-**Prevention:**
-
-- How to avoid in future
-```
-
-3. **Commit the change:**
-
-```bash
-git add docs/TROUBLESHOOTING.md
-git commit -m "docs(troubleshooting): add solution for [issue]"
-```
-
-## Still Stuck?
-
-If issue not listed here:
-
-1. **Check Git commits** for similar fixes:
-
+1. **Search Metro logs** - Error messages often explain the root cause
+2. **Check recent commits** for similar fixes:
    ```bash
    git log --grep="fix" --oneline
    ```
+3. **Consult related documentation:**
+   - [CONTRIBUTING.md](CONTRIBUTING.md) - Setup and workflow
+   - [DATABASE.md](DATABASE.md) - Database operations
+   - [TECHNICAL.md](TECHNICAL.md) - Technical decisions
+   - [ARCHITECTURE.md](ARCHITECTURE.md) - Code structure
 
-2. **Search Metro logs** carefully - error messages often explain the issue
+**Community:**
 
-3. **Add it to this guide** once solved - help future you!
+- GitHub Issues: Report bugs or request features
+- GitHub Discussions: Ask questions
+
+**Contributing:**
+
+Found and fixed a new issue? Update this guide to help others.
