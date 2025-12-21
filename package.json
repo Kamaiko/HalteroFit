@@ -34,7 +34,7 @@
     "@supabase/supabase-js": "^2.87.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "expo": "54.0.28",
+    "expo": "54.0.30",
     "expo-asset": "^12.0.10",
     "expo-background-fetch": "^14.0.8",
     "expo-constants": "~18.0.10",
