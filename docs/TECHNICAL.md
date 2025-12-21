@@ -66,8 +66,6 @@ _Status: Active or Future Phase_
 | **Maestro CLI**  | Global (required for MCP) | `maestro`  | E2E testing (Phase 3+)     |
 | **EAS CLI**      | Global                    | `eas`      | Native builds, submissions |
 
-**See:** [.claude/CLAUDE.md](../.claude/CLAUDE.md) for quick command reference.
-
 ---
 
 ## Architecture Decisions (ADRs)

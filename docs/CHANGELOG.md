@@ -4,35 +4,8 @@ This document tracks completed development milestones and major changes across a
 
 ## 📑 Table of Contents
 
-- [2025-11-26 - DevOps: MCP Configuration](#2025-11-26---devops-mcp-configuration-)
 - [2025-11-06 - Phase 0.6 Complete](#2025-11-06---phase-06-complete-)
 - [2025-11-04 - Phase 0.5 Complete](#2025-11-04---phase-05-complete-)
-
----
-
-## 2025-11-26 - DevOps: MCP Configuration ✅
-
-**Status**: Complete
-**Purpose**: AI-assisted development tooling setup
-
-**MCP Servers Configured** (in `~/.claude.json`):
-
-| Server              | Scope   | Purpose                              |
-| ------------------- | ------- | ------------------------------------ |
-| Supabase            | Project | Database management, migrations, SQL |
-| Sentry              | Project | Error monitoring (Phase 5+)          |
-| Maestro             | Project | E2E testing (Phase 3+)               |
-| Context7            | Global  | Library documentation lookup         |
-| Filesystem          | Global  | File operations                      |
-| Sequential Thinking | Global  | Complex problem analysis             |
-
-**Key Changes:**
-
-- Documented MCP servers in [TECHNICAL.md](./TECHNICAL.md)
-- Updated CLI commands in [CLAUDE.md](../.claude/CLAUDE.md) (`npx supabase`, `maestro`)
-- Windows compatibility: All npx-based MCPs use `cmd /c` wrapper
-
-**Note:** Project MCPs (Supabase, Sentry, Maestro) only load when Claude Code runs from `C:\DevTools\Projects\Halterofit`.
 
 ---
 
