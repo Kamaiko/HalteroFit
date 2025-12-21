@@ -48,7 +48,7 @@
     "expo-router": "~6.0.15",
     "expo-status-bar": "~3.0.8",
     "nativewind": "^4.2.1",
-    "react": "19.2.2",
+    "react": "19.2.3",
     "react-native": "0.81.5",
     "react-native-css-interop": "^0.2.1",
     "react-native-gesture-handler": "^2.29.1",
@@ -90,7 +90,7 @@
     "pg": "^8.16.3",
     "prettier": "^3.7.4",
     "react-native-worklets": "0.6.1",
-    "react-test-renderer": "^19.2.2",
+    "react-test-renderer": "^19.2.3",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2",
     "zod": "^4.1.13"
