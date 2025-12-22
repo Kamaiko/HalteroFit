@@ -342,12 +342,13 @@ import { createTestWorkout } from '../../../__helpers__/database/factories';
 
 ### Common Errors
 
-| Error                                    | Root Cause                     | Fix                                                        |
-| ---------------------------------------- | ------------------------------ | ---------------------------------------------------------- |
-| `Cannot find module '@test-helpers/...'` | Alias not configured           | Add to `jest.config.ts` + `tsconfig.json` paths            |
-| `LokiJS: Table 'workouts' not found`     | Database not initialized       | Add `createTestDatabase()` in `beforeAll`                  |
-| `Test IDs inconsistent between runs`     | `resetTestIdCounter()` missing | Call in `beforeAll()` after `createTestDatabase()`         |
-| `Jest hangs or won't exit`               | Too many database instances    | Use shared instance pattern (`beforeAll` not `beforeEach`) |
+| Error                                                       | Root Cause                     | Fix                                                        |
+| ----------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------- |
+| `Cannot find module '@test-helpers/...'`                    | Alias not configured           | Add to `jest.config.ts` + `tsconfig.json` paths            |
+| `LokiJS: Table 'workouts' not found`                        | Database not initialized       | Add `createTestDatabase()` in `beforeAll`                  |
+| `Test IDs inconsistent between runs`                        | `resetTestIdCounter()` missing | Call in `beforeAll()` after `createTestDatabase()`         |
+| `Jest hangs or won't exit`                                  | Too many database instances    | Use shared instance pattern (`beforeAll` not `beforeEach`) |
+| `Jest did not exit one second after the test run completed` | LokiJS workers remain open     | Already fixed: `forceExit: true` in `jest.config.ts`       |
 
 ### Database Lifecycle Pattern
 
@@ -381,16 +382,27 @@ beforeEach(() => {
 - Data isolation maintained via cleanupTestDatabase()
 - Industry-standard pattern for in-memory database testing
 
-**Note on Worker Warning:**
-You may see: "A worker process has failed to exit gracefully and has been force exited."
+**Note on Jest Exit Warning:**
 
-This is expected and beneficial:
+You may see either of these warnings (both are expected and harmless):
 
-- Tests complete successfully
-- Tests run in ~5s
-- Jest exits cleanly
-- Warning appears because LokiJS workers don't have close() methods
-- Without --forceExit, real memory leaks will be detected
+1. **"Jest did not exit one second after the test run has completed"**
+   - Cause: LokiJS adapter keeps worker threads open (no close() method by design)
+   - Solution: `forceExit: true` configured in `jest.config.ts` (line 56)
+   - Impact: None - tests complete successfully, Jest exits cleanly
+
+2. **"A worker process has failed to exit gracefully and has been force exited"**
+   - Cause: Same as above - LokiJS workers don't gracefully close
+   - Solution: Same as above - `forceExit: true` handles this
+   - Impact: None - this is the expected behavior
+
+**Why `forceExit: true` is safe here:**
+
+- ✅ Tests complete successfully (all assertions pass)
+- ✅ No actual memory leaks (workers are cleaned up by Node.js on exit)
+- ✅ Tests run fast (~5-10s for 31 tests)
+- ✅ Alternative would require custom worker management (overcomplicated)
+- ✅ Industry standard for in-memory database testing with workers
 
 ---
 

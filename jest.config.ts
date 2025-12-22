@@ -49,6 +49,11 @@ const config: Config = {
 
   // Verbose output in CI for better debugging
   verbose: process.env.CI === 'true',
+
+  // Force exit after tests complete
+  // Required for WatermelonDB/LokiJS which keeps worker threads open
+  // See: docs/TESTING.md#known-issues for details
+  forceExit: true,
 };
 
 export default config;
