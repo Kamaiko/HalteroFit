@@ -2,7 +2,7 @@ name: Weekly Dependency Health Check
 
 on:
   schedule:
-    - cron: '0 12 * * 1'  # Monday 12PM UTC (7AM EST) - Runs 1h after Dependabot
+    - cron: '0 13 * * 1'  # Monday 1PM UTC (8AM EST) - Runs 2h after Dependabot
   workflow_dispatch:      # Manual trigger
 
 jobs:

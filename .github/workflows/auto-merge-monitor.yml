@@ -43,10 +43,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create issue for stale PRs
+      - name: Create or update issue for stale PRs
         if: steps.check.outputs.has_stale == 'true'
         run: |
           STALE_PRS=$(cat stale_prs.json)
+
+          # Check for existing open issue
+          EXISTING_ISSUE=$(gh issue list \
+            --repo "$GITHUB_REPOSITORY" \
+            --label "ci,dependencies,needs-investigation" \
+            --search "Auto-Merge Monitor" \
+            --state open \
+            --json number \
+            --jq '.[0].number' || echo "")
 
           ISSUE_BODY=$(cat <<'EOFISSUE'
           ## Auto-Merge Monitoring Alert
@@ -72,11 +81,21 @@ jobs:
 
           ISSUE_BODY="${ISSUE_BODY//STALE_PRS_PLACEHOLDER/$STALE_PRS}"
 
-          gh issue create \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "Auto-Merge Monitor: Stale PRs Detected" \
-            --label "ci,dependencies,needs-investigation" \
-            --body "$ISSUE_BODY"
+          if [ -n "$EXISTING_ISSUE" ]; then
+            echo "Found existing issue #$EXISTING_ISSUE, adding comment instead of creating new issue"
+            gh issue comment "$EXISTING_ISSUE" \
+              --repo "$GITHUB_REPOSITORY" \
+              --body "🔄 **Still Detecting Stale PRs** ($(date '+%Y-%m-%d %H:%M UTC'))
+
+          $ISSUE_BODY"
+          else
+            echo "No existing issue found, creating new one"
+            gh issue create \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Auto-Merge Monitor: Stale PRs Detected" \
+              --label "ci,dependencies,needs-investigation" \
+              --body "$ISSUE_BODY"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
