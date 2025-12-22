@@ -16,6 +16,10 @@ updates:
     # Increased limit now that overrides resolve peer deps
     open-pull-requests-limit: 8
 
+    # Assign PRs to maintainer for review
+    assignees:
+      - "Kamaiko"
+
     # Group similar updates to reduce PR noise
     groups:
       # Dev dependencies - Auto-merged by CI workflow

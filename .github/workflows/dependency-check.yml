@@ -1,0 +1,78 @@
+name: Weekly Dependency Health Check
+
+on:
+  schedule:
+    - cron: '0 10 * * 1'  # Monday 10AM UTC
+  workflow_dispatch:      # Manual trigger
+
+jobs:
+  check-outdated:
+    name: Check for Outdated Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated dependencies
+        id: outdated
+        run: |
+          # Run npm outdated and capture output
+          npm outdated --json > outdated.json || true
+
+          # Check if there are any outdated packages
+          if [ -s outdated.json ]; then
+            echo "has_outdated=true" >> $GITHUB_OUTPUT
+            echo "📦 Outdated dependencies detected:"
+            npm outdated
+          else
+            echo "has_outdated=false" >> $GITHUB_OUTPUT
+            echo "✅ All dependencies are up to date"
+          fi
+
+      - name: Create issue if outdated dependencies found
+        if: steps.outdated.outputs.has_outdated == 'true' && github.event_name == 'schedule'
+        run: |
+          # Format the outdated dependencies as markdown
+          echo "## 📦 Outdated Dependencies Detected" > issue_body.md
+          echo "" >> issue_body.md
+          echo "The following dependencies have updates available:" >> issue_body.md
+          echo "" >> issue_body.md
+          echo '```' >> issue_body.md
+          npm outdated >> issue_body.md
+          echo '```' >> issue_body.md
+          echo "" >> issue_body.md
+          echo "**Action Required:**" >> issue_body.md
+          echo "1. Review the outdated packages above" >> issue_body.md
+          echo "2. Check if Dependabot has already created PRs for these updates" >> issue_body.md
+          echo "3. For packages not covered by Dependabot (major updates, ignored packages), consider manual update" >> issue_body.md
+          echo "4. Close this issue once all updates are reviewed" >> issue_body.md
+          echo "" >> issue_body.md
+          echo "---" >> issue_body.md
+          echo "_This issue was automatically created by the Weekly Dependency Health Check workflow._" >> issue_body.md
+
+          # Create the issue
+          gh issue create \
+            --title "📦 Weekly Dependency Check: Outdated Dependencies Detected" \
+            --body-file issue_body.md \
+            --label "dependencies,needs-review"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.outdated.outputs.has_outdated }}" == "true" ]; then
+            echo "::notice::Outdated dependencies detected. Review the output above."
+          else
+            echo "::notice::All dependencies are up to date! ✅"
+          fi
