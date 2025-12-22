@@ -16,6 +16,10 @@ updates:
     # Increased limit now that overrides resolve peer deps
     open-pull-requests-limit: 8
 
+    # Auto-rebase PRs when they fall behind base branch
+    # Required for auto-merge to work (GitHub won't merge BEHIND PRs)
+    rebase-strategy: "auto"
+
     # Assign PRs to maintainer for review
     assignees:
       - "Kamaiko"
@@ -126,6 +130,9 @@ updates:
       timezone: "America/New_York"
 
     open-pull-requests-limit: 3
+
+    # Auto-rebase PRs when they fall behind base branch
+    rebase-strategy: "auto"
 
     labels:
       - "github-actions"
