@@ -28,12 +28,12 @@ const config: Config = {
   // Coverage thresholds (see TESTING.md for strategy)
   coverageThreshold: {
     global: {
-      // Global thresholds disabled for Phase 0.5 (only testing database layer)
-      // Will be enabled in Phase 1 when testing broader codebase
-      // branches: 0,
-      // functions: 0,
-      // lines: 0,
-      // statements: 0,
+      // Global thresholds enabled - starting at 2% (current coverage: 1.93%)
+      // Incremental strategy: Phase 1 (2%→5%→10%), Phase 2 (10%→20%→40%)
+      branches: 0,
+      functions: 0,
+      lines: 2,
+      statements: 2,
     },
     './src/services/database/': {
       branches: 0, // 0% actual coverage (no branch testing yet)
