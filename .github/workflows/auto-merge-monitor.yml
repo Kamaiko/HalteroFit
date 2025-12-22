@@ -1,22 +1,12 @@
 name: Auto-Merge Monitor
 
-# ============================================================================
-# Purpose: Monitor Dependabot PRs with auto-merge enabled but not merging
-# ============================================================================
-# Detects PRs where auto-merge is enabled but the PR has been open > 24 hours.
-# This catches silent failures like:
-# - Branch protection rules blocking merge
-# - Failed checks not retrying
-# - GitHub API issues
-# - Merge conflicts
-#
-# Runs daily at 8AM EST (13:00 UTC) to check stale auto-merge PRs.
-# ============================================================================
+# Monitor Dependabot PRs with auto-merge enabled but not merging
+# Runs daily at 8AM EST to check for stale auto-merge PRs (open > 24h)
 
 on:
   schedule:
     - cron: '0 13 * * *'  # Daily 8AM EST (13:00 UTC)
-  workflow_dispatch:      # Manual trigger for testing
+  workflow_dispatch:      # Manual trigger only
 
 permissions:
   contents: read
@@ -33,29 +23,21 @@ jobs:
       - name: Check for stale auto-merge PRs
         id: check
         run: |
-          echo "🔍 Checking for PRs with auto-merge enabled > 24h..."
+          echo "Checking for PRs with auto-merge enabled > 24h..."
 
-          # Get all open PRs with auto-merge enabled
           STALE_PRS=$(gh pr list \
             --repo "$GITHUB_REPOSITORY" \
             --state open \
             --json number,title,autoMergeRequest,createdAt,url \
-            --jq '.[] | select(.autoMergeRequest != null) |
-                   select(
-                     (now - (.createdAt | fromdateiso8601)) > 86400
-                   ) |
-                   {number, title, age_hours: ((now - (.createdAt | fromdateiso8601)) / 3600 | floor), url}')
+            --jq '[.[] | select(.autoMergeRequest != null) | select((now - (.createdAt | fromdateiso8601)) > 86400)]')
 
-          if [ -z "$STALE_PRS" ]; then
-            echo "✅ No stale auto-merge PRs found"
+          if [ "$STALE_PRS" = "[]" ] || [ -z "$STALE_PRS" ]; then
+            echo "No stale auto-merge PRs found"
             echo "has_stale=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "⚠️  Found stale auto-merge PRs:"
-          echo "$STALE_PRS"
-
-          # Save for next step
+          echo "Found stale auto-merge PRs"
           echo "$STALE_PRS" > stale_prs.json
           echo "has_stale=true" >> $GITHUB_OUTPUT
         env:
@@ -64,62 +46,47 @@ jobs:
       - name: Create issue for stale PRs
         if: steps.check.outputs.has_stale == 'true'
         run: |
-          # Read stale PRs
           STALE_PRS=$(cat stale_prs.json)
 
-          # Build issue body
-          ISSUE_BODY="## ⚠️ Auto-Merge Monitoring Alert
+          ISSUE_BODY=$(cat <<'EOFISSUE'
+          ## Auto-Merge Monitoring Alert
 
-**Detected PRs with auto-merge enabled but not merging for > 24 hours:**
+          Detected PRs with auto-merge enabled for more than 24 hours.
 
-\`\`\`json
-$STALE_PRS
-\`\`\`
+          **Stale PRs:**
+          STALE_PRS_PLACEHOLDER
 
-### Possible Causes:
-1. **Branch protection blocking merge** - PR might be behind base branch
-2. **Failed checks** - One or more required checks might be failing
-3. **Merge conflicts** - Manual resolution needed
-4. **GitHub API issues** - Transient failures
+          **Possible Causes:**
+          - Branch protection blocking merge (PR behind base)
+          - Failed required checks
+          - Merge conflicts requiring manual resolution
+          - GitHub API transient failures
 
-### Recommended Actions:
-1. Check each PR's status and failed checks
-2. Run \`@dependabot rebase\` if PR is behind
-3. Manually merge if checks are passing but auto-merge stuck
-4. Close and reopen PR if GitHub API issue suspected
+          **Recommended Actions:**
+          1. Check PR status and failed checks
+          2. Run @dependabot rebase if PR is behind
+          3. Manually merge if checks passing but auto-merge stuck
+          4. Close and reopen PR if GitHub API issue suspected
+          EOFISSUE
+          )
 
----
-*This issue was automatically created by the Auto-Merge Monitor workflow.*
-*See: \`.github/workflows/auto-merge-monitor.yml\`*"
+          ISSUE_BODY="${ISSUE_BODY//STALE_PRS_PLACEHOLDER/$STALE_PRS}"
 
-          # Create issue
           gh issue create \
             --repo "$GITHUB_REPOSITORY" \
-            --title "🚨 Auto-Merge Monitor: Stale PRs Detected" \
-            --body "$ISSUE_BODY" \
-            --label "ci,dependencies,needs-investigation"
+            --title "Auto-Merge Monitor: Stale PRs Detected" \
+            --label "ci,dependencies,needs-investigation" \
+            --body "$ISSUE_BODY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Comment on stale PRs
         if: steps.check.outputs.has_stale == 'true'
         run: |
-          # Read stale PRs and comment on each
-          STALE_PRS=$(cat stale_prs.json)
-
-          echo "$STALE_PRS" | jq -r '.number' | while read PR_NUM; do
+          cat stale_prs.json | jq -r '.[].number' | while read PR_NUM; do
             gh pr comment "$PR_NUM" \
               --repo "$GITHUB_REPOSITORY" \
-              --body "⚠️ **Auto-Merge Monitor Alert**
-
-This PR has had auto-merge enabled for > 24 hours but hasn't merged yet.
-
-**Possible issues:**
-- Branch might be behind base (run \`@dependabot rebase\`)
-- Required checks might be failing
-- Merge conflicts need manual resolution
-
-Please investigate and resolve. See the [Auto-Merge Monitor issue](https://github.com/$GITHUB_REPOSITORY/issues) for details."
+              --body "Auto-Merge Monitor Alert: This PR has auto-merge enabled for more than 24h but has not merged. Please investigate."
           done
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
