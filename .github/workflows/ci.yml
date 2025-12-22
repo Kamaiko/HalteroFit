@@ -380,6 +380,35 @@ jobs:
             echo "✅ Bundle size ${BUNDLE_SIZE_MB}MB is within ${THRESHOLD_MB}MB threshold"
           fi
 
+      - name: Comment bundle size on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const bundleSize = '${{ steps.bundle-size.outputs.bundle_size_mb }}';
+            const threshold = '3.0';
+            const percentage = ((parseFloat(bundleSize) / parseFloat(threshold)) * 100).toFixed(1);
+            const passed = parseFloat(bundleSize) <= parseFloat(threshold);
+
+            const body = `## ${passed ? '✅' : '❌'} Bundle Size Check
+
+            | Metric | Value | Status |
+            |--------|-------|--------|
+            | **Bundle Size** | ${bundleSize} MB | ${passed ? '✅ PASS' : '❌ FAIL'} |
+            | **Threshold** | ${threshold} MB | - |
+            | **Usage** | ${percentage}% | - |
+
+            ${passed
+              ? '**Bundle size is within acceptable limits.**'
+              : '**⚠️ Bundle exceeds threshold.** Consider removing unused dependencies or enabling code splitting.'}`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
   # ============================================================================
   # Job 5: Secrets Scanning
   # Prevents accidental commit of secrets (.env, API keys, tokens)

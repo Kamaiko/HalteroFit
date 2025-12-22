@@ -195,6 +195,14 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - Alternative: Continue with direct Supabase calls + Zustand
   - **Estimated effort:** ~4-6h (setup + migration)
   - **Dependencies:** Validated need for advanced caching
+- **Bundle Monitoring Enhancements** (BundleMon)
+  - Current: Shell script threshold (3MB) + Expo Atlas (local analysis)
+  - BundleMon provides automated historical trend tracking and detailed PR comments
+  - Consider when project grows beyond solo dev (5+ active contributors)
+  - Consider when bundle size becomes critical performance bottleneck
+  - Alternative: Continue with current simple threshold + local Expo Atlas
+  - **Estimated effort:** ~2h (setup + configuration)
+  - **Dependencies:** Team growth or bundle optimization priority
 - **Multi-language support (i18n)** - Defer until international expansion
 - **Social features** (share workouts, follow friends) - Defer until user base >1,000
 - **Coach-client relationship** (team accounts) - Defer until B2B validation

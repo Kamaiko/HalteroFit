@@ -228,6 +228,15 @@ Automatically merges safe Dependabot PRs after CI passes. Rules:
 
 Monitors JavaScript bundle size (<3MB threshold for Phase 1). Comments on PRs with size analysis.
 
+**Local Analysis:** Use Expo Atlas for detailed bundle composition analysis:
+
+```bash
+EXPO_ATLAS=true npx expo export --platform android
+npx expo-atlas .expo/atlas.jsonl
+```
+
+See [Expo Atlas docs](https://docs.expo.dev/guides/analyzing-bundles/) for details.
+
 #### Job 6: Secrets Scanning
 
 TruffleHog OSS scans for API keys, credentials, private keys, and tokens. Uses `--only-verified` flag to reduce false positives.
