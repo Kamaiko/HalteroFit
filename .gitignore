@@ -110,6 +110,13 @@ package-lock.json
 *.lock
 
 # ===================
+# Maestro E2E Testing
+# ===================
+.maestro/maestro-results/
+.maestro/*.mp4
+.maestro/*.png
+
+# ===================
 # Tools & Misc
 # ===================
 storybook-static/

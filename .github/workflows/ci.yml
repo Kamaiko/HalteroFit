@@ -195,7 +195,7 @@ jobs:
   #         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
   #
   #     - name: Run Maestro tests
-  #       run: maestro test e2e/maestro/
+  #       run: maestro test .maestro/
   #
   #     - name: Upload Maestro results
   #       if: always()

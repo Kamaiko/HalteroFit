@@ -505,22 +505,22 @@ __tests__/                      # All tests centralized (renamed from tests/)
         └── exercises.json      # Sample exercise data
 
 e2e/                            # E2E tests (manual + automated)
-├── manual/                     # Manual testing documentation
-│   ├── README.md               # Manual testing guide
-│   └── checklists/             # Test checklists
-│
-└── maestro/                    # Maestro automated E2E (Phase 1+)
-    ├── auth/                   # Authentication flows
-    │   ├── login.yaml
-    │   └── register.yaml
-    ├── workflows/              # User journeys (Phase 2+)
-    └── config.yaml             # Global Maestro configuration
+└── manual/                     # Manual testing documentation
+    ├── README.md               # Manual testing guide
+    └── checklists/             # Test checklists
+
+.maestro/                       # Maestro automated E2E (root level)
+├── auth/                       # Authentication flows
+│   ├── login.yaml
+│   └── register.yaml
+├── workflows/                  # User journeys (Phase 2+)
+└── config.yaml                 # Global Maestro configuration
 ```
 
 **Conventions**:
 
 - **Unit tests**: `__tests__/unit/**/*.test.ts` (centralized, not colocated)
-- **E2E tests**: `e2e/maestro/**/*.yaml` (Maestro flows)
+- **E2E tests**: `.maestro/**/*.yaml` (Maestro flows, root level)
 - **Helpers import**: `@test-helpers/database/*` (NEVER relative imports)
 - **Export pattern**: Named exports only
 - **Pre-commit**: Tests MUST pass before commit
