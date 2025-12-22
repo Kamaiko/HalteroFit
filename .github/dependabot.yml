@@ -10,7 +10,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "09:00"
+      time: "06:00"  # 11:00 UTC - Off-peak hours for better GitHub API performance
       timezone: "America/New_York"
 
     # Increased limit now that overrides resolve peer deps
@@ -126,7 +126,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "09:00"
+      time: "06:00"  # 11:00 UTC - Off-peak hours for better GitHub API performance
       timezone: "America/New_York"
 
     open-pull-requests-limit: 3

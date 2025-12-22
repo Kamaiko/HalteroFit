@@ -288,9 +288,11 @@ jobs:
       - name: Comment on MAJOR updates requiring review
         # Major updates (X.0.0): Breaking changes - ALWAYS require manual review
         # Post helpful comment with action items
+        # Exclude GitHub Actions (already auto-merged in previous step)
         if: |
           steps.metadata.outputs.dependency-type == 'direct:production' &&
-          steps.metadata.outputs.update-type == 'version-update:semver-major'
+          steps.metadata.outputs.update-type == 'version-update:semver-major' &&
+          steps.metadata.outputs.package-ecosystem != 'github_actions'
         run: |
           gh pr comment "$PR_URL" --body "🚨 **MAJOR UPDATE - Breaking Changes Expected**
 
