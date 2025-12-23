@@ -219,7 +219,7 @@ export function useActiveWorkout() {
 
 ```
 services/
-├── database/              # WatermelonDB database (Phase 0.6 - Reorganized)
+├── database/              # WatermelonDB database
 │   ├── local/             # WatermelonDB (SQLite local storage)
 │   │   ├── schema.ts      # Database schema
 │   │   ├── migrations.ts  # Schema migrations
@@ -251,7 +251,7 @@ services/
 └── notifications/    # Push notifications
 ```
 
-**Database Architecture (Phase 0.6 - Reorganized):**
+**Database Architecture:**
 
 - **`local/`** - WatermelonDB concerns (schema, models, migrations)
 - **`remote/`** - Supabase sync protocol

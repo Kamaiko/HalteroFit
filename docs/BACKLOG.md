@@ -196,7 +196,7 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - **Estimated effort:** ~4-6h (setup + migration)
   - **Dependencies:** Validated need for advanced caching
 - **Bundle Monitoring Enhancements** (BundleMon)
-  - Current: Shell script threshold (3MB) + Expo Atlas (local analysis)
+  - Shell script threshold (3MB) + Expo Atlas (local analysis)
   - BundleMon provides automated historical trend tracking and detailed PR comments
   - Consider when project grows beyond solo dev (5+ active contributors)
   - Consider when bundle size becomes critical performance bottleneck

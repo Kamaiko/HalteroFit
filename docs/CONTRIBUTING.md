@@ -103,7 +103,6 @@ To rebuild: `eas build --profile development --platform [android|ios]`
 
 - Check [TASKS.md](TASKS.md) for the next priority
 - Start with "Current Focus" tasks
-- Pick tasks from Phase 1 if you're new (see [PHASE1_PLAN.md](PHASE1_PLAN.md))
 
 ### 2. Create a Branch
 

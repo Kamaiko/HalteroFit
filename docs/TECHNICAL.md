@@ -673,7 +673,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for complete workflow (commit conventio
 
 ## Deployment
 
-**Current:** Development Build (EAS Build) - Required for native modules (WatermelonDB, MMKV, Victory Native)
+**Build Type:** Development Build (EAS Build) - Required for native modules (WatermelonDB, MMKV, Victory Native)
 
 **Distribution:** TestFlight (iOS) / Play Store Internal Testing (Android)
 

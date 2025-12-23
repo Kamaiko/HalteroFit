@@ -23,7 +23,7 @@ This document outlines the complete testing strategy for Halterofit, including u
 | **Integration Tests** | 5-30s   | Node.js + Mock APIs (msw) | Test sync protocol logic: conflict resolution, offline behavior, network scenarios |
 | **E2E Tests**         | 5-10min | Real Device + SQLite      | Test complete user flows: login → workout → sync with real backend                 |
 
-**Current Status:** 31 unit tests + 38 integration tests
+**Test Suite:** 31 unit tests + 38 integration tests
 
 ### Quick Commands
 
@@ -79,7 +79,7 @@ Can I test this in Jest with LokiJS (in-memory)?
 
 ### Integration Tests
 
-**Status:** 38 tests implemented (Phase 1 complete)
+**Coverage:** 38 tests implemented
 
 **When to Use:**
 
