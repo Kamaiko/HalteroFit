@@ -20,10 +20,6 @@ updates:
     # Required for auto-merge to work (GitHub won't merge BEHIND PRs)
     rebase-strategy: "auto"
 
-    # Assign PRs to maintainer for review
-    assignees:
-      - "Kamaiko"
-
     # Group similar updates to reduce PR noise
     groups:
       # Dev dependencies - Auto-merged by CI workflow

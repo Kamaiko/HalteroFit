@@ -330,10 +330,11 @@ jobs:
   # ============================================================================
   # Job 4: Bundle Size Check
   # Monitors JS bundle size to prevent bloat
-  # Target: <3MB for Phase 1 MVP
+  # Target: <6MB for React Native + Expo (Hermes Bytecode)
+  # Note: .hbc files are larger than .js due to bytecode format
   # ============================================================================
   bundle-size-check:
-    name: Bundle Size Check (<3MB)
+    name: Bundle Size Check (<6MB)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -360,8 +361,9 @@ jobs:
       - name: Calculate bundle size
         id: bundle-size
         run: |
-          # Calculate total JS bundle size (all .js files in dist)
-          BUNDLE_SIZE_BYTES=$(find dist/_expo/static/js -name "*.js" -type f -exec du -b {} + | awk '{total+=$1} END {print total}')
+          # Calculate total JS bundle size (.js for dev, .hbc for Hermes Bytecode)
+          # Expo SDK 54+ uses Hermes Bytecode (.hbc) for production builds
+          BUNDLE_SIZE_BYTES=$(find dist/_expo/static/js \( -name "*.js" -o -name "*.hbc" \) -type f -exec du -b {} + | awk '{total+=$1} END {print total}')
           BUNDLE_SIZE_MB=$(echo "scale=2; $BUNDLE_SIZE_BYTES / 1024 / 1024" | bc)
 
           echo "Bundle size: ${BUNDLE_SIZE_MB}MB"
@@ -370,7 +372,7 @@ jobs:
       - name: Check bundle size threshold
         run: |
           BUNDLE_SIZE_MB="${{ steps.bundle-size.outputs.bundle_size_mb }}"
-          THRESHOLD_MB=3.0
+          THRESHOLD_MB=6.0
 
           # Use bc for float comparison
           if (( $(echo "$BUNDLE_SIZE_MB > $THRESHOLD_MB" | bc -l) )); then
@@ -390,7 +392,7 @@ jobs:
         with:
           script: |
             const bundleSize = '${{ steps.bundle-size.outputs.bundle_size_mb }}';
-            const threshold = '3.0';
+            const threshold = '6.0';
             const percentage = ((parseFloat(bundleSize) / parseFloat(threshold)) * 100).toFixed(1);
             const passed = parseFloat(bundleSize) <= parseFloat(threshold);
 
