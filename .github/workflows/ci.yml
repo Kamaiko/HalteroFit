@@ -334,7 +334,7 @@ jobs:
   # Note: .hbc files are larger than .js due to bytecode format
   # ============================================================================
   bundle-size-check:
-    name: Bundle Size Check (<6MB)
+    name: Bundle Size Check
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
