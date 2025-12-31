@@ -208,8 +208,16 @@ function detectPlateauWithContext(exerciseHistory, user) {
 - **Coach-client relationship** (team accounts) - Defer until B2B validation
 - **Performance dashboards** (Sentry Performance monitoring) - Already setup, just add custom metrics
 - **Biometric authentication** (Face ID/Touch ID) - Not critical (user logs in once)
+- **CodeRabbit AI Integration** (Automated Code Review)
+  - AI-powered PR reviews for open source contributions
+  - Automated code quality checks, best practices enforcement
+  - Useful when project scales and becomes easily contributable open source
+  - Integration with GitHub Actions for seamless workflow
+  - **Estimated effort:** ~2-3h (setup + configuration)
+  - **Dependencies:** MVP complete, active open source contributors (3+)
+  - **Trigger:** Only after project gains traction and external contributions increase
 
-**Estimated effort:** ~15-20h (polish items only)
+**Estimated effort:** ~20-25h (polish items only)
 
 ---
 
