@@ -216,6 +216,13 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - **Estimated effort:** ~2-3h (setup + configuration)
   - **Dependencies:** MVP complete, active open source contributors (3+)
   - **Trigger:** Only after project gains traction and external contributions increase
+- **License Change** (If Keeping Project Private)
+  - Current LICENSE: MIT (permissive open source)
+  - If deciding to keep Halterofit proprietary/private: replace with "All Rights Reserved"
+  - Decision point: Before accepting first external contribution or public release
+  - **Note:** MIT License currently chosen to enable future open source transition
+  - **Estimated effort:** <1h (replace LICENSE file + update README)
+  - **Dependencies:** Strategic decision on project direction (private vs open source)
 
 **Estimated effort:** ~20-25h (polish items only)
 
