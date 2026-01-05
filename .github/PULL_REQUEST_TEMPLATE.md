@@ -1,11 +1,4 @@
-## Description
-
-## Type of Change
-
-- [ ] 🐛 Bug fix (non-breaking)
-- [ ] ✨ New feature (non-breaking)
-- [ ] 💥 Breaking change
-- [ ] 📝 Documentation update
+## Changes
 
 ## ✅ Checklist
 
