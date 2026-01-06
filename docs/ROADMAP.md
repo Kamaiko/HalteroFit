@@ -1,4 +1,4 @@
-# MVP Roadmap - Halterofit
+# Roadmap
 
 Strategic overview of development phases and execution sequence. This roadmap defines the path to MVP completion through five sequential phases. For current progress and actionable tasks, see [TASKS.md](./TASKS.md).
 

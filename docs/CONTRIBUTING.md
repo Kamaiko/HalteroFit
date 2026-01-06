@@ -1,4 +1,4 @@
-# Contributing - Halterofit
+# Contributing
 
 This guide covers project setup, development workflow, coding standards, and common troubleshooting steps for contributing to Halterofit.
 

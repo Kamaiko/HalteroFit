@@ -1,4 +1,4 @@
-# Changelog - Halterofit
+# Changelog
 
 This document tracks completed development milestones and major changes across all phases. Entries are organized in reverse chronological order (newest first).
 

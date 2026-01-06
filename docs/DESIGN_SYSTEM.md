@@ -1,4 +1,4 @@
-# Design System - Halterofit
+# Design System
 
 Strategic design guidelines and UI/UX patterns for building Halterofit's mobile interface.
 

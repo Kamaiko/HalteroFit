@@ -1,4 +1,4 @@
-# Product Requirements - Halterofit
+# Product Requirements Document
 
 This document defines the scope, features, user stories, and success metrics for the Halterofit MVP. Use this as the authoritative reference for product requirements and design decisions.
 

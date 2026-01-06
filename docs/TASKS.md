@@ -1,4 +1,4 @@
-# Tasks - Halterofit
+# Tasks
 
 Actionable tasks with Kanban tracking. For strategic overview and phase sequence, see ROADMAP.md.
 

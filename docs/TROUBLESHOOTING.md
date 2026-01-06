@@ -1,4 +1,4 @@
-# Troubleshooting - Halterofit
+# Troubleshooting
 
 Solutions to common development issues with Halterofit. This guide covers the Development Build stack (WatermelonDB, MMKV, Victory Native, NativeWind) and typical error scenarios encountered during development.
 

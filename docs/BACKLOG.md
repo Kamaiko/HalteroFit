@@ -1,4 +1,4 @@
-# Post-MVP Backlog - Halterofit
+# Backlog
 
 This document lists features deferred from the MVP roadmap. These enhancements will be prioritized post-launch based on user feedback and product-market fit validation.
 

@@ -1,4 +1,4 @@
-# Technical Documentation - Halterofit
+# Technical
 
 This document covers all technical architecture decisions (ADRs), technology stack choices, performance guidelines, and coding standards. Reference this when making technology or architecture decisions for the project.
 

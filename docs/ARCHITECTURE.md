@@ -1,4 +1,4 @@
-# Architecture - Halterofit
+# Architecture
 
 This document explains how Halterofit's codebase is organized. It covers folder structure, architectural patterns, and the separation of concerns between different layers (navigation, components, services, state management).
 

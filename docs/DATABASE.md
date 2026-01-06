@@ -1,4 +1,4 @@
-# Database - Halterofit
+# Database
 
 This document provides an overview of Halterofit's hybrid database architecture and practical guidance for working with data storage.
 

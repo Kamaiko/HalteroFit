@@ -1,4 +1,4 @@
-# Sentry Monitoring - Halterofit
+# Sentry Setup
 
 Quick reference for Sentry error monitoring configuration and usage.
 

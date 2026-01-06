@@ -1,4 +1,4 @@
-# DevOps Pipeline - Halterofit
+# DevOps Pipeline
 
 This document defines the complete CI/CD pipeline configuration, including git hooks, GitHub Actions workflows, Dependabot automation, and branch protection rules. Use this as the single source of truth for all DevOps behavior.
 
