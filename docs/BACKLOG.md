@@ -223,8 +223,15 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - **Note:** MIT License currently chosen to enable future open source transition
   - **Estimated effort:** <1h (replace LICENSE file + update README)
   - **Dependencies:** Strategic decision on project direction (private vs open source)
+- **Documentation Site** (If Open Source)
+  - Publish docs on GitHub Pages, Netlify, or Vercel
+  - Framework options: Docusaurus (MDX for React components) or VitePress
+  - Convert existing markdown docs to documentation site format
+  - Add search, versioning, and better navigation
+  - **Estimated effort:** ~4-6h (initial setup + migration)
+  - **Dependencies:** Open source decision, stable documentation structure
 
-**Estimated effort:** ~20-25h (polish items only)
+**Estimated effort:** ~25-30h (polish items only)
 
 ---
 
