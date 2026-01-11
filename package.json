@@ -17,8 +17,6 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
-    "test:integration": "jest --config jest.config.integration.ts",
-    "test:integration:watch": "jest --config jest.config.integration.ts --watch",
     "prepare": "husky"
   },
   "dependencies": {

@@ -482,7 +482,7 @@ describe('Workout CRUD Operations', () => {
      * - Database handles moderate volumes
      *
      * NOTE: Performance assertions removed (LokiJS ≠ SQLite real device).
-     * For real device performance testing, see e2e/manual/performance-baseline.md
+     * For real device performance testing, use Maestro E2E tests.
      */
     test('queries multiple workouts efficiently', async () => {
       // Create 100 workouts (realistic dataset for unit tests)

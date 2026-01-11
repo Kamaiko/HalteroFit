@@ -2,12 +2,16 @@ import type { Config } from 'jest';
 
 const config: Config = {
   preset: 'jest-expo',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/__tests__/integration/setup.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@nozbe/watermelondb)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@nozbe/watermelondb|msw|@mswjs|until-async)',
   ],
+
+  // Timeout for sync/network tests (msw integration)
+  testTimeout: 30000,
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
+    '__tests__/__helpers__/network/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
     '!src/**/__mocks__/**',
@@ -16,14 +20,13 @@ const config: Config = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@test-helpers/(.*)$': '<rootDir>/__tests__/__helpers__/$1', // Test helpers (factories, queries, time, assertions)
     '^@tests/(.*)$': '<rootDir>/__tests__/$1', // General tests infrastructure (fixtures, e2e)
+    // msw v2 uses conditional exports - point Jest to the correct Node.js entry
+    '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
   },
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}', '**/?(*.)+(spec|test).{ts,tsx}'],
 
-  // Exclude integration tests from default test run (use npm run test:integration)
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/__tests__/integration/', // Integration tests have separate config
-  ],
+  // Exclude only node_modules (integration tests now run with unit tests)
+  testPathIgnorePatterns: ['/node_modules/'],
 
   // Coverage thresholds (see TESTING.md for strategy)
   coverageThreshold: {

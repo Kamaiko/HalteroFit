@@ -504,17 +504,12 @@ __tests__/                      # All tests centralized (renamed from tests/)
         ├── workouts.json       # Sample workout data
         └── exercises.json      # Sample exercise data
 
-e2e/                            # E2E tests (manual + automated)
-└── manual/                     # Manual testing documentation
-    ├── README.md               # Manual testing guide
-    └── checklists/             # Test checklists
-
-.maestro/                       # Maestro automated E2E (root level)
-├── auth/                       # Authentication flows
-│   ├── login.yaml
-│   └── register.yaml
-├── workflows/                  # User journeys (Phase 2+)
-└── config.yaml                 # Global Maestro configuration
+.maestro/                       # E2E tests (Maestro)
+├── flows/                      # Test flows
+│   ├── auth/                   # Authentication flows
+│   └── workout/                # Workout flows
+├── config.yaml                 # Global Maestro configuration
+└── README.md                   # E2E testing guide
 ```
 
 **Conventions**:
@@ -543,7 +538,7 @@ e2e/                            # E2E tests (manual + automated)
 | **External dependencies** | `__mocks__/` (root)      | Jest auto-discovery |
 | **Internal test utils**   | `__tests__/__helpers__/` | Custom test logic   |
 | **Static test data**      | `__tests__/fixtures/`    | JSON fixtures       |
-| **E2E tests**             | `e2e/`                   | Separate from unit  |
+| **E2E tests**             | `.maestro/flows/`        | Maestro YAML flows  |
 
 **Why root for mocks?** Jest convention - auto-discovers mocks adjacent to `node_modules`.
 

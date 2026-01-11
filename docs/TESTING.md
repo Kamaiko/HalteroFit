@@ -1,6 +1,8 @@
-# Testing - Halterofit
+# Testing
 
-This document outlines the complete testing strategy for Halterofit, including unit tests (Jest), integration tests (msw), and E2E testing (Maestro). Use this as a reference for writing tests and understanding coverage requirements.
+This document outlines the complete testing strategy for Halterofit. Use this as a reference for writing tests and understanding coverage requirements.
+
+> "Write tests. Not too many. Mostly integration." - Kent C. Dodds
 
 ## Table of Contents
 
@@ -15,28 +17,27 @@ This document outlines the complete testing strategy for Halterofit, including u
 
 ## Overview
 
-### Three-Tier Testing Strategy
+### Two-Tier Testing Strategy
 
-| Type                  | Speed   | Environment               | Purpose                                                                            |
-| --------------------- | ------- | ------------------------- | ---------------------------------------------------------------------------------- |
-| **Unit Tests**        | <5s     | Node.js + LokiJS          | Test isolated business logic: CRUD operations, queries, relationships, validations |
-| **Integration Tests** | 5-30s   | Node.js + Mock APIs (msw) | Test sync protocol logic: conflict resolution, offline behavior, network scenarios |
-| **E2E Tests**         | 5-10min | Real Device + SQLite      | Test complete user flows: login → workout → sync with real backend                 |
+| Type          | Speed   | Environment            | Purpose                                                          |
+| ------------- | ------- | ---------------------- | ---------------------------------------------------------------- |
+| **Jest**      | <30s    | Node.js + LokiJS + msw | All business logic: CRUD, queries, sync logic, network scenarios |
+| **E2E Tests** | 5-10min | Real Device + SQLite   | Sync protocol, complete user flows, real backend validation      |
 
-**Test Suite:** 31 unit tests + 38 integration tests
+**Test Suite:** ~69 tests (unit + integration combined)
 
 ### Quick Commands
 
 ```bash
-# Unit tests
-npm test                  # Run all unit tests
+# Jest (unit + integration)
+npm test                  # Run all tests
 npm run test:watch        # Watch mode
 npm run test:coverage     # Coverage report
 npm test -- filename.test # Run specific file
 
-# Integration tests
-npm run test:integration         # Run sync integration tests
-npm run test:integration:watch   # Watch mode
+# E2E (Maestro)
+maestro test .maestro/              # Run all E2E flows
+maestro test .maestro/flows/auth/   # Run auth flows only
 ```
 
 ---
@@ -49,13 +50,12 @@ npm run test:integration:watch   # Watch mode
 Can I test this in Jest with LokiJS (in-memory)?
 │
 ├─ YES: Does it involve _changed, _status, or synchronize()?
-│   ├─ NO → Unit Test (Jest + LokiJS)
+│   ├─ NO → Jest (unit or integration folder)
 │   └─ YES → E2E Only (Real SQLite required)
 │
 └─ NO: Need real device/SQLite?
     ├─ One-off scenario → Manual E2E
-    ├─ Repeatable flow → Maestro E2E (Phase 3+)
-    └─ Cross-service → Integration Test
+    └─ Repeatable flow → Maestro E2E
 ```
 
 ### Unit Tests (Jest + LokiJS)
@@ -77,9 +77,11 @@ Can I test this in Jest with LokiJS (in-memory)?
 
 **Why LokiJS?** Jest runs in Node.js. SQLite requires React Native JSI (not available in Node). LokiJS provides real WatermelonDB behavior in Node.js.
 
-### Integration Tests
+### Integration Tests (Jest + msw)
 
-**Coverage:** 38 tests implemented
+**Location:** `__tests__/integration/`
+
+Integration tests run with the same Jest config as unit tests. They use msw to mock network requests.
 
 **When to Use:**
 
@@ -95,33 +97,23 @@ Can I test this in Jest with LokiJS (in-memory)?
 - `network-simulator` - Simulate offline/slow/intermittent connections
 - `sync-fixtures` - Generate realistic test data (workouts, conflicts, edge cases)
 
-**Current Coverage:**
-
-- sync-basic.test.ts - 11 tests (pull/push/bidirectional)
-- conflict-resolution.test.ts - 11 tests (last write wins, multi-device)
-- schema-validation.test.ts - 16 tests (Zod validation)
-
 **Important Limitation:**
 Integration tests use LokiJS (in-memory), NOT Real SQLite. WatermelonDB sync protocol columns (\_changed, \_status) and synchronize() method require native SQLite module, only available in E2E tests. Integration tests validate sync LOGIC, E2E tests validate sync PROTOCOL.
 
-**Run:** `npm run test:integration`
+### E2E Tests (Maestro)
 
-### E2E Tests
+**Location:** `.maestro/flows/`
 
-**Manual E2E (Current):**
+E2E tests use Maestro with real devices and SQLite. Use for scenarios that cannot be tested in Jest.
+
+**When to Use:**
 
 - Sync protocol testing (\_changed, \_status)
+- Complete user journeys (login, workout creation)
 - Migrations (schema changes)
-- One-off validation before automation
-- Speed: 15-20 minutes (includes build + device testing)
-
-**Maestro E2E (Phase 1+):**
-
-- High-value user journeys (login, workout creation)
 - Regression testing before releases
-- Speed: 2-5 minutes (automated)
-- Status: Planned for Phase 1+ (Task 1.22)
-- Directory: `.maestro/` at project root
+
+**Run:** `maestro test .maestro/`
 
 ---
 
@@ -250,16 +242,15 @@ afterEach(async () => {
 ### Directory Structure
 
 ```
-__tests__/
+__tests__/                      # All Jest tests
 ├── unit/                       # Unit tests (Jest + LokiJS)
 │   ├── services/database/      # Database CRUD tests
 │   ├── services/auth/          # Auth tests (Phase 1+)
 │   └── utils/                  # Utility function tests
 │
-├── integration/                # Integration tests
-│   ├── database/               # Database sync (38 tests)
-│   ├── workflows/              # Multi-service workflows
-│   └── features/               # Cross-component features
+├── integration/                # Integration tests (Jest + msw)
+│   ├── database/               # Database sync tests
+│   └── setup.ts                # msw server setup
 │
 ├── __helpers__/                # Reusable test utilities
 │   ├── database/               # Database helpers
@@ -267,9 +258,11 @@ __tests__/
 │
 └── fixtures/                   # Static test data (JSON)
 
-e2e/                            # E2E tests (outside __tests__)
-├── manual/                     # Manual E2E documentation
-└── maestro/                    # Maestro automation (Phase 1+)
+.maestro/                       # E2E tests (Maestro)
+├── flows/                      # Test flows
+│   ├── auth/                   # Authentication flows
+│   └── workout/                # Workout flows
+└── config.yaml                 # Global Maestro config
 
 __mocks__/                      # Jest auto-discovery mocks
 ```
@@ -406,5 +399,5 @@ You may see either of these warnings (both are expected and harmless):
 
 ---
 
-**Version:** 5.0 (Refactored - Single Source of Truth)
+**Version:** 6.0 (Simplified - Two-Tier Strategy)
 **Maintainer:** Patrick Patenaude + AI Agents

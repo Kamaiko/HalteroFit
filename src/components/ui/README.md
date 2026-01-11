@@ -503,7 +503,7 @@ import { FlashList } from '@shopify/flash-list';
 ### E2E Testing (Maestro - Phase 3+)
 
 ```yaml
-# tests/e2e/image-loading.yaml
+# .maestro/flows/workout/image-loading.yaml
 appId: com.halterofit.app
 ---
 - launchApp
