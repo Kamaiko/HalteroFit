@@ -250,7 +250,7 @@ _Status: Active or Future Phase_
 - Source code in project (full customization)
 - Class Variance Authority for type-safe variants
 
-**Trade-offs:** +50KB bundle, shadcn/ui learning curve
+**Trade-offs:** +50KB bundle, React Native Reusables learning curve
 
 **Status:** Implemented
 
