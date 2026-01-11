@@ -14,12 +14,8 @@ node_modules/
 # ===================
 .expo/
 dist/
-web-build/
-expo-env.d.ts
 *.orig.*
 *.jsbundle
-/ios/Pods/
-/android/app/debug.keystore
 
 # ===================
 # Build & Output
@@ -29,12 +25,10 @@ coverage/
 *.tgz
 *.tar.gz
 *.lcov
-.nyc_output
 
 # ===================
 # Caches
 # ===================
-.cache/
 .jest-cache/
 .eslintcache
 *.tsbuildinfo
@@ -66,7 +60,6 @@ Thumbs.db
 # ===================
 # IDE
 # ===================
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -81,20 +74,11 @@ Thumbs.db
 *.pem
 *.mobileprovision
 *.credentials
-android-service-account.json
-ios-distribution.p12
 
 # ===================
 # Supabase
 # ===================
-supabase/.branches
 supabase/.temp
-
-# ===================
-# Claude Code
-# ===================
-.claude/
-.mcp.json
 
 # ===================
 # Database
@@ -115,11 +99,3 @@ supabase/.temp
 .maestro/maestro-results/
 .maestro/*.mp4
 .maestro/*.png
-
-# ===================
-# Tools & Misc
-# ===================
-storybook-static/
-patches/
-.detox/
-.flipper/
