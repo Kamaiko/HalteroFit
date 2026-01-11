@@ -106,7 +106,7 @@ supabase/.temp
 # ===================
 # Lock Files
 # ===================
-package-lock.json
+# Note: package-lock.json should be TRACKED for reproducible builds
 *.lock
 
 # ===================
