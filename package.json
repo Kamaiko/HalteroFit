@@ -89,7 +89,7 @@
     "msw": "^2.12.7",
     "pg": "^8.16.3",
     "prettier": "^3.7.4",
-    "react-test-renderer": "^19.2.3",
+    "react-test-renderer": "^19.0.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2",
     "zod": "^4.3.5"
@@ -109,6 +109,9 @@
     "@nozbe/with-observables": {
       "react": "$react",
       "@types/react": "$@types/react"
+    },
+    "react-test-renderer": {
+      "react": "$react"
     }
   },
   "private": true
