@@ -31,15 +31,17 @@ This document tracks completed development milestones and major changes across a
 
 ### Dependency Cleanup
 
-Removed 5 unused packages:
+Removed 3 unused packages:
 
 - `react-native-skia` (ghost duplicate of @shopify/react-native-skia)
-- `react-native-nitro-modules` (transitive via MMKV)
 - `simple-statistics` (premature - Phase 4+)
-- `react-native-css-interop` (transitive via NativeWind)
 - `react-refresh` (auto-installed by Expo)
 
-Note: `react-native-worklets` kept - required by NativeWind's babel preset
+Kept (required by dependencies):
+
+- `react-native-worklets` - required by NativeWind babel preset
+- `react-native-nitro-modules` - required by react-native-mmkv
+- `react-native-css-interop` - transitive via NativeWind
 
 ### NPM Configuration
 
