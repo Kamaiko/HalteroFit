@@ -50,7 +50,7 @@
     "react-native": "0.79.7",
     "react-native-css-interop": "^0.2.1",
     "react-native-gesture-handler": "~2.24.0",
-    "react-native-mmkv": "^4.1.0",
+    "react-native-mmkv": "^4.1.1",
     "react-native-nitro-modules": "^0.32.1",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
@@ -64,7 +64,7 @@
     "tailwindcss": "^3.4.19",
     "tailwindcss-animate": "^1.0.7",
     "victory-native": "^41.20.1",
-    "zustand": "^5.0.9"
+    "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
