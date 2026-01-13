@@ -4,9 +4,54 @@ This document tracks completed development milestones and major changes across a
 
 ## 📑 Table of Contents
 
+- [2026-01-13 - Reanimated 4 & React Lock](#2026-01-13---reanimated-4--react-lock-)
 - [2026-01-12 - SDK 53 Stabilization](#2026-01-12---sdk-53-stabilization-)
 - [2025-11-06 - Phase 0.6 Complete](#2025-11-06---phase-06-complete-)
 - [2025-11-04 - Phase 0.5 Complete](#2025-11-04---phase-05-complete-)
+
+---
+
+## 2026-01-13 - Reanimated 4 & React Lock ✅
+
+**Status**: Complete
+**Reason**: Reanimated 4 compatibility + React version mismatch prevention
+
+<details>
+<summary>📋 Changes (Click to expand)</summary>
+
+### Reanimated 4 Upgrade
+
+- [x] Upgraded `react-native-reanimated` from 3.17.4 to 4.1.0
+- [x] Updated `babel.config.js` - Changed plugin from `reanimated/plugin` to `worklets/plugin`
+- [x] Locked `react-native-worklets` to 0.5.x (Reanimated 4 requirement)
+
+### React Ecosystem Lock
+
+- [x] Pinned `react` to 19.0.0 (must match react-native-renderer)
+- [x] Pinned `react-test-renderer` to 19.0.0
+- [x] Blocked ALL React updates in Dependabot (patch/minor/major)
+
+### Enhanced NDK Config Plugin
+
+- [x] `plugins/withNdkVersion.js` now modifies 3 files:
+  1. `build.gradle` - Sets `ext.ndkVersion` BEFORE expo-root-project plugin
+  2. `gradle.properties` - Sets `android.ndkVersion` as backup
+  3. `app/build.gradle` - Uses `findProperty()` with fallback
+
+### Dependabot Hardening
+
+- [x] Blocked ALL updates for `react-native-worklets` (0.5.x required by Reanimated 4)
+- [x] Blocked ALL updates for `react` and `react-test-renderer`
+- [x] Reverted Dependabot's worklets 0.7.1 bump (incompatible)
+
+</details>
+
+**Key Achievements:**
+
+- **Reanimated 4** brings performance improvements and new worklets architecture
+- **React lock** prevents version mismatch errors (react vs react-native-renderer)
+- **Worklets lock** prevents "Expected version in inclusive range 0.5.x" errors
+- **69 tests passing** - All unit/integration tests green
 
 ---
 

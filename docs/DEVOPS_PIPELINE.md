@@ -303,17 +303,16 @@ open-pull-requests-limit: 8
 **Update types:** Patch only
 **Auto-merge:** ✅ (after CI passes)
 
-#### Group 3: react-ecosystem (Auto-merged minor/patch)
-
-**Patterns:** `react`, `@types/react`, `react-test-renderer`
-**Update types:** Minor + Patch
-**Auto-merge:** ✅ (after CI passes)
-
 > **See:** [.github/dependabot.yml](../.github/dependabot.yml) for complete patterns and exclusions
 
-### Ignored Dependencies
+### Ignored Dependencies (Fully Locked)
 
-**Critical packages locked to specific versions:**
+**Critical packages locked to ALL versions (patch/minor/major):**
+
+1. **React** (`react`, `react-test-renderer`): Must match react-native-renderer exactly (19.0.0)
+2. **React Native Worklets**: Must match Reanimated 4.x requirement (0.5.x range)
+
+**Packages locked to minor/major only:**
 
 1. **Tailwind CSS v4**: Incompatible with NativeWind v4 (requires NativeWind v5 preview)
 2. **React Native**: Locked to Expo SDK version (never upgrade independently)
