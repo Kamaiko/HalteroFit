@@ -63,17 +63,6 @@ updates:
         update-types:
           - "patch"
 
-      # NEW: React ecosystem (minor updates only)
-      # React is stable enough to auto-group minor updates
-      react-ecosystem:
-        patterns:
-          - "react"
-          - "@types/react"
-          - "react-test-renderer"
-        update-types:
-          - "minor"
-          - "patch"
-
     # Critical packages always get separate PRs (manual review required)
     # Expo, React Native, WatermelonDB, Supabase
     # These need careful testing before merge
@@ -86,10 +75,25 @@ updates:
       - dependency-name: "tailwindcss"
         versions: [">=4.0.0"]
 
+      # React - LOCKED to Expo SDK version
+      # SDK 53 = react@19.0.0, SDK 54 = react@19.1.0
+      # NEVER upgrade independently of Expo SDK
+      - dependency-name: "react"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+      # React Test Renderer - MUST match react version
+      # Peer dependency: react-test-renderer@X requires react@X
+      - dependency-name: "react-test-renderer"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+      # @types/react - SHOULD match react version
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+
       # React Native - LOCKED to Expo SDK version
       # NEVER upgrade independently of Expo SDK
-      # Current: 0.81.5 (Expo SDK 54)
-      # Next: Wait for Expo SDK 55 (Q1-Q2 2026)
+      # Current: 0.79.6 (Expo SDK 53)
+      # Next: Wait for Expo SDK 54 stability (NDK issues resolved)
       - dependency-name: "react-native"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
