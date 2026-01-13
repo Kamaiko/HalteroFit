@@ -87,14 +87,16 @@ updates:
       # REACT ECOSYSTEM - LOCKED (minor/major)
       # ------------------------------------------------------------------
 
+      # React versions must match react-native-renderer exactly (currently 19.0.0)
+      # Block ALL updates to prevent version mismatch errors
       - dependency-name: "react"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
 
       - dependency-name: "react-native"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
       - dependency-name: "react-test-renderer"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
 
       - dependency-name: "react-refresh"
         update-types: ["version-update:semver-major"]
