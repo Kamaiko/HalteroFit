@@ -110,6 +110,15 @@ updates:
       - dependency-name: "expo"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
+      # jest-expo - MUST match Expo SDK version
+      # jest-expo@54 requires Expo SDK 54, we're on SDK 53
+      - dependency-name: "jest-expo"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+      # babel-preset-expo - MUST match Expo SDK version
+      - dependency-name: "babel-preset-expo"
+        update-types: ["version-update:semver-major"]
+
     # Custom labels for better organization
     labels:
       - "dependencies"
