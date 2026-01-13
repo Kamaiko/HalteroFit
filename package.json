@@ -51,7 +51,7 @@
     "react-native-css-interop": "^0.2.1",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-mmkv": "^4.1.1",
-    "react-native-nitro-modules": "^0.32.1",
+    "react-native-nitro-modules": "^0.33.0",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
