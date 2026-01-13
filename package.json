@@ -46,7 +46,7 @@
     "expo-router": "~5.1.10",
     "expo-status-bar": "~2.2.3",
     "nativewind": "^4.2.1",
-    "react": "^19.0.0",
+    "react": "^19.0.3",
     "react-native": "0.79.7",
     "react-native-css-interop": "^0.2.1",
     "react-native-gesture-handler": "~2.24.0",
