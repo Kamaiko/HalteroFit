@@ -1,6 +1,9 @@
-# Dependabot Configuration - Halterofit (Optimized)
-# Version: 2.0 (2025-11-06)
-# Philosophy: Surgical automation with Expo SDK awareness
+# Dependabot Configuration - Halterofit
+# Version: 3.0 (2026-01-13)
+# Philosophy: Conservative updates with Expo SDK 53 lock-in
+#
+# CRITICAL: We are locked to Expo SDK 53 due to NDK build issues on Windows.
+# ALL SDK-coupled packages must be locked to prevent breaking changes.
 
 version: 2
 updates:
@@ -10,142 +13,154 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "06:00"  # 11:00 UTC - Off-peak hours for better GitHub API performance
+      time: "06:00"
       timezone: "America/New_York"
 
-    # Increased limit now that overrides resolve peer deps
-    open-pull-requests-limit: 8
+    open-pull-requests-limit: 5
 
-    # Auto-rebase PRs when they fall behind base branch
-    # Required for auto-merge to work (GitHub won't merge BEHIND PRs)
     rebase-strategy: "auto"
 
     # Group similar updates to reduce PR noise
     groups:
       # Dev dependencies - Auto-merged by CI workflow
-      # TypeScript, ESLint, Jest, Prettier, etc.
       dev-dependencies:
         patterns:
-          - "@types/*"
           - "@typescript-eslint/*"
           - "eslint*"
           - "prettier"
           - "lint-staged"
           - "husky"
           - "@commitlint/*"
-          - "jest*"
-          - "@testing-library/*"
         update-types:
           - "minor"
           - "patch"
 
-      # Runtime patch updates - Auto-merged by CI workflow
-      # Bug fixes only (0.0.X), low risk
-      runtime-patches:
+      # Safe runtime patches - Only truly safe packages
+      safe-patches:
         patterns:
-          - "*"
-        exclude-patterns:
-          - "@types/*"
-          - "@typescript-eslint/*"
-          - "eslint*"
-          - "prettier"
-          - "lint-staged"
-          - "husky"
-          - "@commitlint/*"
-          - "jest*"
-          - "@testing-library/*"
-          # Exclude critical packages from patches group
-          - "expo"
-          - "react"
-          - "react-native"
-          - "@nozbe/watermelondb"
-          - "@supabase/supabase-js"
+          - "clsx"
+          - "class-variance-authority"
+          - "tailwind-merge"
+          - "simple-statistics"
+          - "zustand"
+          - "zod"
+          - "dotenv"
+          - "msw"
+          - "pg"
+          - "ts-node"
         update-types:
           - "patch"
 
-    # Critical packages always get separate PRs (manual review required)
-    # Expo, React Native, WatermelonDB, Supabase
-    # These need careful testing before merge
-
-    # Ignore specific incompatible versions
+    # ==========================================================================
+    # IGNORE SECTION - Packages that require manual review
+    # ==========================================================================
     ignore:
-      # Tailwind CSS v4 - Incompatible with NativeWind v4
-      # Requires NativeWind v5 (preview). Will upgrade when NativeWind v5 is stable.
-      # See: PR #19 analysis (closed 2025-10-30)
-      - dependency-name: "tailwindcss"
-        versions: [">=4.0.0"]
+      # ------------------------------------------------------------------
+      # EXPO SDK ECOSYSTEM - ALL LOCKED
+      # SDK 53 uses specific versions. Do NOT update independently.
+      # ------------------------------------------------------------------
 
-      # React - LOCKED to Expo SDK version
-      # SDK 53 = react@19.0.0, SDK 54 = react@19.1.0
-      # NEVER upgrade independently of Expo SDK
+      # Core Expo SDK
+      - dependency-name: "expo"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+      # ALL expo-* packages (expo-router, expo-image, etc.)
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+      # Expo dev tools
+      - dependency-name: "jest-expo"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "babel-preset-expo"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+      # ------------------------------------------------------------------
+      # REACT ECOSYSTEM - LOCKED TO SDK VERSION
+      # ------------------------------------------------------------------
+
       - dependency-name: "react"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
-
-      # React Test Renderer - MUST match react version
-      # Peer dependency: react-test-renderer@X requires react@X
-      - dependency-name: "react-test-renderer"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
-
-      # @types/react - SHOULD match react version
-      - dependency-name: "@types/react"
-        update-types: ["version-update:semver-major"]
-
-      # React Native - LOCKED to Expo SDK version
-      # NEVER upgrade independently of Expo SDK
-      # Current: 0.79.6 (Expo SDK 53)
-      # Next: Wait for Expo SDK 54 stability (NDK issues resolved)
       - dependency-name: "react-native"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "react-test-renderer"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
-      # React Native ecosystem packages - Follow Expo SDK compatibility
+      # ------------------------------------------------------------------
+      # REACT NATIVE ECOSYSTEM - MAJOR UPDATES LOCKED
+      # These packages have native code and must be compatible with RN version
+      # ------------------------------------------------------------------
+
+      # Core RN packages (managed by Expo)
       - dependency-name: "react-native-reanimated"
         update-types: ["version-update:semver-major"]
       - dependency-name: "react-native-screens"
         update-types: ["version-update:semver-major"]
       - dependency-name: "react-native-safe-area-context"
         update-types: ["version-update:semver-major"]
-
-      # Expo SDK - Only patch updates auto-allowed
-      # Minor/major upgrades require migration guide review
-      - dependency-name: "expo"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
-
-      # ALL expo-* packages - MUST match Expo SDK version
-      # These are versioned together with the SDK
-      - dependency-name: "expo-*"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
-
-      # jest-expo - MUST match Expo SDK version
-      # jest-expo@54 requires Expo SDK 54, we're on SDK 53
-      - dependency-name: "jest-expo"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
-
-      # babel-preset-expo - MUST match Expo SDK version
-      - dependency-name: "babel-preset-expo"
+      - dependency-name: "react-native-gesture-handler"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native-svg"
         update-types: ["version-update:semver-major"]
 
-    # Custom labels for better organization
+      # Native module packages
+      - dependency-name: "react-native-mmkv"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native-worklets"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native-nitro-modules"
+        update-types: ["version-update:semver-major"]
+
+      # Styling (NativeWind + TailwindCSS are coupled)
+      - dependency-name: "nativewind"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native-css-interop"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "tailwindcss"
+        versions: [">=4.0.0"]
+
+      # ------------------------------------------------------------------
+      # THIRD-PARTY NATIVE LIBRARIES - MAJOR UPDATES LOCKED
+      # ------------------------------------------------------------------
+
+      # Shopify libraries (native code)
+      - dependency-name: "@shopify/flash-list"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@shopify/react-native-skia"
+        update-types: ["version-update:semver-major"]
+
+      # Database (critical - has native SQLite)
+      - dependency-name: "@nozbe/watermelondb"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@nozbe/with-observables"
+        update-types: ["version-update:semver-major"]
+
+      # Monitoring (native code)
+      - dependency-name: "@sentry/react-native"
+        update-types: ["version-update:semver-major"]
+
+      # Charting (depends on Skia)
+      - dependency-name: "victory-native"
+        update-types: ["version-update:semver-major"]
+
     labels:
       - "dependencies"
-      - "javascript"
 
     commit-message:
       prefix: "chore"
       include: "scope"
 
-  # GitHub Actions - Auto-merged after CI passes
-  # SHA pinning ensures security
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "06:00"  # 11:00 UTC - Off-peak hours for better GitHub API performance
+      time: "06:00"
       timezone: "America/New_York"
 
     open-pull-requests-limit: 3
-
-    # Auto-rebase PRs when they fall behind base branch
     rebase-strategy: "auto"
 
     labels:
