@@ -128,8 +128,10 @@ updates:
       - dependency-name: "react-native-mmkv"
         update-types: ["version-update:semver-major"]
 
+      # Worklets version must match Reanimated 4.x requirement (currently 0.5.x)
+      # Block ALL updates to prevent "Expected version in inclusive range 0.5.x" error
       - dependency-name: "react-native-worklets"
-        update-types: ["version-update:semver-major"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
 
       - dependency-name: "react-native-nitro-modules"
         update-types: ["version-update:semver-major"]
