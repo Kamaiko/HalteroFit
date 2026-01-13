@@ -4,8 +4,67 @@ This document tracks completed development milestones and major changes across a
 
 ## 📑 Table of Contents
 
+- [2026-01-12 - SDK 53 Stabilization](#2026-01-12---sdk-53-stabilization-)
 - [2025-11-06 - Phase 0.6 Complete](#2025-11-06---phase-06-complete-)
 - [2025-11-04 - Phase 0.5 Complete](#2025-11-04---phase-05-complete-)
+
+---
+
+## 2026-01-12 - SDK 53 Stabilization ✅
+
+**Status**: Complete
+**Reason**: SDK 54 caused NDK 27 STL linking errors on Windows
+
+<details>
+<summary>📋 Changes (Click to expand)</summary>
+
+### NDK Config Plugin
+
+- [x] Created `plugins/withNdkVersion.js` - Forces NDK 26.1.10909125 on every prebuild
+- [x] Configured in `app.config.ts` - Plugin persists NDK version automatically
+
+### Expo Configuration Architecture
+
+- [x] `app.json` - Base static config (no plugins)
+- [x] `app.config.ts` - Extends app.json + defines plugins
+- [x] Clean inheritance via `...config` spread
+
+### Dependency Cleanup
+
+Removed 6 unused packages:
+
+- `react-native-skia` (ghost duplicate of @shopify/react-native-skia)
+- `react-native-worklets` (no references)
+- `react-native-nitro-modules` (transitive via MMKV)
+- `simple-statistics` (premature - Phase 4+)
+- `react-native-css-interop` (not needed with NativeWind v4)
+- `react-refresh` (auto-installed by Expo)
+
+### NPM Configuration
+
+- [x] `.npmrc` - Added `legacy-peer-deps=true` for CI compatibility
+- [x] `package.json` overrides - React version alignment for peer deps
+
+### Dependabot v3.1
+
+- [x] Locked all SDK 53-coupled packages (expo-_, react-native-_, etc.)
+- [x] Auto-merge groups for safe dev dependencies
+- [x] Prevents accidental SDK-breaking updates
+
+</details>
+
+**Key Achievements:**
+
+- **NDK plugin** ensures Android builds work on Windows after every prebuild
+- **Clean config architecture** - No duplication between app.json/app.config.ts
+- **Dependabot lockdown** - Weekly merges won't break SDK 53 compatibility
+- **69 tests passing** - All unit/integration tests green
+
+**Prebuild Frequency:**
+
+- Weekly Dependabot merges: NO prebuild required
+- SDK upgrade: YES, prebuild required
+- Native package added: YES, prebuild required
 
 ---
 

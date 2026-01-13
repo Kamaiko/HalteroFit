@@ -1,35 +1,37 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
-export default ({ config }: ConfigContext): ExpoConfig => ({
-  ...config,
-  name: 'Halterofit',
-  slug: 'halterofit',
-  version: '0.1.0',
-  orientation: 'portrait',
-  userInterfaceStyle: 'dark',
-  scheme: 'halterofit',
-  backgroundColor: '#0A0A0A',
-  assetBundlePatterns: ['**/*'],
-  ios: {
-    supportsTablet: false,
-    bundleIdentifier: 'com.halterofit.app',
-  },
-  android: {
-    package: 'com.halterofit.app',
-  },
-  web: {
-    bundler: 'metro',
-    output: 'static',
-  },
-  plugins: ['expo-router'],
-  experiments: {
-    typedRoutes: true,
-    tsconfigPaths: true,
-  },
-  extra: {
-    ...config.extra,
-    router: {
-      origin: false,
+/**
+ * Dynamic Expo configuration
+ *
+ * This file extends app.json and adds:
+ * - Config plugins (withNdkVersion for Android NDK compatibility)
+ * - Future: Environment-specific configuration (process.env)
+ *
+ * app.json = Static base config (readable by external tools)
+ * app.config.ts = Dynamic extensions (plugins, env vars, conditionals)
+ */
+export default ({ config }: ConfigContext): ExpoConfig => {
+  // Ensure required fields from app.json are present
+  if (!config.name || !config.slug) {
+    throw new Error('app.json must define name and slug');
+  }
+
+  return {
+    // Inherit everything from app.json
+    ...config,
+    name: config.name,
+    slug: config.slug,
+
+    // Plugins are defined here (not in app.json) because:
+    // 1. Plugin paths are resolved relative to this file
+    // 2. Future plugins may need dynamic configuration
+    plugins: ['expo-router', ['./plugins/withNdkVersion', { ndkVersion: '26.1.10909125' }]],
+
+    // Preserve extra config from app.json and extend if needed
+    extra: {
+      ...config.extra,
+      // Future: Add environment-specific values here
+      // apiUrl: process.env.EXPO_PUBLIC_API_URL,
     },
-  },
-});
+  };
+};

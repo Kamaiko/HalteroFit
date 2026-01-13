@@ -8,6 +8,7 @@
     "scheme": "halterofit",
     "backgroundColor": "#0A0A0A",
     "newArchEnabled": true,
+    "assetBundlePatterns": ["**/*"],
     "android": {
       "package": "com.halterofit.app",
       "adaptiveIcon": {
@@ -19,9 +20,9 @@
       "bundleIdentifier": "com.halterofit.app"
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "static"
     },
-    "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
