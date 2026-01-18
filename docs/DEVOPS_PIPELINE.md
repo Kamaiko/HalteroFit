@@ -27,8 +27,7 @@ This document defines the complete CI/CD pipeline configuration, including git h
 1. `Code Quality (TypeScript, ESLint, Prettier)`
 2. `Unit Tests (Jest)`
 3. `Security Scan (npm audit)`
-4. `Bundle Size Check (<3MB)` (independent, not required for merge)
-5. `Secrets Scanning (TruffleHog)` (independent, not required for merge)
+4. `Secrets Scanning (TruffleHog)` (independent, not required for merge)
 
 **Dependabot Auto-Merge Rules:**
 
@@ -64,7 +63,7 @@ This document defines the complete CI/CD pipeline configuration, including git h
                                    │
                                    ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    GITHUB ACTIONS CI/CD (6 Jobs)                    │
+│                    GITHUB ACTIONS CI/CD (5 Jobs)                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  Required for Merge (Branch Protection)                             │
@@ -84,10 +83,10 @@ This document defines the complete CI/CD pipeline configuration, including git h
 │                   └────────────────────┘                            │
 │                                                                     │
 │  Independent (Informational Only)                                   │
-│  ┌──────────────┐  ┌──────────────┐                                 │
-│  │ Bundle Size  │  │ Secrets Scan │                                 │
-│  │ <3MB check   │  │ TruffleHog   │                                 │
-│  └──────────────┘  └──────────────┘                                 │
+│  ┌──────────────┐                                                   │
+│  │ Secrets Scan │                                                   │
+│  │ TruffleHog   │                                                   │
+│  └──────────────┘                                                   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
                                    │
@@ -182,9 +181,9 @@ git push
 │  │ code-quality │  │ unit-tests   │  │ security-scan│    │
 │  └──────────────┘  └──────────────┘  └──────────────┘    │
 │                                                          │
-│  ┌──────────────┐  ┌──────────────┐                      │
-│  │ bundle-size  │  │ secrets-scan │                      │
-│  └──────────────┘  └──────────────┘                      │
+│  ┌──────────────┐                                        │
+│  │ secrets-scan │                                        │
+│  └──────────────┘                                        │
 └──────────────────────────────────────────────────────────┘
                            │
                            │ (all pass)
@@ -199,7 +198,7 @@ git push
               └────────────────────────┘
 ```
 
-**Note:** `bundle-size-check` and `secrets-scan` run independently. Dependabot auto-merge only waits for the 3 critical jobs (code-quality, unit-tests, security-scan).
+**Note:** `secrets-scan` runs independently. Dependabot auto-merge only waits for the 3 critical jobs (code-quality, unit-tests, security-scan).
 
 #### Job 1: Code Quality
 
@@ -224,20 +223,7 @@ Automatically merges safe Dependabot PRs after CI passes. Rules:
 
 ---
 
-#### Job 5: Bundle Size Check
-
-Monitors JavaScript bundle size (<3MB threshold for Phase 1). Comments on PRs with size analysis.
-
-**Local Analysis:** Use Expo Atlas for detailed bundle composition analysis:
-
-```bash
-EXPO_ATLAS=true npx expo export --platform android
-npx expo-atlas .expo/atlas.jsonl
-```
-
-See [Expo Atlas docs](https://docs.expo.dev/guides/analyzing-bundles/) for details.
-
-#### Job 6: Secrets Scanning
+#### Job 5: Secrets Scanning
 
 TruffleHog OSS scans for API keys, credentials, private keys, and tokens. Uses `--only-verified` flag to reduce false positives.
 
