@@ -98,13 +98,9 @@
     ]
   },
   "overrides": {
-    "@babel/runtime": "^7.26.10",
     "@nozbe/with-observables": {
       "react": "$react",
       "@types/react": "$@types/react"
-    },
-    "react-test-renderer": {
-      "react": "$react"
     }
   },
   "private": true
