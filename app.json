@@ -8,6 +8,7 @@
     "scheme": "halterofit",
     "backgroundColor": "#0A0A0A",
     "newArchEnabled": true,
+    "plugins": ["expo-router", "@sentry/react-native", "expo-asset"],
     "assetBundlePatterns": ["**/*"],
     "android": {
       "package": "com.halterofit.app",

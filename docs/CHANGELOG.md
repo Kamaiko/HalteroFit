@@ -43,11 +43,11 @@ All SDK-coupled packages automatically updated via `npx expo install --fix`:
 - [x] Downgraded `@types/jest` from 30.x to 29.5.14
 - [x] Updated `jest-expo` from 53.x to 54.x
 
-### Config Plugin Updates
+### Config Simplification
 
-- [x] Added `@sentry/react-native` plugin to `app.config.ts`
-- [x] Added `expo-asset` plugin to `app.config.ts`
-- [x] Kept `withNdkVersion` plugin for Windows NDK compatibility
+- [x] Moved all plugins to `app.json` (expo-router, @sentry/react-native, expo-asset)
+- [x] Deleted `app.config.ts` (no longer needed without custom plugins)
+- [x] Deleted `plugins/withNdkVersion.js` (obsolete - EAS Build used instead)
 
 </details>
 
@@ -80,12 +80,12 @@ All SDK-coupled packages automatically updated via `npx expo install --fix`:
 - [x] Pinned `react-test-renderer` to 19.0.0
 - [x] Blocked ALL React updates in Dependabot (patch/minor/major)
 
-### Enhanced NDK Config Plugin
+### Enhanced NDK Config Plugin (Later Removed)
 
-- [x] `plugins/withNdkVersion.js` now modifies 3 files:
-  1. `build.gradle` - Sets `ext.ndkVersion` BEFORE expo-root-project plugin
-  2. `gradle.properties` - Sets `android.ndkVersion` as backup
-  3. `app/build.gradle` - Uses `findProperty()` with fallback
+- [x] ~~`plugins/withNdkVersion.js` now modifies 3 files~~ (Removed in SDK 54 - EAS Build used instead)
+  1. ~~`build.gradle` - Sets `ext.ndkVersion` BEFORE expo-root-project plugin~~
+  2. ~~`gradle.properties` - Sets `android.ndkVersion` as backup~~
+  3. ~~`app/build.gradle` - Uses `findProperty()` with fallback~~
 
 ### Dependabot Hardening
 
@@ -112,16 +112,15 @@ All SDK-coupled packages automatically updated via `npx expo install --fix`:
 <details>
 <summary>📋 Changes (Click to expand)</summary>
 
-### NDK Config Plugin
+### NDK Config Plugin (Later Removed in SDK 54)
 
-- [x] Created `plugins/withNdkVersion.js` - Forces NDK 26.1.10909125 on every prebuild
-- [x] Configured in `app.config.ts` - Plugin persists NDK version automatically
+- [x] ~~Created `plugins/withNdkVersion.js`~~ (Removed - EAS Build used instead)
+- [x] ~~Configured in `app.config.ts`~~ (Removed - plugins now in app.json)
 
-### Expo Configuration Architecture
+### Expo Configuration Architecture (Simplified in SDK 54)
 
-- [x] `app.json` - Base static config (no plugins)
-- [x] `app.config.ts` - Extends app.json + defines plugins
-- [x] Clean inheritance via `...config` spread
+- [x] `app.json` - All config including plugins
+- [x] ~~`app.config.ts` - Extends app.json + defines plugins~~ (Removed)
 
 ### Dependency Cleanup
 
@@ -152,9 +151,9 @@ Kept (required by dependencies):
 
 **Key Achievements:**
 
-- **NDK plugin** ensures Android builds work on Windows after every prebuild
-- **Clean config architecture** - No duplication between app.json/app.config.ts
-- **Dependabot lockdown** - Weekly merges won't break SDK 53 compatibility
+- ~~**NDK plugin** ensures Android builds work on Windows after every prebuild~~ (Removed in SDK 54)
+- **Simplified config** - All config in app.json only
+- **Dependabot lockdown** - Weekly merges won't break SDK compatibility
 - **69 tests passing** - All unit/integration tests green
 
 **Prebuild Frequency:**
