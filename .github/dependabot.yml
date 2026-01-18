@@ -1,9 +1,8 @@
 # Dependabot Configuration - Halterofit
-# Version: 3.1 (2026-01-13)
-# Philosophy: Conservative updates with Expo SDK 53 lock-in
+# Philosophy: Conservative updates with Expo SDK compatibility
 #
-# CRITICAL: We are locked to Expo SDK 53 due to NDK build issues on Windows.
-# ALL SDK-coupled packages must be locked to prevent breaking changes.
+# Strategy: Lock native/SDK-coupled packages, auto-merge safe JS-only packages.
+# Auto-merge happens when CI passes (any day), not just on schedule day.
 
 version: 2
 updates:
@@ -49,12 +48,9 @@ updates:
           - "class-variance-authority"
           - "tailwind-merge"
           - "tailwindcss-animate"
-          - "simple-statistics"
           - "zustand"
           - "zod"
-          - "dotenv"
           - "msw"
-          - "pg"
           - "ts-node"
           - "@supabase/supabase-js"
           - "@rn-primitives/*"
@@ -68,7 +64,7 @@ updates:
     ignore:
       # ------------------------------------------------------------------
       # EXPO SDK ECOSYSTEM - ALL LOCKED (minor/major)
-      # SDK 53 uses specific versions. Do NOT update independently.
+      # Expo SDK uses specific versions. Do NOT update independently.
       # ------------------------------------------------------------------
 
       - dependency-name: "expo"
@@ -84,11 +80,11 @@ updates:
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
       # ------------------------------------------------------------------
-      # REACT ECOSYSTEM - LOCKED (minor/major)
+      # REACT ECOSYSTEM - LOCKED
+      # React version must match react-native renderer (managed by Expo SDK)
+      # Block ALL updates to prevent version mismatch errors
       # ------------------------------------------------------------------
 
-      # React versions must match react-native-renderer exactly (currently 19.0.0)
-      # Block ALL updates to prevent version mismatch errors
       - dependency-name: "react"
         update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
 
@@ -97,9 +93,6 @@ updates:
 
       - dependency-name: "react-test-renderer"
         update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
-
-      - dependency-name: "react-refresh"
-        update-types: ["version-update:semver-major"]
 
       # Note: @types/react is in dev-dependencies group (auto-update minor/patch)
 
@@ -128,15 +121,12 @@ updates:
       - dependency-name: "react-native-mmkv"
         update-types: ["version-update:semver-major"]
 
-      # Worklets version must match Reanimated 4.x requirement (currently 0.5.x)
-      # Block ALL updates to prevent "Expected version in inclusive range 0.5.x" error
+      # Worklets version must match Reanimated requirement (tightly coupled)
+      # Block ALL updates to prevent version mismatch errors
       - dependency-name: "react-native-worklets"
         update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
 
       - dependency-name: "react-native-nitro-modules"
-        update-types: ["version-update:semver-major"]
-
-      - dependency-name: "react-native-skia"
         update-types: ["version-update:semver-major"]
 
       # Styling (NativeWind + TailwindCSS are coupled)
