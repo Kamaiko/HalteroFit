@@ -25,7 +25,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     // Plugins are defined here (not in app.json) because:
     // 1. Plugin paths are resolved relative to this file
     // 2. Future plugins may need dynamic configuration
-    plugins: ['expo-router', ['./plugins/withNdkVersion', { ndkVersion: '26.1.10909125' }]],
+    plugins: [
+      'expo-router',
+      '@sentry/react-native',
+      'expo-asset',
+      // NDK plugin disabled for SDK 54 - uses NDK 28 by default
+      // ['./plugins/withNdkVersion', { ndkVersion: '26.1.10909125' }],
+    ],
 
     // Preserve extra config from app.json and extend if needed
     extra: {
