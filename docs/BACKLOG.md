@@ -22,6 +22,8 @@ This document lists features deferred from the MVP roadmap. These enhancements w
 - Plateau detection (Mann-Kendall statistical test with simple-statistics library)
 - Workout summaries (post-workout report: duration, volume, PRs)
 - Weekly summary notifications (Monday morning push notifications)
+  - **Requires:** `expo-notifications` (~500KB) - Install when implementing
+  - Push notifications for weekly summaries, rest reminders, etc.
 - Volume distribution analysis (pie charts by muscle group)
 
 **Estimated effort:** ~35-45h (Phase 4 from original roadmap)
@@ -140,6 +142,10 @@ function detectPlateauWithContext(exerciseHistory, user) {
 - **Profile image upload** (requires: expo-image-picker, Supabase Storage)
 - **Superset/circuit support** (exercise grouping with visual indicators)
 - **Form validation with Zod** (runtime schema validation for auth, settings, workout inputs)
+- **Rest timer audio cues** (3 beeps countdown before set starts, like Jefit)
+  - **Requires:** `expo-audio` - Install when implementing rest timer
+  - Beep sounds at 3, 2, 1 seconds before rest ends
+  - User can toggle sound on/off in settings
 
 **Estimated effort:** ~25-30h
 
@@ -231,6 +237,12 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - Add search, versioning, and better navigation
   - **Estimated effort:** ~4-6h (initial setup + migration)
   - **Dependencies:** Open source decision, stable documentation structure
+- **OTA Updates** (expo-updates)
+  - Over-the-air JavaScript updates without App Store review
+  - Enables hotfixes and quick feature deployments
+  - **Requires:** `expo-updates` package + EAS Update configuration
+  - **Estimated effort:** ~3-4h (setup + testing)
+  - **Dependencies:** Production release, stable update workflow needed
 
 **Estimated effort:** ~25-30h (polish items only)
 
