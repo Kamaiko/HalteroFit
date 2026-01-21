@@ -17,11 +17,10 @@ permissions:
 
 jobs:
   # ============================================================================
-  # Job 1: Code Quality (TypeScript + ESLint + Prettier)
-  # Runs in parallel with unit-tests and security-scan
+  # Job 1: Lint (TypeScript + ESLint + Prettier)
   # ============================================================================
   code-quality:
-    name: Code Quality (TypeScript, ESLint, Prettier)
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -62,18 +61,14 @@ jobs:
       - name: TypeScript type-check
         run: npm run type-check
 
-      - name: ESLint
-        run: npm run lint -- --cache --cache-location .eslintcache
-
-      - name: Prettier format check
-        run: npm run format:check
+      - name: ESLint + Prettier
+        run: npx eslint . --ext .ts,.tsx --cache --cache-location .eslintcache
 
   # ============================================================================
-  # Job 2: Unit Tests (Jest with Coverage)
-  # Runs in parallel with code-quality and security-scan
+  # Job 2: Test (Jest with Coverage)
   # ============================================================================
   unit-tests:
-    name: Unit Tests (Jest)
+    name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -124,11 +119,10 @@ jobs:
           retention-days: 30
 
   # ============================================================================
-  # Job 3: Security Scan (npm audit)
-  # Runs in parallel with code-quality and unit-tests
+  # Job 3: Security (npm audit)
   # ============================================================================
   security-scan:
-    name: Security Scan (npm audit)
+    name: Security
     runs-on: ubuntu-latest
     timeout-minutes: 3
 
@@ -208,11 +202,10 @@ jobs:
   #   # Reference: docs/E2E_STRATEGY.md for complete setup guide
 
   # ============================================================================
-  # Job 5: Dependabot Auto-Merge
-  # Requires ALL previous jobs to pass before merging
+  # Job 4: Auto-Merge (Dependabot PRs)
   # ============================================================================
   dependabot-auto-merge:
-    name: Dependabot Auto-Merge
+    name: Auto-Merge
     needs: [code-quality, unit-tests, security-scan]
     runs-on: ubuntu-latest
 
@@ -328,11 +321,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ============================================================================
-  # Job 5: Secrets Scanning
-  # Prevents accidental commit of secrets (.env, API keys, tokens)
+  # Job 5: Secrets (TruffleHog)
   # ============================================================================
   secrets-scan:
-    name: Secrets Scanning (TruffleHog)
+    name: Secrets
     runs-on: ubuntu-latest
     timeout-minutes: 5
 

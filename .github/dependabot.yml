@@ -121,10 +121,9 @@ updates:
       - dependency-name: "react-native-mmkv"
         update-types: ["version-update:semver-major"]
 
-      # Worklets version must match Reanimated requirement (tightly coupled)
-      # Block ALL updates to prevent version mismatch errors
+      # Worklets version should match Reanimated requirement
       - dependency-name: "react-native-worklets"
-        update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
+        update-types: ["version-update:semver-major"]
 
       - dependency-name: "react-native-nitro-modules"
         update-types: ["version-update:semver-major"]
@@ -150,9 +149,6 @@ updates:
         update-types: ["version-update:semver-major"]
 
       - dependency-name: "@nozbe/watermelondb"
-        update-types: ["version-update:semver-major"]
-
-      - dependency-name: "@nozbe/with-observables"
         update-types: ["version-update:semver-major"]
 
       - dependency-name: "@sentry/react-native"
