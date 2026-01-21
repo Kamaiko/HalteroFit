@@ -1817,7 +1817,7 @@ jobs:
         with:
           node-version: '18'
       - run: npm ci
-      - run: npm run test:coverage
+      - run: npm run test:ci
       - name: Check coverage thresholds
         run: |
           if [ $? -ne 0 ]; then
@@ -2446,7 +2446,7 @@ function formatAuthError(error: any): string {
 
 ```bash
 npm test                    # Run all unit tests
-npm run test:coverage       # Coverage report
+npm test -- --coverage      # Coverage report
 maestro test .maestro/auth/ # E2E auth flows (Task 1.22)
 ```
 

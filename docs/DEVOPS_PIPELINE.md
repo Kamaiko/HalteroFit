@@ -24,10 +24,10 @@ This document defines the complete CI/CD pipeline configuration, including git h
 
 **CI Job Names (must match branch protection):**
 
-1. `Code Quality (TypeScript, ESLint, Prettier)`
-2. `Unit Tests (Jest)`
-3. `Security Scan (npm audit)`
-4. `Secrets Scanning (TruffleHog)` (independent, not required for merge)
+1. `Lint` - TypeScript, ESLint, Prettier
+2. `Test` - Jest with coverage
+3. `Security` - npm audit (critical only)
+4. `Secrets` - TruffleHog (independent, not required for merge)
 
 **Dependabot Auto-Merge Rules:**
 
@@ -40,7 +40,7 @@ This document defines the complete CI/CD pipeline configuration, including git h
 
 - Branch: `master`
 - Strict: Yes (must be up to date)
-- Checks: Jobs 1-3 only (code-quality, unit-tests, security-scan)
+- Checks: Jobs 1-3 only (Lint, Test, Security)
 
 ---
 
@@ -68,9 +68,9 @@ This document defines the complete CI/CD pipeline configuration, including git h
 │                                                                     │
 │  Required for Merge (Branch Protection)                             │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐               │
-│  │ Code Quality │  │ Unit Tests   │  │ Security     │               │
-│  │ TypeScript   │  │ Jest         │  │ Scan         │               │
-│  │ ESLint       │  │ Coverage     │  │ npm audit    │               │
+│  │    Lint      │  │    Test      │  │   Security   │               │
+│  │ TypeScript   │  │ Jest         │  │ npm audit    │               │
+│  │ ESLint       │  │ Coverage     │  │ (critical)   │               │
 │  │ Prettier     │  │              │  │              │               │
 │  └──────┬───────┘  └───────┬──────┘  └───────┬──────┘               │
 │         └──────────────────┴─────────────────┘                      │
@@ -84,7 +84,7 @@ This document defines the complete CI/CD pipeline configuration, including git h
 │                                                                     │
 │  Independent (Informational Only)                                   │
 │  ┌──────────────┐                                                   │
-│  │ Secrets Scan │                                                   │
+│  │   Secrets    │                                                   │
 │  │ TruffleHog   │                                                   │
 │  └──────────────┘                                                   │
 │                                                                     │
@@ -178,27 +178,27 @@ git push
 ┌──────────────────────────────────────────────────────────┐
 │                    PARALLEL JOBS (Independent)           │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
-│  │ code-quality │  │ unit-tests   │  │ security-scan│    │
+│  │     Lint     │  │     Test     │  │   Security   │    │
 │  └──────────────┘  └──────────────┘  └──────────────┘    │
 │                                                          │
 │  ┌──────────────┐                                        │
-│  │ secrets-scan │                                        │
+│  │   Secrets    │                                        │
 │  └──────────────┘                                        │
 └──────────────────────────────────────────────────────────┘
                            │
                            │ (all pass)
                            ▼
               ┌────────────────────────┐
-              │ dependabot-auto-merge  │
+              │     Auto-Merge         │
               │ (Only if Dependabot PR)│
               │                        │
-              │ needs: [code-quality,  │
-              │  unit-tests,           │
-              │  security-scan]        │
+              │ needs: [Lint,          │
+              │  Test,                 │
+              │  Security]             │
               └────────────────────────┘
 ```
 
-**Note:** `secrets-scan` runs independently. Dependabot auto-merge only waits for the 3 critical jobs (code-quality, unit-tests, security-scan).
+**Note:** `Secrets` runs independently. Dependabot auto-merge only waits for the 3 critical jobs (Lint, Test, Security).
 
 #### Job 1: Code Quality
 
@@ -338,9 +338,9 @@ open-pull-requests-limit: 3
 
 **Required Checks:**
 
-1. `Code Quality (TypeScript, ESLint, Prettier)`
-2. `Unit Tests (Jest)`
-3. `Security Scan (npm audit)`
+1. `Lint`
+2. `Test`
+3. `Security`
 
 ### Other Rules
 

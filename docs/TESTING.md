@@ -31,8 +31,7 @@ This document outlines the complete testing strategy for Halterofit. Use this as
 ```bash
 # Jest (unit + integration)
 npm test                  # Run all tests
-npm run test:watch        # Watch mode
-npm run test:coverage     # Coverage report
+npm test -- --coverage    # Coverage report
 npm test -- filename.test # Run specific file
 
 # E2E (Maestro)

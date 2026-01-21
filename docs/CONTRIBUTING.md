@@ -263,7 +263,6 @@ eas build --profile production --platform ios
 
 ```bash
 npm test              # Run unit tests
-npm run test:watch    # Watch mode
 npm run type-check    # TypeScript validation
 ```
 
@@ -378,11 +377,11 @@ schemaMigrations({
 | Command              | Purpose                      |
 | -------------------- | ---------------------------- |
 | `npm run type-check` | TypeScript validation        |
-| `npm run lint:fix`   | Auto-fix linting issues      |
+| `npm run lint`       | Auto-fix linting issues      |
 | `npm test`           | Run unit tests               |
 | `npm audit`          | Security vulnerability check |
 
-**CI Jobs:** code-quality, unit-tests, security-scan (parallel) → dependabot-auto-merge
+**CI Jobs:** Lint, Test, Security (parallel) → Auto-Merge
 
 ---
 
