@@ -137,10 +137,11 @@ function detectPlateauWithContext(exerciseHistory, user) {
 - **Set history** (last 3-5 sets display below input for progressive overload reference)
 - **Notes per workout/exercise/set** (text area for observations)
 - **Onboarding flow** (3-4 screens with feature highlights on first launch)
-- **Profile image upload** (Supabase Storage integration, expo-image-picker)
+- **Profile image upload** (requires: expo-image-picker, Supabase Storage)
 - **Superset/circuit support** (exercise grouping with visual indicators)
+- **Form validation with Zod** (runtime schema validation for auth, settings, workout inputs)
 
-**Estimated effort:** ~20-25h
+**Estimated effort:** ~25-30h
 
 ---
 

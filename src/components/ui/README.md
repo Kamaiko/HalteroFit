@@ -587,7 +587,6 @@ PRD requires <200ms cache retrieval → `memory-disk` is only option.
 
 **Future Enhancements:**
 
-- Consider adding image compression helpers (expo-image-manipulator)
 - Add prefetch utility for critical images
 - Add analytics for cache hit/miss rates
 - Consider adding WebP optimization guidelines

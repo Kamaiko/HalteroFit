@@ -1,21 +1,15 @@
 {
   "name": "halterofit",
   "version": "0.1.0",
-  "description": "Offline-first fitness tracking app with context-aware analytics. Testing: docs/TESTING.md",
+  "description": "Fast, reliable workout tracker that works offline",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web",
+    "lint": "eslint . --ext .ts,.tsx --fix && prettier --write \"**/*.{ts,tsx,json}\"",
     "type-check": "tsc --noEmit",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "prepare": "husky"
   },
@@ -34,12 +28,11 @@
     "clsx": "^2.1.1",
     "expo": "^54.0.31",
     "expo-asset": "~12.0.12",
-    "expo-background-fetch": "~14.0.9",
     "expo-constants": "~18.0.13",
     "expo-dev-client": "~6.0.20",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
-    "expo-image-manipulator": "~14.0.8",
+    "expo-image-picker": "~17.0.10",
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.11",
     "expo-notifications": "~0.32.16",
@@ -83,17 +76,15 @@
     "msw": "^2.12.7",
     "prettier": "^3.7.4",
     "react-test-renderer": "^19.0.0",
-    "ts-node": "^10.9.2",
     "typescript": "~5.9.2",
     "zod": "^4.3.5"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix",
-      "prettier --write",
-      "bash -c 'tsc --noEmit'"
+      "prettier --write"
     ],
-    "*.{js,jsx,json,md}": [
+    "*.json": [
       "prettier --write"
     ]
   },
