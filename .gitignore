@@ -66,6 +66,11 @@ nul
 *.swo
 
 # ===================
+# External AI Tools
+# ===================
+.agents/
+
+# ===================
 # Secrets & Credentials
 # ===================
 *.jks
