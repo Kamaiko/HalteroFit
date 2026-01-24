@@ -89,5 +89,16 @@
       "prettier --write"
     ]
   },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "@nozbe/watermelondb",
+          "@nozbe/simdjson"
+        ],
+        "listUnknownPackages": false
+      }
+    }
+  },
   "private": true
 }
