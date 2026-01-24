@@ -32,6 +32,7 @@ This document covers all technical architecture decisions (ADRs), technology sta
 | **Database**         | WatermelonDB              | 0.28.0  | Offline-first reactive database                    |
 | **Storage**          | MMKV                      | 4.0.0   | Encrypted key-value storage                        |
 | **State Management** | Zustand                   | 5.0.8   | Lightweight global state                           |
+| **Validation**       | Zod                       | 4.3.5   | Schema validation and type inference               |
 | **Backend**          | Supabase                  | 2.78.0  | PostgreSQL + Auth + Storage                        |
 | **Charts**           | Victory Native            | 41.20.1 | Data visualization (Skia-based)                    |
 | **Lists**            | FlashList                 | 2.2.0   | High-performance lists                             |

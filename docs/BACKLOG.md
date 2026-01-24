@@ -155,6 +155,15 @@ function detectPlateauWithContext(exerciseHistory, user) {
 
 **Priority:** LOW (validate with users first)
 
+- **AI Coach & Semantic Search** (Supabase Vector + pgvector)
+  - Natural language exercise search: "exercice pour mal de dos" → relevant results
+  - AI-powered workout suggestions based on user goals and history
+  - Intelligent FAQ/support chatbot with RAG (Retrieval Augmented Generation)
+  - Personalized exercise recommendations based on preferences
+  - **Tech:** Supabase Vector (pgvector extension), OpenAI embeddings API
+  - **Trade-offs:** Adds external API dependency (conflicts with offline-first), recurring API costs
+  - **Estimated effort:** ~20-30h (embeddings pipeline + UI + LLM integration)
+  - **Dependencies:** MVP complete, validated user demand for AI features
 - **Custom exercise creation** (user-defined exercises with image upload)
   - Migration path documented in [ADR-017](archives/ADR-017-No-Custom-Exercises-MVP.md)
   - Add `is_custom` and `created_by` fields to exercises table

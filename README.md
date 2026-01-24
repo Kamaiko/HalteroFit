@@ -2,7 +2,7 @@
 
 # Halterofit
 
-**Science-based fitness tracking with intelligent analytics**
+**Workout Tracking App with Training Analytics**
 
 <!-- Tech Stack -->
 
@@ -32,68 +32,29 @@
 
 ## About
 
-Offline-first fitness tracker. Track every set, build consistency, document the work. Most apps track what you do. This one helps you become who you're meant to be—while you still can.
+A workout tracking app with analytics to identify trends, monitor progress, and optimize training routines.
 
 ---
 
-## 🚀 Quick Start
+## Development
+
+### Prerequisites
+
+- Node.js 18+
+- iOS Simulator or Android Emulator
+- [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/)
+
+### Setup
 
 ```bash
-npm install                    # Install dependencies
-npm start                      # Start development server
+npm install
+cp .env.example .env.local  # Configure your environment
+npm start
 ```
-
-**First-time setup:** See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for environment configuration (~15-20 min)
 
 ---
 
 ## 📚 Documentation
 
-**Choose the right document for your need:**
+Start with [CONTRIBUTING.md](docs/CONTRIBUTING.md). Full documentation in [`/docs`](docs/).
 
-| Document                                          | When to Read                 | Purpose                            |
-| ------------------------------------------------- | ---------------------------- | ---------------------------------- |
-| **[PRD.md](docs/PRD.md)**                         | Understanding product vision | Product requirements and vision    |
-| **[ROADMAP.md](docs/ROADMAP.md)**                 | Understanding MVP phases     | Strategic timeline and milestones  |
-| **[TASKS.md](docs/TASKS.md)**                     | Planning next tasks          | Kanban board and task tracking     |
-| **[BACKLOG.md](docs/BACKLOG.md)**                 | Exploring future features    | Post-MVP features and enhancements |
-| **[CHANGELOG.md](docs/CHANGELOG.md)**             | Reviewing completed work     | Completed milestones and releases  |
-| **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**       | Understanding code structure | Project structure and organization |
-| **[DATABASE.md](docs/DATABASE.md)**               | Working with database        | Database schema and operations     |
-| **[TECHNICAL.md](docs/TECHNICAL.md)**             | Understanding tech decisions | Technical decisions and ADRs       |
-| **[TESTING.md](docs/TESTING.md)**                 | Understanding test strategy  | Testing strategy and practices     |
-| **[DEVOPS_PIPELINE.md](docs/DEVOPS_PIPELINE.md)** | Setting up CI/CD             | DevOps pipeline and deployment     |
-| **[CONTRIBUTING.md](docs/CONTRIBUTING.md)**       | Setup & daily development    | Developer setup and workflow       |
-| **[CODE_OF_CONDUCT.md](docs/CODE_OF_CONDUCT.md)** | Community guidelines         | Code of conduct for contributors   |
-| **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | When something breaks        | Debugging guide and fixes          |
-
----
-
-## 🛠️ Tech Stack
-
-**Current Production Stack (Development Build):**
-
-| Category         | Technology                |
-| ---------------- | ------------------------- |
-| Framework        | Expo SDK                  |
-| Language         | TypeScript                |
-| UI Library       | React Native              |
-| Styling          | NativeWind                |
-| UI Components    | React Native Reusables    |
-| Icons            | React Native Vector Icons |
-| Database         | WatermelonDB              |
-| Storage          | MMKV                      |
-| State Management | Zustand                   |
-| Backend          | Supabase                  |
-| Charts           | Victory Native            |
-| Lists            | FlashList                 |
-| Images           | expo-image                |
-| Navigation       | Expo Router               |
-| Error Monitoring | Sentry                    |
-| Build            | EAS Build                 |
-| Testing          | Jest + RNTL + Maestro     |
-| Linting          | ESLint + Prettier         |
-
----
-
-> _"Your body remembers every choice. Make sure the story it tells is worth living."_
