@@ -1,8 +1,9 @@
 # ============================================================================
 # Pre-Push Hook - Run tests and type-check before pushing
 # ============================================================================
-# Best practice for solo dev: Detect errors locally (30s) vs waiting for CI (2-3 min)
-# Allows frequent commits (pre-commit is fast) while ensuring quality before push
+# ⚠️ REDUNDANCY WARNING:
+# These checks also run in CI (ci.yml). Kept for faster local feedback (~30s)
+# vs waiting for CI (~2-3min). May be removed in the future to rely solely on CI.
 # ============================================================================
 
 echo ""
