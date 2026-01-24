@@ -86,7 +86,7 @@ jobs:
         run: npm ci
 
       - name: Check Expo SDK compatibility
-        run: npx expo-doctor --non-interactive
+        run: npx expo-doctor
 
   # ============================================================================
   # Job 3: Test (Jest with Coverage)
