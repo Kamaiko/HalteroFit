@@ -65,7 +65,31 @@ jobs:
         run: npx eslint . --ext .ts,.tsx --cache --cache-location .eslintcache
 
   # ============================================================================
-  # Job 2: Test (Jest with Coverage)
+  # Job 2: Expo SDK Compatibility
+  # ============================================================================
+  expo-doctor:
+    name: Expo Doctor
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Expo SDK compatibility
+        run: npx expo-doctor --non-interactive
+
+  # ============================================================================
+  # Job 3: Test (Jest with Coverage)
   # ============================================================================
   unit-tests:
     name: Test
@@ -119,7 +143,7 @@ jobs:
           retention-days: 30
 
   # ============================================================================
-  # Job 3: Security (npm audit)
+  # Job 4: Security (npm audit)
   # ============================================================================
   security-scan:
     name: Security
@@ -156,7 +180,7 @@ jobs:
           exit 1
 
   # ============================================================================
-  # Job 4: E2E Tests (Maestro) - PHASE 3+
+  # Job 5: E2E Tests (Maestro) - PHASE 3+
   # Uncomment when Task 10.2 is complete (Setup Maestro E2E Automation)
   # ============================================================================
   # e2e-tests:
@@ -202,11 +226,11 @@ jobs:
   #   # Reference: docs/E2E_STRATEGY.md for complete setup guide
 
   # ============================================================================
-  # Job 4: Auto-Merge (Dependabot PRs)
+  # Job 5: Auto-Merge (Dependabot PRs)
   # ============================================================================
   dependabot-auto-merge:
     name: Auto-Merge
-    needs: [code-quality, unit-tests, security-scan]
+    needs: [code-quality, expo-doctor, unit-tests, security-scan]
     runs-on: ubuntu-latest
 
     # Only run on Dependabot PRs
@@ -321,7 +345,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ============================================================================
-  # Job 5: Secrets (TruffleHog)
+  # Job 6: Secrets (TruffleHog)
   # ============================================================================
   secrets-scan:
     name: Secrets
