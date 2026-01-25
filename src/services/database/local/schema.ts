@@ -10,7 +10,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 7, // V7: Added gif_url (GitHub ExerciseDB dataset provides exercise GIF URLs)
+  version: 8, // V8: Added workout plans/templates (workout_plans, plan_days, plan_day_exercises)
   tables: [
     // Users table
     tableSchema({
@@ -18,6 +18,7 @@ export const schema = appSchema({
       columns: [
         { name: 'email', type: 'string' },
         { name: 'preferred_unit', type: 'string' }, // 'kg' or 'lbs'
+        { name: 'default_rest_timer_seconds', type: 'number', isOptional: true }, // Global rest timer default
         // NOTE: nutrition_phase removed per SCOPE-SIMPLIFICATION.md (not in MVP scope)
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
@@ -45,11 +46,13 @@ export const schema = appSchema({
       ],
     }),
 
-    // Workouts table
+    // Workouts table (logged workout sessions)
     tableSchema({
       name: 'workouts',
       columns: [
         { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'plan_id', type: 'string', isOptional: true, isIndexed: true }, // Link to source plan
+        { name: 'plan_day_id', type: 'string', isOptional: true, isIndexed: true }, // Link to source day
         { name: 'started_at', type: 'number', isIndexed: true },
         { name: 'completed_at', type: 'number', isOptional: true },
         { name: 'duration_seconds', type: 'number', isOptional: true },
@@ -94,6 +97,52 @@ export const schema = appSchema({
         { name: 'notes', type: 'string', isOptional: true },
         { name: 'is_warmup', type: 'boolean' },
         { name: 'is_failure', type: 'boolean' },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+
+    // ========================================
+    // WORKOUT PLANS / TEMPLATES (v8)
+    // ========================================
+
+    // Workout plans (reusable templates)
+    tableSchema({
+      name: 'workout_plans',
+      columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'name', type: 'string' },
+        { name: 'is_active', type: 'boolean' }, // Only one plan active at a time
+        { name: 'cover_image_url', type: 'string', isOptional: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+
+    // Plan days (days within a plan)
+    tableSchema({
+      name: 'plan_days',
+      columns: [
+        { name: 'plan_id', type: 'string', isIndexed: true },
+        { name: 'name', type: 'string' }, // "Day 1 Chest & Triceps"
+        { name: 'day_of_week', type: 'string', isOptional: true }, // "MON", "TUE", etc.
+        { name: 'order_index', type: 'number' },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+
+    // Plan day exercises (exercise templates within a day)
+    tableSchema({
+      name: 'plan_day_exercises',
+      columns: [
+        { name: 'plan_day_id', type: 'string', isIndexed: true },
+        { name: 'exercise_id', type: 'string', isIndexed: true },
+        { name: 'order_index', type: 'number' },
+        { name: 'target_sets', type: 'number' }, // Default: 3
+        { name: 'target_reps', type: 'number' }, // Default: 10
+        { name: 'rest_timer_seconds', type: 'number', isOptional: true }, // Exercise-specific timer
+        { name: 'notes', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],

@@ -15,6 +15,9 @@ import Exercise from './models/Exercise';
 import Workout from './models/Workout';
 import WorkoutExercise from './models/WorkoutExercise';
 import ExerciseSet from './models/ExerciseSet';
+import WorkoutPlan from './models/WorkoutPlan';
+import PlanDay from './models/PlanDay';
+import PlanDayExercise from './models/PlanDayExercise';
 
 // SQLite adapter configuration
 const adapter = new SQLiteAdapter({
@@ -33,9 +36,19 @@ const adapter = new SQLiteAdapter({
 // Create database instance
 export const database = new Database({
   adapter,
-  modelClasses: [User, Exercise, Workout, WorkoutExercise, ExerciseSet],
+  modelClasses: [
+    User,
+    Exercise,
+    Workout,
+    WorkoutExercise,
+    ExerciseSet,
+    WorkoutPlan,
+    PlanDay,
+    PlanDayExercise,
+  ],
 });
 
 // Export models for convenient imports
 export { User, Exercise, Workout, WorkoutExercise, ExerciseSet };
+export { WorkoutPlan, PlanDay, PlanDayExercise };
 export { schema };
