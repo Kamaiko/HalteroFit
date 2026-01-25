@@ -1,14 +1,17 @@
 # Dependabot Configuration - Halterofit
 # =============================================================================
 #
-# Strategy: TWO-TIER APPROACH
+# Strategy: THREE-TIER APPROACH
 #
-# 1. EXPO-LOCKED: Packages with native code or Expo SDK coupling
-#    → Block ALL updates (patch/minor/major)
-#    → Upgrade ONLY via `npx expo install` during SDK upgrades
+# 1. EXPO-LOCKED: Native/SDK-coupled packages
+#    → Block ALL updates
+#    → Upgrade ONLY via `npx expo install`
 #
-# 2. SAFE JS: Pure JavaScript packages
-#    → Auto-update minor/patch via grouped PRs
+# 2. UI UTILITIES: Stable CSS/styling packages (clsx, tailwind-merge, etc.)
+#    → Auto-merge minor + patch
+#
+# 3. STATE/DATA LIBS: App behavior packages (zustand, zod, supabase)
+#    → Auto-merge patch ONLY (minors require manual review)
 #
 # =============================================================================
 
@@ -51,19 +54,25 @@ updates:
           - "minor"
           - "patch"
 
-      # Safe runtime - Pure JS packages, no native code
-      safe-js-packages:
+      # UI utilities - Stable APIs, safe for minor updates
+      ui-utilities:
         patterns:
           - "clsx"
           - "class-variance-authority"
           - "tailwind-merge"
           - "tailwindcss-animate"
-          - "zustand"
-          - "zod"
-          - "@supabase/supabase-js"
           - "@rn-primitives/*"
         update-types:
           - "minor"
+          - "patch"
+
+      # State/data libs - Patch only (minors can change app behavior)
+      state-data-libs:
+        patterns:
+          - "zustand"
+          - "zod"
+          - "@supabase/supabase-js"
+        update-types:
           - "patch"
 
     # =========================================================================
