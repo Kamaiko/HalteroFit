@@ -121,7 +121,7 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:ci
 
-      # TODO(Phase 1): Uncomment when coverage reaches 40%
+      # Coverage threshold check - see docs/TESTING.md for implementation timeline
       # - name: Check coverage threshold
       #   run: |
       #     node -e "
@@ -140,7 +140,7 @@ jobs:
         with:
           name: coverage-report
           path: coverage/
-          retention-days: 30
+          retention-days: 7
 
   # ============================================================================
   # Job 4: Security (npm audit)
@@ -230,7 +230,7 @@ jobs:
   # ============================================================================
   dependabot-auto-merge:
     name: Auto-Merge
-    needs: [code-quality, expo-doctor, unit-tests, security-scan]
+    needs: [code-quality, expo-doctor, unit-tests, security-scan, secrets-scan]
     runs-on: ubuntu-latest
 
     # Only run on Dependabot PRs
@@ -355,7 +355,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 0  # Full history for TruffleHog
+          fetch-depth: 10  # Recent commits sufficient, scan runs on every push
 
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@116e7171542d2f1dad8810f00dcfacbe0b809183 # v3.92.5
