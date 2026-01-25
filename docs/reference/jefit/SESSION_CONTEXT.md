@@ -12,10 +12,13 @@
 - [x] JEFIT_UI_SPEC.md créé (~400 lignes)
 - [x] Screenshots extraits et réorganisés (35 fichiers)
 - [x] Migration BD v8 complétée (3 nouvelles tables + modifications)
+- [x] Composants UI de base créés (SwipeableTabs, BottomSheet)
 
 ### Prochaines Étapes
-1. **Setup composants UI** - SwipeableTabs, BottomSheet
-2. **Implémenter écrans** par phase (B→C→D→E)
+1. **Phase B: Exercise Library** - ExerciseSelectorScreen, ExerciseListScreen
+2. **Phase C: Plans & Templates** - PlansListScreen, PlanDetailScreen, etc.
+3. **Phase D: Active Workout** - ActiveWorkoutScreen, SetLogging, RestTimer
+4. **Phase E: Settings** - SettingsScreen, ProfileScreen
 
 ---
 
@@ -135,8 +138,8 @@ rest_timer_seconds, notes, created_at, updated_at
 
 | Composant | Package | Statut |
 |-----------|---------|--------|
-| SwipeableTabs | react-native-pager-view | À créer |
-| BottomSheet | @gorhom/bottom-sheet | À créer |
+| SwipeableTabs | react-native-pager-view | ✅ Créé |
+| BottomSheet | @gorhom/bottom-sheet | ✅ Créé |
 | ConfirmDialog | custom | À créer |
 | ExerciseCard | custom | À créer |
 | SetRow | custom | À créer |

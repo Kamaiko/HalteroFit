@@ -135,6 +135,27 @@ function detectPlateauWithContext(exerciseHistory, user) {
 
 **Priority:** MEDIUM
 
+- **Light theme support** (toggle in settings, follow system preference option)
+  - Current MVP: Dark theme only (brand focus)
+  - Requires: Theme context, color palette for light mode, persist preference
+  - **Estimated effort:** ~4-6h
+- **Anatomy muscle selector** (visual body diagram for exercise filtering)
+  - Current MVP: Simple "Show All" muscle list
+  - Visual front/back body with tappable muscle groups
+  - Highlight selected muscles, show exercise count per muscle
+  - **Estimated effort:** ~8-12h (SVG diagrams + interaction logic)
+- **Advanced exercise filters** (equipment, difficulty, muscle combinations)
+  - Current MVP: Basic muscle filter with "Show All"
+  - Multi-select equipment filter (barbell, dumbbell, cable, etc.)
+  - Combine muscle + equipment filters
+  - **Estimated effort:** ~4-6h
+- **Leftover session handling** (workout abandoned >4h)
+  - Current MVP: No timeout handling
+  - Detect workouts inactive for 4+ hours
+  - Show notification/dialog: "Resume or Discard?"
+  - Option to save partial progress or discard
+  - Jefit pattern: See [screenshots/05-progress/05-leftover-session.png](reference/jefit/screenshots/05-progress/05-leftover-session.png)
+  - **Estimated effort:** ~3-4h
 - **Plate calculator** (modal from weight input showing required plates per side)
 - **Set history** (last 3-5 sets display below input for progressive overload reference)
 - **Notes per workout/exercise/set** (text area for observations)
