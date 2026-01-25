@@ -1,33 +1,48 @@
 # Jefit UI Reference
 
 > **Purpose:** Document Jefit's UX patterns as reference for Halterofit MVP
-> **Created:** 2025-01-24
+> **Updated:** 2026-01-25
 
-## Documentation Order
+## Main Documentation
 
-1. **[Exercise Library](./01-exercise-library.md)** - Foundation for everything
-2. **[Templates & Routines](./02-templates-routines.md)** - Pre-built workout plans
-3. **[Workout Logging](./03-workout-logging.md)** - Core tracking experience
+**[JEFIT_UI_SPEC.md](./JEFIT_UI_SPEC.md)** - Complete UI specification extracted from the PDF reference document (36 pages)
 
-## Quick Navigation
+## Screenshots
 
-| Section | Status | Screenshots |
-|---------|--------|-------------|
-| Exercise Library | 🔲 Pending | `/screenshots/01-exercises/` |
-| Templates & Routines | 🔲 Pending | `/screenshots/02-templates/` |
-| Workout Logging | 🔲 Pending | `/screenshots/03-workout/` |
-
----
-
-## Screenshot Naming Convention
+Screenshots extracted from the PDF are organized in:
 
 ```
-[section]-[screen]-[state].png
-
-Examples:
-01-exercises-list-default.png
-01-exercises-list-filtered.png
-01-exercises-detail-chest-press.png
-02-templates-create-step1.png
-03-workout-active-rest-timer.png
+screenshots/
+├── 01-navigation/     # Bottom tabs, headers
+├── 02-exercises/      # Exercise library, filters, details
+├── 03-plans/          # All Plans, Planned, Day Details
+├── 04-active-workout/ # Logging sets, rest timer, complete
+├── 05-progress/       # Calendar, workout logs
+└── 06-settings/       # Settings, profile
 ```
+
+See [screenshots/README.md](./screenshots/README.md) for naming conventions.
+
+## Quick Reference
+
+| Section | MVP Priority | Key Screens |
+|---------|--------------|-------------|
+| Navigation | Core | Bottom tabs (4) |
+| Exercises | Core | Selector, List |
+| Plans | Core | List, Detail, Edit Day |
+| Active Workout | Critical | Logging, Rest Timer, Summary |
+| Progress | Simplified | Settings access only |
+| Settings | Core | Profile, Preferences |
+
+## Legacy Documentation
+
+> **Note:** The files below were placeholders created before the PDF analysis. They are superseded by JEFIT_UI_SPEC.md.
+
+- ~~[01-exercise-library.md](./01-exercise-library.md)~~ - See JEFIT_UI_SPEC.md Section 2
+- ~~[02-templates-routines.md](./02-templates-routines.md)~~ - See JEFIT_UI_SPEC.md Section 3
+- ~~[03-workout-logging.md](./03-workout-logging.md)~~ - See JEFIT_UI_SPEC.md Section 4
+
+## Related Documents
+
+- [CAPTURE-CHECKLIST.md](./CAPTURE-CHECKLIST.md) - Checklist for capturing additional screenshots
+- [_TEMPLATE.md](./_TEMPLATE.md) - Template for documenting individual screens
