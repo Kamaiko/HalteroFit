@@ -137,8 +137,10 @@ export default function ExerciseListScreen() {
   }, [loadingMore, hasMore, loading]);
 
   const handleExercisePress = useCallback((exercise: Exercise) => {
-    // Future: Navigate to exercise detail
-    // router.push(`/exercises/${exercise.id}`);
+    router.push({
+      pathname: '/(tabs)/exercises/[id]',
+      params: { id: exercise.id },
+    });
   }, []);
 
   const renderItem = useCallback(
