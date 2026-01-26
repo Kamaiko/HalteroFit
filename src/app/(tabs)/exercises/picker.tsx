@@ -50,11 +50,15 @@ export default function ExercisePickerScreen() {
     if (selectedIds.size === 0 || !dayId) return;
 
     const selectedExerciseIds = Array.from(selectedIds);
-    // Navigate back with selected exercises
-    router.back();
     // TODO: Call addExerciseToPlanDay for each selected exercise
     console.log('Adding exercises to day:', dayId, selectedExerciseIds);
+    // Navigate back to Workout tab
+    router.replace('/(tabs)/workout');
   }, [selectedIds, dayId]);
+
+  const handleGoBack = useCallback(() => {
+    router.replace('/(tabs)/workout');
+  }, []);
 
   const renderItem = useCallback(
     ({ item }: { item: Exercise }) => (
@@ -76,7 +80,7 @@ export default function ExercisePickerScreen() {
     <ScreenContainer>
       {/* Header */}
       <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
-        <Pressable onPress={() => router.back()} className="mr-3">
+        <Pressable onPress={handleGoBack} className="mr-3">
           <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
         </Pressable>
         <View className="flex-1">
@@ -146,8 +150,8 @@ export default function ExercisePickerScreen() {
       {selectedCount > 0 && (
         <View className="absolute bottom-6 left-4 right-4">
           <Button
-            className="w-full py-4"
-            style={{ backgroundColor: Colors.primary.DEFAULT }}
+            className="w-full items-center justify-center"
+            style={{ backgroundColor: Colors.primary.DEFAULT, minHeight: 56 }}
             onPress={handleAddExercises}
           >
             <Text className="text-white font-semibold text-base">

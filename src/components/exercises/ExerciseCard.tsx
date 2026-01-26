@@ -92,9 +92,10 @@ export const ExerciseCard = memo(function ExerciseCard({
         <Ionicons name="chevron-forward" size={20} color={Colors.foreground.secondary} />
       ) : (
         <View
-          className="h-6 w-6 items-center justify-center rounded border-2"
+          className="h-6 w-6 items-center justify-center rounded-md"
           style={{
-            borderColor: selected ? Colors.primary.DEFAULT : Colors.foreground.tertiary,
+            borderWidth: 2,
+            borderColor: selected ? Colors.primary.DEFAULT : Colors.foreground.secondary,
             backgroundColor: selected ? Colors.primary.DEFAULT : 'transparent',
           }}
         >

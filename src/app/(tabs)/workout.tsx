@@ -167,43 +167,37 @@ export default function WorkoutScreen() {
                 </View>
               </View>
 
-              {/* Exercise list */}
-              {dayExercises.length === 0 ? (
-                <View className="flex-1 items-center justify-center p-8">
-                  <Ionicons name="barbell-outline" size={48} color={Colors.foreground.tertiary} />
-                  <Text className="text-base text-foreground-secondary text-center mt-4">
-                    No exercises yet
-                  </Text>
-                  <Button className="mt-6" onPress={handleAddExercisePress}>
-                    <Text className="text-white font-medium">+ Add Exercise</Text>
-                  </Button>
-                </View>
-              ) : (
-                <FlashList
-                  data={dayExercises}
-                  renderItem={({ item }) => (
-                    <DayExerciseCard
-                      exercise={item}
-                      onPress={() => console.log('Edit exercise:', item.id)}
-                    />
-                  )}
-                  keyExtractor={(item) => item.id}
-                  ListFooterComponent={
-                    <Pressable
-                      onPress={handleAddExercisePress}
-                      className="flex-row items-center mx-4 py-3"
+              {/* Exercise list with Add Exercise button */}
+              <FlashList
+                data={dayExercises}
+                renderItem={({ item }) => (
+                  <DayExerciseCard
+                    exercise={item}
+                    onPress={() => console.log('Edit exercise:', item.id)}
+                  />
+                )}
+                keyExtractor={(item) => item.id}
+                ListFooterComponent={
+                  <Pressable
+                    onPress={handleAddExercisePress}
+                    className="flex-row items-center px-4 py-3 border-b border-background-elevated"
+                  >
+                    <View
+                      className="w-12 h-12 rounded-full items-center justify-center mr-3"
+                      style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
                     >
-                      <View
-                        className="w-8 h-8 rounded-full items-center justify-center mr-3"
-                        style={{ backgroundColor: Colors.primary.DEFAULT }}
-                      >
-                        <Ionicons name="add" size={20} color="white" />
-                      </View>
-                      <Text className="text-primary font-medium">Add Exercise</Text>
-                    </Pressable>
-                  }
-                />
-              )}
+                      <Ionicons name="add" size={24} color={Colors.primary.DEFAULT} />
+                    </View>
+                    <View>
+                      <Text className="text-base font-medium text-foreground">Add Exercise</Text>
+                      <Text className="text-sm text-foreground-secondary">
+                        sets x reps • interval
+                      </Text>
+                    </View>
+                  </Pressable>
+                }
+                ListEmptyComponent={null}
+              />
             </View>
           )}
         </View>
