@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -7,7 +8,7 @@ import { PortalHost } from '@rn-primitives/portal';
 import * as SplashScreen from 'expo-splash-screen';
 import { Colors } from '@/constants';
 import { initSentry, setSentryUser } from '@/utils/sentry';
-import { useAuthStore } from '@/stores/auth/authStore';
+import { useAuthStore, enableDevMode } from '@/stores/auth/authStore';
 import { initializeExercises } from '@/services/database/seed';
 import '../../global.css';
 
@@ -31,6 +32,11 @@ export default function RootLayout() {
       try {
         // Initialize Sentry
         initSentry();
+
+        // ⚠️ DEV MODE - REMOVE BEFORE PRODUCTION ⚠️
+        // This enables a mock user for UI testing without Supabase auth
+        // TODO: Remove this line when implementing real auth (Phase 1)
+        enableDevMode();
 
         // Seed exercises on first launch
         await initializeExercises();
@@ -70,6 +76,14 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
       <SafeAreaProvider>
         <StatusBar style="light" backgroundColor={Colors.background.DEFAULT} />
+        {/* ⚠️ DEV MODE BANNER - Remove enableDevMode() call above to hide */}
+        {__DEV__ && (
+          <View style={{ backgroundColor: '#ff6b35', paddingVertical: 4, paddingHorizontal: 12 }}>
+            <Text style={{ color: 'white', fontSize: 11, textAlign: 'center', fontWeight: '600' }}>
+              🔧 DEV MODE - Mock User Active
+            </Text>
+          </View>
+        )}
         <Stack
           screenOptions={{
             headerShown: false,

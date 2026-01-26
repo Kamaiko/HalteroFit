@@ -32,6 +32,12 @@ export interface AuthState {
   signOut: () => Promise<void>;
 }
 
+// Development mock user - remove before production
+const DEV_MOCK_USER: User = {
+  id: 'dev-user-123',
+  email: 'dev@halterofit.local',
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -80,3 +86,21 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+/**
+ * Enable development mode with mock user
+ * Call this once at app startup for UI testing without real auth
+ *
+ * Usage: In App.tsx or _layout.tsx during development
+ * ```
+ * if (__DEV__) {
+ *   enableDevMode();
+ * }
+ * ```
+ */
+export function enableDevMode(): void {
+  if (__DEV__) {
+    useAuthStore.getState().setUser(DEV_MOCK_USER);
+    console.log('🔧 Dev mode enabled - using mock user');
+  }
+}
