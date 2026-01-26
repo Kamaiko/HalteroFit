@@ -1,0 +1,162 @@
+/**
+ * Exercise CRUD Operations - WatermelonDB Implementation
+ *
+ * Read-only operations for the exercise library.
+ * Custom exercises are deferred to Phase 3+ (ADR-017).
+ */
+
+import { Q } from '@nozbe/watermelondb';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { database } from '../local';
+import ExerciseModel from '../local/models/Exercise';
+import { DatabaseError } from '@/utils/errors';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface Exercise {
+  id: string;
+  exercisedb_id: string;
+  name: string;
+  body_parts: string[];
+  target_muscles: string[];
+  secondary_muscles: string[];
+  equipments: string[];
+  instructions: string[];
+  gif_url?: string;
+  created_at: number;
+  updated_at: number;
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function exerciseToPlain(exercise: ExerciseModel): Exercise {
+  return {
+    id: exercise.id,
+    exercisedb_id: exercise.exercisedbId,
+    name: exercise.name,
+    body_parts: exercise.bodyParts,
+    target_muscles: exercise.targetMuscles,
+    secondary_muscles: exercise.secondaryMuscles,
+    equipments: exercise.equipments,
+    instructions: exercise.instructions,
+    gif_url: exercise.gifUrl ?? undefined,
+    created_at: exercise.createdAt.getTime(),
+    updated_at: exercise.updatedAt.getTime(),
+  };
+}
+
+// ============================================================================
+// READ Operations
+// ============================================================================
+
+/**
+ * Get exercise by ID (Promise)
+ */
+export async function getExerciseById(id: string): Promise<Exercise> {
+  try {
+    const exercise = await database.get<ExerciseModel>('exercises').find(id);
+    return exerciseToPlain(exercise);
+  } catch (error) {
+    throw new DatabaseError(
+      'Unable to load exercise. Please try again.',
+      `Failed to get exercise by ID ${id}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
+ * Observe exercise by ID (Observable)
+ */
+export function observeExercise(id: string): Observable<Exercise> {
+  return database.get<ExerciseModel>('exercises').findAndObserve(id).pipe(map(exerciseToPlain));
+}
+
+/**
+ * Get all exercises (Promise)
+ * With optional search and pagination
+ */
+export async function getExercises(options?: {
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<Exercise[]> {
+  try {
+    const { search, limit = 50, offset = 0 } = options ?? {};
+
+    const queries: Q.Clause[] = [];
+
+    // Search by name (case-insensitive via SQLite LIKE)
+    if (search && search.trim().length > 0) {
+      queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(search)}%`)));
+    }
+
+    queries.push(Q.sortBy('name', Q.asc));
+    queries.push(Q.take(limit));
+    queries.push(Q.skip(offset));
+
+    const exercises = await database
+      .get<ExerciseModel>('exercises')
+      .query(...queries)
+      .fetch();
+
+    return exercises.map(exerciseToPlain);
+  } catch (error) {
+    throw new DatabaseError(
+      'Unable to load exercises. Please try again.',
+      `Failed to get exercises: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
+ * Observe all exercises (Observable)
+ * With optional search
+ */
+export function observeExercises(options?: {
+  search?: string;
+  limit?: number;
+}): Observable<Exercise[]> {
+  const { search, limit = 50 } = options ?? {};
+
+  const queries: Q.Clause[] = [];
+
+  if (search && search.trim().length > 0) {
+    queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(search)}%`)));
+  }
+
+  queries.push(Q.sortBy('name', Q.asc));
+  queries.push(Q.take(limit));
+
+  return database
+    .get<ExerciseModel>('exercises')
+    .query(...queries)
+    .observe()
+    .pipe(map((exercises) => exercises.map(exerciseToPlain)));
+}
+
+/**
+ * Get total exercise count
+ */
+export async function getExerciseCount(): Promise<number> {
+  try {
+    return await database.get<ExerciseModel>('exercises').query().fetchCount();
+  } catch (error) {
+    throw new DatabaseError(
+      'Unable to count exercises. Please try again.',
+      `Failed to count exercises: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
+ * Search exercises by name (Promise)
+ * Convenience wrapper around getExercises
+ */
+export async function searchExercises(query: string, limit = 50): Promise<Exercise[]> {
+  return getExercises({ search: query, limit });
+}

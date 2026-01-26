@@ -4,14 +4,14 @@
  * Business logic for database CRUD operations.
  *
  * USAGE:
- * import { createWorkout, logSet } from '@/services/database/operations';
+ * import { createWorkout, logSet, createPlan } from '@/services/database/operations';
  */
 
 // Workout operations
 export * from './workouts';
 
-// Future: Exercise operations (Phase 2+)
-// export * from './exercises';
+// Workout plan operations
+export * from './plans';
 
-// Future: Set operations (Phase 2+)
-// export * from './sets';
+// Exercise operations
+export * from './exercises';
