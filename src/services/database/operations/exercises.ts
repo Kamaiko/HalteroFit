@@ -140,11 +140,20 @@ export function observeExercises(options?: {
 }
 
 /**
- * Get total exercise count
+ * Get exercise count (with optional search filter)
  */
-export async function getExerciseCount(): Promise<number> {
+export async function getExerciseCount(search?: string): Promise<number> {
   try {
-    return await database.get<ExerciseModel>('exercises').query().fetchCount();
+    const queries: Q.Clause[] = [];
+
+    if (search && search.trim().length > 0) {
+      queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(search)}%`)));
+    }
+
+    return await database
+      .get<ExerciseModel>('exercises')
+      .query(...queries)
+      .fetchCount();
   } catch (error) {
     throw new DatabaseError(
       'Unable to count exercises. Please try again.',

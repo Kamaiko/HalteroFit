@@ -60,16 +60,45 @@ This document provides an overview of Halterofit's hybrid database architecture 
 
 ## ExerciseDB Dataset
 
-**Source:** GitHub ExerciseDB static dataset
+### Overview
 
-| Attribute | Value                                        |
-| --------- | -------------------------------------------- |
-| Exercises | 1,500+                                       |
-| Format    | Static JSON (one-time import)                |
-| Content   | Animated GIFs, instructions, muscle groups   |
-| Backup    | `docs/archives/exercisedb-full-dataset.json` |
+| Attribute | Value                              |
+| --------- | ---------------------------------- |
+| Source    | ExerciseDB (Kaggle/GitHub)         |
+| Exercises | 1,500+                             |
+| Format    | Bundled JSON, seeded on first launch |
+| Content   | GIF URLs, instructions, muscle groups |
+| Location  | `assets/data/exercises.json`       |
 
-**Field mapping:** See `src/services/database/watermelon/models/Exercise.ts`
+### Seeding Mechanism
+
+Exercises are loaded into WatermelonDB on first app launch via `initializeExercises()` in the root layout.
+
+**Files:**
+- Data: `assets/data/exercises.json`
+- Seeding service: `src/services/database/seed/exercises.ts`
+- Model: `src/services/database/local/models/Exercise.ts`
+
+**Version tracking:** MMKV stores `exercise_seed_version`. Incrementing `SEED_VERSION` in the seeding service forces a re-import on next app launch.
+
+### Updating the Dataset
+
+**Option 1: Manual download (recommended)**
+1. Download from [Kaggle ExerciseDB](https://www.kaggle.com/datasets/exercisedb/fitness-exercises-dataset)
+2. Extract and replace `assets/data/exercises.json`
+3. Increment `SEED_VERSION` in `src/services/database/seed/exercises.ts`
+
+**Option 2: Kaggle CLI**
+```bash
+set KAGGLE_API_TOKEN=<your-token>
+kaggle datasets download -d exercisedb/fitness-exercises-dataset -p assets/data --unzip --force
+```
+
+### Known Limitations
+
+**Broken GIF URLs:** Some exercises have GIF URLs that return 404. This is a CDN issue on ExerciseDB's side, not a dataset age issue. The app displays a placeholder icon when images fail to load.
+
+**Static data:** ExerciseDB updates infrequently. The Kaggle dataset (Dec 2025) is identical to earlier versions.
 
 ---
 

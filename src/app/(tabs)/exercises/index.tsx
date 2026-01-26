@@ -9,6 +9,7 @@
  */
 
 import { Text } from '@/components/ui/text';
+import { Ionicons } from '@/components/ui/icon';
 import { Colors } from '@/constants';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -94,7 +95,11 @@ function MuscleCard({ label, disabled = false, onPress }: MuscleCardProps) {
     >
       {/* Placeholder for muscle illustration */}
       <View className="mb-2 h-12 w-12 items-center justify-center rounded-full bg-background-elevated">
-        <Text className="text-2xl">{isShowAll ? '📋' : '💪'}</Text>
+        {isShowAll ? (
+          <Ionicons name="list" size={24} color={Colors.foreground.DEFAULT} />
+        ) : (
+          <Ionicons name="body" size={24} color={Colors.foreground.secondary} />
+        )}
       </View>
 
       <Text

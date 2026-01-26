@@ -1,12 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PortalHost } from '@rn-primitives/portal';
 import { Colors } from '@/constants';
 import { initSentry, setSentryUser } from '@/utils/sentry';
 import { useAuthStore } from '@/stores/auth/authStore';
+import { initializeExercises } from '@/services/database/seed';
 import '../../global.css';
 
 /**
@@ -14,13 +16,31 @@ import '../../global.css';
  *
  * Initializes:
  * - Sentry (production-only error monitoring)
- * - WatermelonDB (lazy, on first database access)
+ * - Exercise database seeding (first launch only)
  * - PortalHost (for dropdowns, tooltips, modals)
  */
 export default function RootLayout() {
-  // Initialize Sentry on app startup
+  const [isReady, setIsReady] = useState(false);
+
+  // Initialize app on startup
   useEffect(() => {
-    initSentry();
+    async function initialize() {
+      try {
+        // Initialize Sentry
+        initSentry();
+
+        // Seed exercises on first launch
+        await initializeExercises();
+
+        setIsReady(true);
+      } catch (error) {
+        console.error('App initialization failed:', error);
+        // Still show app even if seeding fails
+        setIsReady(true);
+      }
+    }
+
+    initialize();
   }, []);
 
   // Sync Sentry user context with auth state
@@ -35,6 +55,24 @@ export default function RootLayout() {
 
     return unsubscribe;
   }, []);
+
+  // Show loading screen during initialization
+  if (!isReady) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: Colors.background.DEFAULT,
+          }}
+        >
+          <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
+        </View>
+      </GestureHandlerRootView>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

@@ -9,16 +9,36 @@
  */
 
 import { Text } from '@/components/ui/text';
-import { Button } from '@/components/ui/button';
+import { Ionicons } from '@/components/ui/icon';
 import { Colors } from '@/constants';
 import { getExercises, getExerciseCount, type Exercise } from '@/services/database/operations';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
+
+/**
+ * Capitalize first letter of each word
+ * "barbell bench press" → "Barbell Bench Press"
+ */
+function capitalizeWords(str: string): string {
+  return str
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 const BATCH_SIZE = 50;
+
+// Hoisted static component to prevent recreation on each render
+// @see Vercel React Best Practices: rendering-hoist-jsx
+const LoadingFooter = () => (
+  <View className="py-4">
+    <ActivityIndicator size="small" color={Colors.primary.DEFAULT} />
+  </View>
+);
 
 export default function ExerciseListScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -34,18 +54,21 @@ export default function ExerciseListScreen() {
     loadCount();
   }, []);
 
-  // Search with debounce
+  // Search with debounce - parallelize requests for better performance
+  // @see Vercel React Best Practices: async-parallel
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadExercises(true);
+      const searchQuery = search.trim() || undefined;
+      // Run both requests in parallel instead of sequentially
+      Promise.all([loadExercises(true), loadCount(searchQuery)]);
     }, 300);
 
     return () => clearTimeout(timer);
   }, [search]);
 
-  const loadCount = async () => {
+  const loadCount = async (searchQuery?: string) => {
     try {
-      const count = await getExerciseCount();
+      const count = await getExerciseCount(searchQuery);
       setTotalCount(count);
     } catch (error) {
       console.error('Failed to load exercise count:', error);
@@ -83,11 +106,13 @@ export default function ExerciseListScreen() {
     }
   };
 
+  // Remove exercises.length from deps - it's not used in the callback
+  // @see Vercel React Best Practices: rerender-dependencies
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore && !loading) {
       loadExercises(false);
     }
-  }, [loadingMore, hasMore, loading, exercises.length]);
+  }, [loadingMore, hasMore, loading]);
 
   const handleExercisePress = useCallback((exercise: Exercise) => {
     // Future: Navigate to exercise detail
@@ -108,7 +133,7 @@ export default function ExerciseListScreen() {
       {/* Header */}
       <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
         <Pressable onPress={() => router.back()} className="mr-3">
-          <Text className="text-2xl">←</Text>
+          <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
         </Pressable>
         <Text className="flex-1 text-xl font-semibold text-foreground">Exercises</Text>
       </View>
@@ -116,7 +141,12 @@ export default function ExerciseListScreen() {
       {/* Search Bar */}
       <View className="border-b border-background-elevated px-4 py-3">
         <View className="flex-row items-center rounded-lg bg-background-surface px-3 py-2">
-          <Text className="mr-2 text-foreground-tertiary">🔍</Text>
+          <Ionicons
+            name="search"
+            size={20}
+            color={Colors.foreground.secondary}
+            style={{ marginRight: 8 }}
+          />
           <TextInput
             className="flex-1 text-foreground"
             placeholder="Search exercise name"
@@ -128,7 +158,7 @@ export default function ExerciseListScreen() {
           />
           {search.length > 0 && (
             <Pressable onPress={() => setSearch('')}>
-              <Text className="text-foreground-tertiary">✕</Text>
+              <Ionicons name="close" size={20} color={Colors.foreground.secondary} />
             </Pressable>
           )}
         </View>
@@ -137,7 +167,7 @@ export default function ExerciseListScreen() {
       {/* Counter */}
       <View className="px-4 py-2">
         <Text className="text-sm text-foreground-secondary">
-          {loading ? 'Loading...' : `${exercises.length} of ${totalCount} exercises`}
+          {loading ? 'Loading...' : `${totalCount} exercises found`}
         </Text>
       </View>
 
@@ -159,13 +189,7 @@ export default function ExerciseListScreen() {
           keyExtractor={keyExtractor}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            loadingMore ? (
-              <View className="py-4">
-                <ActivityIndicator size="small" color={Colors.primary.DEFAULT} />
-              </View>
-            ) : null
-          }
+          ListFooterComponent={loadingMore ? LoadingFooter : null}
         />
       )}
     </SafeAreaView>
@@ -177,23 +201,57 @@ interface ExerciseCardProps {
   onPress: () => void;
 }
 
-function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
-  const muscleText = exercise.target_muscles.join(', ') || 'No muscle info';
+/**
+ * Memoized exercise card component
+ * Prevents unnecessary re-renders when scrolling through the list
+ * @see Vercel React Best Practices: rerender-memo
+ */
+const ExerciseCard = memo(function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
+  // Track which exercise.id had an error, not just a boolean
+  // This handles FlashList cell recycling: when exercise changes, error state auto-resets
+  const [errorExerciseId, setErrorExerciseId] = useState<string | null>(null);
+
+  // Image error only applies if it's for the current exercise
+  const imageError = errorExerciseId === exercise.id;
+
+  const handleImageError = useCallback(() => {
+    setErrorExerciseId(exercise.id);
+  }, [exercise.id]);
+
+  const muscleText = exercise.target_muscles.map(capitalizeWords).join(', ') || 'No muscle info';
+
+  const showPlaceholder = !exercise.gif_url || imageError;
 
   return (
     <Pressable
       className="flex-row items-center border-b border-background-elevated px-4 py-3"
       onPress={onPress}
     >
-      {/* Placeholder for exercise image/gif */}
-      <View className="mr-3 h-14 w-14 items-center justify-center rounded-lg bg-background-surface">
-        <Text className="text-2xl">💪</Text>
+      {/* Exercise thumbnail (static, no animation) */}
+      <View className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-background-surface">
+        {showPlaceholder ? (
+          <View className="h-14 w-14 items-center justify-center bg-background-elevated">
+            <Ionicons name="barbell-outline" size={24} color={Colors.foreground.secondary} />
+          </View>
+        ) : (
+          <Image
+            source={{ uri: exercise.gif_url }}
+            style={{ width: 56, height: 56 }}
+            contentFit="cover"
+            autoplay={false}
+            cachePolicy="memory-disk"
+            transition={200}
+            recyclingKey={exercise.id}
+            placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+            onError={handleImageError}
+          />
+        )}
       </View>
 
       {/* Exercise info */}
       <View className="flex-1">
         <Text className="font-medium text-foreground" numberOfLines={1}>
-          {exercise.name}
+          {capitalizeWords(exercise.name)}
         </Text>
         <Text className="mt-0.5 text-sm text-foreground-secondary" numberOfLines={1}>
           {muscleText}
@@ -201,7 +259,7 @@ function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
       </View>
 
       {/* Chevron */}
-      <Text className="text-foreground-tertiary">›</Text>
+      <Ionicons name="chevron-forward" size={20} color={Colors.foreground.secondary} />
     </Pressable>
   );
-}
+});

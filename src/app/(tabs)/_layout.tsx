@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants';
 
 export default function TabsLayout() {
@@ -18,35 +19,35 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>🏠</Text>,
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="workout"
         options={{
           title: 'Workout',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>✓</Text>,
+          tabBarIcon: ({ color }) => <Ionicons name="checkmark-circle" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="exercises"
         options={{
           title: 'Exercises',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>🏋️</Text>,
+          tabBarIcon: ({ color }) => <Ionicons name="barbell" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="stats"
         options={{
           title: 'Progress',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>📊</Text>,
+          tabBarIcon: ({ color }) => <Ionicons name="stats-chart" size={24} color={color} />,
         }}
       />
+      {/* Settings screen hidden from tabs - accessible via navigation */}
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>👤</Text>,
+          href: null, // Hide from tab bar
         }}
       />
     </Tabs>
