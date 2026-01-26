@@ -7,10 +7,10 @@
  * - Overview: List of plan days with FlashList
  * - Day Details: Exercises for selected day
  * - Auto-creates default plan on first visit
+ * - Real exercise counts per day
  *
  * Known limitations:
- * - Tabs use Pressable instead of SwipeableTabs (PagerView crash workaround)
- * - Exercise counts hardcoded to 0 (pending Task 2.1.2)
+ * - Tabs use SimpleTabs (tap-only, swipe TODO in BACKLOG.md)
  *
  * @see docs/reference/jefit/screenshots/03-plans/13-workout-overview-empty.png
  * @see docs/reference/jefit/screenshots/03-plans/14-workout-overview-full.png
@@ -18,198 +18,45 @@
  */
 
 import { FlashList } from '@shopify/flash-list';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout';
-import { BottomSheet, type BottomSheetRef } from '@/components/ui/bottom-sheet';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Ionicons } from '@/components/ui/icon';
+import { SimpleTabs } from '@/components/ui/simple-tabs';
 import { Text } from '@/components/ui/text';
 import { DayCard, PlanHeader } from '@/components/workout';
 import { Colors } from '@/constants';
-import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
-import {
-  createPlan,
-  createPlanDay,
-  deletePlanDay,
-  getPlanWithDays,
-  observeActivePlan,
-  type PlanDay,
-  type WorkoutPlan,
-} from '@/services/database/operations/plans';
-import { useAuthStore } from '@/stores/auth/authStore';
+import { useWorkoutScreen } from '@/hooks/workout';
+import type { PlanDay } from '@/services/database/operations/plans';
 
 export default function WorkoutScreen() {
-  const user = useAuthStore((state) => state.user);
-  const { handleError } = useErrorHandler();
-
-  // State
-  const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(null);
-  const [planDays, setPlanDays] = useState<PlanDay[]>([]);
-  const [selectedDay, setSelectedDay] = useState<PlanDay | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [creatingDefaultPlan, setCreatingDefaultPlan] = useState(false);
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-
-  // Menu state
-  const [menuDay, setMenuDay] = useState<PlanDay | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const menuSheetRef = useRef<BottomSheetRef>(null);
-
-  // TODO(2.1.2): Compute from actual plan_day_exercises data
-  const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
-
-  // Subscribe to active plan changes
-  useEffect(() => {
-    if (!user?.id) {
-      setLoading(false);
-      return;
-    }
-
-    const subscription = observeActivePlan(user.id).subscribe({
-      next: (plan) => {
-        setActivePlan(plan);
-        if (!plan && !creatingDefaultPlan) {
-          // No active plan, create default
-          createDefaultPlan();
-        } else {
-          setLoading(false);
-        }
-      },
-      error: (error) => {
-        handleError(error, 'observeActivePlan');
-        setLoading(false);
-      },
-    });
-
-    return () => subscription.unsubscribe();
-  }, [user?.id, creatingDefaultPlan, handleError]);
-
-  // Fetch plan days when active plan changes
-  useEffect(() => {
-    if (!activePlan?.id) {
-      setPlanDays([]);
-      setSelectedDay(null);
-      return;
-    }
-
-    const fetchDays = async () => {
-      try {
-        const planWithDays = await getPlanWithDays(activePlan.id);
-        setPlanDays(planWithDays.days);
-
-        // Select first day by default if none selected
-        if (planWithDays.days.length > 0 && !selectedDay) {
-          // Don't auto-select, let user choose
-        }
-
-        // TODO(2.1.2): Query actual exercise counts from plan_day_exercises
-        const counts: Record<string, number> = {};
-        for (const day of planWithDays.days) {
-          counts[day.id] = 0;
-        }
-        setExerciseCounts(counts);
-      } catch (error) {
-        handleError(error, 'fetchPlanDays');
-      }
-    };
-
-    fetchDays();
-  }, [activePlan?.id, handleError]);
-
-  // Create default "New Workout" plan
-  const createDefaultPlan = useCallback(async () => {
-    if (!user?.id || creatingDefaultPlan) return;
-
-    setCreatingDefaultPlan(true);
-    try {
-      const newPlan = await createPlan({
-        user_id: user.id,
-        name: 'New Workout',
-        is_active: true,
-      });
-
-      // Create default first day
-      await createPlanDay({
-        plan_id: newPlan.id,
-        name: 'Workout Day #1',
-        day_of_week: 'MON',
-        order_index: 0,
-      });
-
-      // Plan will be picked up by the observer
-    } catch (error) {
-      handleError(error, 'createDefaultPlan');
-    } finally {
-      setCreatingDefaultPlan(false);
-      setLoading(false);
-    }
-  }, [user?.id, creatingDefaultPlan, handleError]);
-
-  // Handle day selection
-  const handleDayPress = useCallback((day: PlanDay) => {
-    setSelectedDay(day);
-    setActiveTabIndex(1); // Switch to Day Details tab
-  }, []);
-
-  // Handle day menu press
-  const handleDayMenuPress = useCallback((day: PlanDay) => {
-    setMenuDay(day);
-    menuSheetRef.current?.open();
-  }, []);
-
-  // Menu actions
-  const handleEditDay = useCallback(() => {
-    menuSheetRef.current?.close();
-    // TODO: Navigate to edit day screen (Task 2.1.4)
-    console.log('Edit day:', menuDay?.id);
-  }, [menuDay]);
-
-  const handleDeleteDayPress = useCallback(() => {
-    menuSheetRef.current?.close();
-    setShowDeleteConfirm(true);
-  }, []);
-
-  const handleConfirmDelete = useCallback(async () => {
-    if (!menuDay) return;
-
-    setIsDeleting(true);
-    try {
-      await deletePlanDay(menuDay.id);
-
-      // Remove from local state
-      setPlanDays((days) => days.filter((d) => d.id !== menuDay.id));
-
-      // Clear selection if deleted day was selected
-      if (selectedDay?.id === menuDay.id) {
-        setSelectedDay(null);
-        setActiveTabIndex(0); // Go back to Overview
-      }
-
-      setShowDeleteConfirm(false);
-      setMenuDay(null);
-    } catch (error) {
-      handleError(error, 'deletePlanDay');
-    } finally {
-      setIsDeleting(false);
-    }
-  }, [menuDay, selectedDay, handleError]);
-
-  // Handle Add Day press
-  const handleAddDayPress = useCallback(() => {
-    // TODO: Open Add Day dialog (Task 2.1.6)
-    console.log('Add day pressed');
-  }, []);
-
-  // Check if Start Workout should be visible
-  const canStartWorkout = useMemo(() => {
-    if (!selectedDay) return false;
-    const count = exerciseCounts[selectedDay.id] ?? 0;
-    return count > 0;
-  }, [selectedDay, exerciseCounts]);
+  const {
+    user,
+    activePlan,
+    planDays,
+    selectedDay,
+    loading,
+    activeTabIndex,
+    exerciseCounts,
+    canStartWorkout,
+    menuDay,
+    showDeleteConfirm,
+    isDeleting,
+    menuSheetRef,
+    setActiveTabIndex,
+    setShowDeleteConfirm,
+    handleDayPress,
+    handleDayMenuPress,
+    handleEditDay,
+    handleDeleteDayPress,
+    handleConfirmDelete,
+    handleAddDayPress,
+    keyExtractor,
+  } = useWorkoutScreen();
 
   // Render day item for FlashList
   const renderDayItem = useCallback(
@@ -224,8 +71,6 @@ export default function WorkoutScreen() {
     ),
     [exerciseCounts, selectedDay?.id, handleDayPress, handleDayMenuPress]
   );
-
-  const keyExtractor = useCallback((item: PlanDay) => item.id, []);
 
   // Loading state
   if (loading) {
@@ -257,33 +102,12 @@ export default function WorkoutScreen() {
         coverImageUrl={activePlan?.cover_image_url}
       />
 
-      {/* Tab Bar - Using Pressable tabs (SwipeableTabs disabled due to PagerView crash) */}
-      <View className="flex-row border-b border-background-elevated bg-background-surface">
-        <Pressable
-          className={`flex-1 items-center justify-center py-3 ${activeTabIndex === 0 ? 'border-b-2 border-primary' : ''}`}
-          onPress={() => setActiveTabIndex(0)}
-        >
-          <Text
-            className={
-              activeTabIndex === 0 ? 'text-primary font-medium' : 'text-foreground-tertiary'
-            }
-          >
-            Overview
-          </Text>
-        </Pressable>
-        <Pressable
-          className={`flex-1 items-center justify-center py-3 ${activeTabIndex === 1 ? 'border-b-2 border-primary' : ''}`}
-          onPress={() => setActiveTabIndex(1)}
-        >
-          <Text
-            className={
-              activeTabIndex === 1 ? 'text-primary font-medium' : 'text-foreground-tertiary'
-            }
-          >
-            Day Details
-          </Text>
-        </Pressable>
-      </View>
+      {/* Tab Bar */}
+      <SimpleTabs
+        tabs={['Overview', 'Day Details']}
+        activeIndex={activeTabIndex}
+        onChange={setActiveTabIndex}
+      />
 
       {/* Tab Content */}
       {activeTabIndex === 0 ? (

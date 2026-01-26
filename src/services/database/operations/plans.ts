@@ -462,6 +462,61 @@ export async function getPlanWithDays(planId: string): Promise<PlanWithDays> {
 }
 
 /**
+ * Get exercise count for a plan day (Promise)
+ */
+export async function getExerciseCountByDay(planDayId: string): Promise<number> {
+  try {
+    const count = await database
+      .get<PlanDayExerciseModel>('plan_day_exercises')
+      .query(Q.where('plan_day_id', planDayId))
+      .fetchCount();
+    return count;
+  } catch (error) {
+    throw new DatabaseError(
+      'Unable to count exercises. Please try again.',
+      `Failed to count exercises for day ${planDayId}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
+ * Get exercise counts for multiple plan days (Promise)
+ * Returns a map of day_id -> count
+ */
+export async function getExerciseCountsByDays(
+  planDayIds: string[]
+): Promise<Record<string, number>> {
+  try {
+    const counts: Record<string, number> = {};
+
+    // Initialize all to 0
+    for (const id of planDayIds) {
+      counts[id] = 0;
+    }
+
+    // Batch query all exercises for these days
+    if (planDayIds.length > 0) {
+      const exercises = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
+        .fetch();
+
+      // Count per day
+      for (const exercise of exercises) {
+        counts[exercise.planDayId] = (counts[exercise.planDayId] ?? 0) + 1;
+      }
+    }
+
+    return counts;
+  } catch (error) {
+    throw new DatabaseError(
+      'Unable to count exercises. Please try again.',
+      `Failed to count exercises for days: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
  * Get plan day with all its exercises (Promise)
  */
 export async function getPlanDayWithExercises(planDayId: string): Promise<PlanDayWithExercises> {
