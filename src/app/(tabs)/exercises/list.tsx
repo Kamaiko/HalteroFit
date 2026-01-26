@@ -254,7 +254,10 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onPress }: ExerciseC
       onPress={onPress}
     >
       {/* Exercise thumbnail (static, no animation) */}
-      <View className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-background-surface">
+      <View
+        className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg"
+        style={{ backgroundColor: '#FFFFFF' }}
+      >
         {showPlaceholder ? (
           <View
             style={{
@@ -276,7 +279,7 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onPress }: ExerciseC
             cachePolicy="memory-disk"
             transition={200}
             recyclingKey={exercise.id}
-            placeholder={{ blurhash: 'L00000fQfQfQfQfQfQfQfQfQfQfQ' }}
+            placeholder={{ blurhash: 'L2TSUA~qfQ~qfQfQfQfQfQfQfQfQ' }}
             onError={handleImageError}
           />
         )}
