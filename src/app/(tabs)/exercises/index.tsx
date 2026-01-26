@@ -58,14 +58,14 @@ export default function ExerciseSelectorScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background-surface" edges={['top']}>
       {/* Header */}
       <View className="border-b border-background-elevated px-4 py-3">
         <Text className="text-xl font-semibold text-foreground">Exercises</Text>
       </View>
 
       {/* Content */}
-      <ScrollView className="flex-1 px-4 py-4">
+      <ScrollView className="flex-1 bg-background px-4 py-4">
         <Text className="mb-4 text-foreground-secondary">
           Select a muscle group to browse exercises
         </Text>

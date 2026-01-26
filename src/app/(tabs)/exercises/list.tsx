@@ -150,7 +150,7 @@ export default function ExerciseListScreen() {
   const keyExtractor = useCallback((item: Exercise) => item.id, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background-surface" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
         <Pressable onPress={() => router.back()} className="mr-3">
