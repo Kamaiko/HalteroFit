@@ -13,6 +13,9 @@ import Workout from '@/services/database/local/models/Workout';
 import Exercise from '@/services/database/local/models/Exercise';
 import WorkoutExercise from '@/services/database/local/models/WorkoutExercise';
 import ExerciseSet from '@/services/database/local/models/ExerciseSet';
+import WorkoutPlan from '@/services/database/local/models/WorkoutPlan';
+import PlanDay from '@/services/database/local/models/PlanDay';
+import PlanDayExercise from '@/services/database/local/models/PlanDayExercise';
 
 /**
  * Counter for generating unique IDs in tests.
@@ -476,6 +479,164 @@ export async function createTestExerciseSet(
       set.notes = setData.notes;
     });
   })) as ExerciseSet;
+}
+
+// ============================================================================
+// WorkoutPlan Factories
+// ============================================================================
+
+export interface TestWorkoutPlanData {
+  id?: string;
+  user_id?: string;
+  name?: string;
+  is_active?: boolean;
+  cover_image_url?: string | null;
+}
+
+/**
+ * Creates test workout plan data with sensible defaults.
+ */
+export function createTestWorkoutPlanData(
+  overrides: Partial<TestWorkoutPlanData> = {}
+): TestWorkoutPlanData {
+  return {
+    user_id: overrides.user_id || generateTestId('user'),
+    name: overrides.name || `Test Plan ${idCounter}`,
+    is_active: overrides.is_active !== undefined ? overrides.is_active : false,
+    cover_image_url: overrides.cover_image_url !== undefined ? overrides.cover_image_url : null,
+    ...overrides,
+  };
+}
+
+/**
+ * Creates and persists a test workout plan in the database.
+ */
+export async function createTestWorkoutPlan(
+  database: Database,
+  overrides: Partial<TestWorkoutPlanData> = {}
+): Promise<WorkoutPlan> {
+  const planData = createTestWorkoutPlanData(overrides);
+  const plansCollection = database.get('workout_plans');
+
+  return (await database.write(async () => {
+    return await plansCollection.create((plan: any) => {
+      if (overrides.id) {
+        plan._raw.id = overrides.id;
+      }
+      plan.userId = planData.user_id;
+      plan.name = planData.name;
+      plan.isActive = planData.is_active;
+      plan.coverImageUrl = planData.cover_image_url;
+    });
+  })) as WorkoutPlan;
+}
+
+// ============================================================================
+// PlanDay Factories
+// ============================================================================
+
+export interface TestPlanDayData {
+  id?: string;
+  plan_id?: string;
+  name?: string;
+  day_of_week?: string | null;
+  order_index?: number;
+}
+
+/**
+ * Creates test plan day data with sensible defaults.
+ */
+export function createTestPlanDayData(overrides: Partial<TestPlanDayData> = {}): TestPlanDayData {
+  return {
+    plan_id: overrides.plan_id || generateTestId('plan'),
+    name: overrides.name || `Day ${idCounter}`,
+    day_of_week: overrides.day_of_week !== undefined ? overrides.day_of_week : null,
+    order_index: overrides.order_index !== undefined ? overrides.order_index : 0,
+    ...overrides,
+  };
+}
+
+/**
+ * Creates and persists a test plan day in the database.
+ */
+export async function createTestPlanDay(
+  database: Database,
+  overrides: Partial<TestPlanDayData> = {}
+): Promise<PlanDay> {
+  const dayData = createTestPlanDayData(overrides);
+  const daysCollection = database.get('plan_days');
+
+  return (await database.write(async () => {
+    return await daysCollection.create((day: any) => {
+      if (overrides.id) {
+        day._raw.id = overrides.id;
+      }
+      day.planId = dayData.plan_id;
+      day.name = dayData.name;
+      day.dayOfWeek = dayData.day_of_week;
+      day.orderIndex = dayData.order_index;
+    });
+  })) as PlanDay;
+}
+
+// ============================================================================
+// PlanDayExercise Factories
+// ============================================================================
+
+export interface TestPlanDayExerciseData {
+  id?: string;
+  plan_day_id?: string;
+  exercise_id?: string;
+  order_index?: number;
+  target_sets?: number;
+  target_reps?: number;
+  rest_timer_seconds?: number | null;
+  notes?: string | null;
+}
+
+/**
+ * Creates test plan day exercise data with sensible defaults.
+ */
+export function createTestPlanDayExerciseData(
+  overrides: Partial<TestPlanDayExerciseData> = {}
+): TestPlanDayExerciseData {
+  return {
+    plan_day_id: overrides.plan_day_id || generateTestId('plan-day'),
+    exercise_id: overrides.exercise_id || generateTestId('exercise'),
+    order_index: overrides.order_index !== undefined ? overrides.order_index : 0,
+    target_sets: overrides.target_sets !== undefined ? overrides.target_sets : 3,
+    target_reps: overrides.target_reps !== undefined ? overrides.target_reps : 10,
+    rest_timer_seconds:
+      overrides.rest_timer_seconds !== undefined ? overrides.rest_timer_seconds : null,
+    notes: overrides.notes !== undefined ? overrides.notes : null,
+    ...overrides,
+  };
+}
+
+/**
+ * Creates and persists a test plan day exercise in the database.
+ */
+export async function createTestPlanDayExercise(
+  database: Database,
+  overrides: Partial<TestPlanDayExerciseData> = {}
+): Promise<PlanDayExercise> {
+  const pdeData = createTestPlanDayExerciseData(overrides);
+  const pdeCollection = database.get('plan_day_exercises');
+
+  return (await database.write(async () => {
+    return await pdeCollection.create((pde: any) => {
+      if (overrides.id) {
+        pde._raw.id = overrides.id;
+      }
+      pde.planDayId = pdeData.plan_day_id;
+      pde.exerciseId = pdeData.exercise_id;
+      pde.orderIndex = pdeData.order_index;
+      pde.targetSets = pdeData.target_sets;
+      pde.targetReps = pdeData.target_reps;
+      pde.restTimerSeconds = pdeData.rest_timer_seconds;
+      pde.notes = pdeData.notes;
+    });
+  })) as PlanDayExercise;
 }
 
 // ============================================================================

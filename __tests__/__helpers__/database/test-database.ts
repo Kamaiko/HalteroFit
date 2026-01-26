@@ -16,6 +16,9 @@ import WorkoutExercise from '@/services/database/local/models/WorkoutExercise';
 import ExerciseSet from '@/services/database/local/models/ExerciseSet';
 import Exercise from '@/services/database/local/models/Exercise';
 import User from '@/services/database/local/models/User';
+import WorkoutPlan from '@/services/database/local/models/WorkoutPlan';
+import PlanDay from '@/services/database/local/models/PlanDay';
+import PlanDayExercise from '@/services/database/local/models/PlanDayExercise';
 
 /**
  * Creates a fresh in-memory LokiJS test database.
@@ -72,7 +75,16 @@ export function createTestDatabase(): Database {
 
   return new Database({
     adapter,
-    modelClasses: [Workout, WorkoutExercise, ExerciseSet, Exercise, User],
+    modelClasses: [
+      Workout,
+      WorkoutExercise,
+      ExerciseSet,
+      Exercise,
+      User,
+      WorkoutPlan,
+      PlanDay,
+      PlanDayExercise,
+    ],
   });
 }
 

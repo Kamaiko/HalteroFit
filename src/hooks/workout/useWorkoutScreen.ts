@@ -47,6 +47,7 @@ export interface UseWorkoutScreenReturn {
   handleDeleteDayPress: () => void;
   handleConfirmDelete: () => Promise<void>;
   handleAddDayPress: () => void;
+  refetchDays: () => void;
 
   // Render helpers
   keyExtractor: (item: PlanDay) => string;
@@ -72,6 +73,16 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
 
   // Exercise counts per day (fetched from database)
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
+
+  // FIXME: refetchTrigger is a workaround because we don't use observables for days/counts.
+  // Ideally, we'd use observePlanDays() + observeExerciseCounts() for automatic updates
+  // when data changes from other screens. Current approach requires manual refetch.
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
+
+  // Force refetch of plan days and exercise counts
+  const refetchDays = useCallback(() => {
+    setRefetchTrigger((prev) => prev + 1);
+  }, []);
 
   // Create default "New Workout" plan
   const createDefaultPlanFn = useCallback(async () => {
@@ -128,7 +139,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     return () => subscription.unsubscribe();
   }, [user?.id, creatingDefaultPlan, handleError, createDefaultPlanFn]);
 
-  // Fetch plan days when active plan changes
+  // Fetch plan days when active plan changes or refetch is triggered
   useEffect(() => {
     if (!activePlan?.id) {
       setPlanDays([]);
@@ -151,7 +162,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     };
 
     fetchDays();
-  }, [activePlan?.id, handleError]);
+  }, [activePlan?.id, refetchTrigger, handleError]);
 
   // Handle day selection
   const handleDayPress = useCallback((day: PlanDay) => {
@@ -184,7 +195,8 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     try {
       await deletePlanDay(menuDay.id);
 
-      // Remove from local state
+      // FIXME: Manual state update after delete. If we used observables for planDays,
+      // this would be automatic. Current approach risks state getting out of sync.
       setPlanDays((days) => days.filter((d) => d.id !== menuDay.id));
 
       // Clear selection if deleted day was selected
@@ -243,6 +255,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     handleDeleteDayPress,
     handleConfirmDelete,
     handleAddDayPress,
+    refetchDays,
 
     // Render helpers
     keyExtractor,

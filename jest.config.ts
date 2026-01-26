@@ -56,6 +56,9 @@ const config: Config = {
 
   // Force exit after tests complete
   // Required for WatermelonDB/LokiJS which keeps worker threads open
+  // FIXME: LokiJS creates internal workers that don't close cleanly.
+  // The warning "worker process has failed to exit gracefully" is expected.
+  // This does NOT affect test results - all tests pass correctly.
   // See: docs/TESTING.md#known-issues for details
   forceExit: true,
 };

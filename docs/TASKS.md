@@ -77,12 +77,13 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Plan header, Overview/Day Details tabs, DayCard list
       Delete day, "Add a day" button, menu bottom sheet
       **Components:** PlanHeader, DayCard (src/components/workout/)
-      **Note:** SwipeableTabs disabled (PagerView crash), using Pressable tabs
+      **Hook:** useWorkoutScreen (src/hooks/workout/) - extracted for testability
+      **Note:** SwipeableTabs disabled (PagerView crash), using SimpleTabs
 
 - [ ] **2.1.2** DayDetailsScreen (M - 3h) 🔴 NEXT
       Exercise list for selected day
       "Add Exercise" button → Exercise picker
-      **Blocker:** Need exercise count query
+      **Ready:** Exercise count query implemented ✅
 
 - [ ] **2.1.3** AllPlansScreen (M - 3h) `[src/app/plans/index.tsx]`
       Grid of PlanCards (2 columns)
@@ -112,9 +113,10 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       createPlanDay(), deletePlanDay()
       **Note:** updatePlanDay(), reorderDays() pending
 
-- [ ] **2.2.3** PlanDayExercise operations (M - 2h)
-      addExerciseToDay(), removeExerciseFromDay()
-      getExerciseCountByDay() - needed for 2.1.1 completion
+- [x] **2.2.3** PlanDayExercise operations (M - 2h) ✅ PARTIAL
+      addExerciseToDay(), removeExerciseFromDay() - existing
+      getExerciseCountByDay(), getExerciseCountsByDays() ✅
+      **Tests:** 10 unit tests in plans.test.ts
 
 ### 2.3: UI Components
 
