@@ -77,8 +77,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Plan header, Overview/Day Details tabs, DayCard list
       Delete day, "Add a day" button, menu bottom sheet
       **Components:** PlanHeader, DayCard (src/components/workout/)
-      **Hook:** useWorkoutScreen (src/hooks/workout/) - extracted for testability
-      **Note:** SwipeableTabs disabled (PagerView crash), using SimpleTabs
+      **Hook:** useWorkoutScreen (src/hooks/workout/)
 
 - [ ] **2.1.2** DayDetailsScreen (M - 3h) 🔴 NEXT
       Exercise list for selected day

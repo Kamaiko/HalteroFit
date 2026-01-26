@@ -168,11 +168,10 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - Beep sounds at 3, 2, 1 seconds before rest ends
   - User can toggle sound on/off in settings
 - **Swipeable tabs** (restore gesture-based tab switching)
-  - Current: SimpleTabs with tap-only (PagerView crash workaround)
-  - Investigation needed: Why `react-native-pager-view` crashes with `IllegalViewOperationException`
-  - Alternatives: `react-native-tab-view`, custom gesture handler, or fix PagerView
-  - Affected screens: Workout (Overview/Day Details), History (History/Chart/Guide)
-  - **Estimated effort:** ~2-4h (investigation) + ~2h (implementation)
+  - Current: SimpleTabs (tap-only)
+  - Issue: PagerView crashes with `IllegalViewOperationException` on Android
+  - Tried: `collapsable={false}`, `requestAnimationFrame`, `offscreenPageLimit` - none worked
+  - Alternatives to explore: `react-native-tab-view`, custom gesture handler
 
 **Estimated effort:** ~25-30h
 

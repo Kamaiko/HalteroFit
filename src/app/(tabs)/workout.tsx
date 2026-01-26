@@ -1,20 +1,7 @@
 /**
  * WorkoutScreen - Main workout tab showing active plan
  *
- * Features:
- * - Active plan header with "All Plans" navigation
- * - Tab navigation: Overview / Day Details
- * - Overview: List of plan days with FlashList
- * - Day Details: Exercises for selected day
- * - Auto-creates default plan on first visit
- * - Real exercise counts per day
- *
- * Known limitations:
- * - Tabs use SimpleTabs (tap-only, swipe TODO in BACKLOG.md)
- *
- * @see docs/reference/jefit/screenshots/03-plans/13-workout-overview-empty.png
- * @see docs/reference/jefit/screenshots/03-plans/14-workout-overview-full.png
- * @see docs/PHASE2_AUDIT.md for implementation details
+ * @see docs/reference/jefit/screenshots/03-plans/
  */
 
 import { FlashList } from '@shopify/flash-list';
@@ -58,7 +45,6 @@ export default function WorkoutScreen() {
     keyExtractor,
   } = useWorkoutScreen();
 
-  // Render day item for FlashList
   const renderDayItem = useCallback(
     ({ item }: { item: PlanDay }) => (
       <DayCard
@@ -72,7 +58,6 @@ export default function WorkoutScreen() {
     [exerciseCounts, selectedDay?.id, handleDayPress, handleDayMenuPress]
   );
 
-  // Loading state
   if (loading) {
     return (
       <ScreenContainer contentClassName="items-center justify-center">
@@ -82,7 +67,6 @@ export default function WorkoutScreen() {
     );
   }
 
-  // No user state
   if (!user?.id) {
     return (
       <ScreenContainer contentClassName="items-center justify-center p-6">
@@ -96,25 +80,20 @@ export default function WorkoutScreen() {
 
   return (
     <ScreenContainer>
-      {/* Plan Header */}
       <PlanHeader
         planName={activePlan?.name ?? 'New Workout'}
         coverImageUrl={activePlan?.cover_image_url}
       />
 
-      {/* Tab Bar */}
       <SimpleTabs
         tabs={['Overview', 'Day Details']}
         activeIndex={activeTabIndex}
         onChange={setActiveTabIndex}
       />
 
-      {/* Tab Content */}
       {activeTabIndex === 0 ? (
-        // Overview Tab
         <View className="flex-1">
           {planDays.length === 0 ? (
-            // Empty state
             <View className="flex-1 items-center justify-center p-8">
               <Ionicons name="calendar-outline" size={48} color={Colors.foreground.tertiary} />
               <Text className="text-lg font-semibold text-foreground mt-4">
@@ -128,7 +107,6 @@ export default function WorkoutScreen() {
               </Button>
             </View>
           ) : (
-            // Days list
             <FlashList
               data={planDays}
               renderItem={renderDayItem}
@@ -149,10 +127,8 @@ export default function WorkoutScreen() {
           )}
         </View>
       ) : (
-        // Day Details Tab
         <View className="flex-1">
           {!selectedDay ? (
-            // No day selected
             <View className="flex-1 items-center justify-center p-8">
               <Ionicons name="list-outline" size={48} color={Colors.foreground.tertiary} />
               <Text className="text-lg font-semibold text-foreground mt-4">
@@ -163,7 +139,6 @@ export default function WorkoutScreen() {
               </Text>
             </View>
           ) : (
-            // Day details - placeholder for Task 2.1.2
             <View className="flex-1 p-4">
               <View className="flex-row items-center justify-between mb-4">
                 <View>
@@ -174,7 +149,6 @@ export default function WorkoutScreen() {
                 </View>
               </View>
 
-              {/* Exercise list placeholder */}
               <View className="flex-1 items-center justify-center">
                 <Pressable
                   onPress={() => console.log('Add exercise')}
@@ -195,16 +169,12 @@ export default function WorkoutScreen() {
                     </View>
                   </View>
                 </Pressable>
-                <Text className="text-sm text-foreground-tertiary mt-4 text-center">
-                  Exercise list will be implemented in Task 2.1.2
-                </Text>
               </View>
             </View>
           )}
         </View>
       )}
 
-      {/* Start Workout Button - Fixed at bottom */}
       {canStartWorkout && (
         <View className="absolute bottom-6 right-4">
           <Button
@@ -217,7 +187,6 @@ export default function WorkoutScreen() {
         </View>
       )}
 
-      {/* Day Menu Bottom Sheet */}
       <BottomSheet ref={menuSheetRef} title={menuDay?.name ?? 'Options'}>
         <View className="px-4 pb-6">
           <Pressable
@@ -236,7 +205,6 @@ export default function WorkoutScreen() {
         </View>
       </BottomSheet>
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}

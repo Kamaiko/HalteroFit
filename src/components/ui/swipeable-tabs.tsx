@@ -1,10 +1,8 @@
 /**
- * SwipeableTabs Component
+ * SwipeableTabs - Horizontal swipeable tab navigation
  *
- * Horizontal swipeable tab navigation using react-native-pager-view.
- * Used for: Overview/Day Details, History/Chart/Guide patterns.
- *
- * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 3.2 (SwipeableTabs)
+ * KNOWN ISSUE: Crashes on Android with IllegalViewOperationException.
+ * Use SimpleTabs until this is resolved. See BACKLOG.md for details.
  */
 
 import { cn } from '@/lib/utils';
@@ -14,66 +12,71 @@ import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager
 
 import { Text } from './text';
 
-// Tab configuration
 export interface TabConfig {
   key: string;
   label: string;
 }
 
-// Props
 export interface SwipeableTabsProps {
   tabs: TabConfig[];
   children: React.ReactNode[];
   initialPage?: number;
+  activeIndex?: number;
   onPageChange?: (index: number) => void;
   className?: string;
   tabBarClassName?: string;
 }
 
-/**
- * SwipeableTabs - Horizontal swipeable tab navigation
- *
- * @example
- * ```tsx
- * <SwipeableTabs
- *   tabs={[{ key: 'overview', label: 'Overview' }, { key: 'details', label: 'Day Details' }]}
- *   onPageChange={(index) => console.log('Page:', index)}
- * >
- *   <OverviewContent />
- *   <DayDetailsContent />
- * </SwipeableTabs>
- * ```
- */
 export function SwipeableTabs({
   tabs,
   children,
   initialPage = 0,
+  activeIndex: controlledIndex,
   onPageChange,
   className,
   tabBarClassName,
 }: SwipeableTabsProps) {
   const pagerRef = React.useRef<PagerView>(null);
-  const [activeIndex, setActiveIndex] = React.useState(initialPage);
+  const [internalIndex, setInternalIndex] = React.useState(initialPage);
 
-  // Handle page selection from swipe
+  const isControlled = controlledIndex !== undefined;
+  const activeIndex = isControlled ? controlledIndex : internalIndex;
+
+  React.useEffect(() => {
+    if (isControlled && pagerRef.current) {
+      // eslint-disable-next-line no-undef
+      requestAnimationFrame(() => {
+        pagerRef.current?.setPageWithoutAnimation(controlledIndex);
+      });
+    }
+  }, [isControlled, controlledIndex]);
+
   const handlePageSelected = React.useCallback(
     (event: PagerViewOnPageSelectedEvent) => {
       const { position } = event.nativeEvent;
-      setActiveIndex(position);
+      if (!isControlled) {
+        setInternalIndex(position);
+      }
       onPageChange?.(position);
     },
-    [onPageChange]
+    [onPageChange, isControlled]
   );
 
-  // Handle tab press
-  const handleTabPress = React.useCallback((index: number) => {
-    pagerRef.current?.setPage(index);
-    setActiveIndex(index);
-  }, []);
+  const handleTabPress = React.useCallback(
+    (index: number) => {
+      pagerRef.current?.setPage(index);
+      if (!isControlled) {
+        setInternalIndex(index);
+      }
+      onPageChange?.(index);
+    },
+    [isControlled, onPageChange]
+  );
+
+  const childrenArray = React.Children.toArray(children);
 
   return (
     <View className={cn('flex-1', className)}>
-      {/* Tab Bar */}
       <View
         className={cn(
           'flex-row border-b border-background-elevated bg-background-surface',
@@ -90,16 +93,15 @@ export function SwipeableTabs({
         ))}
       </View>
 
-      {/* Swipeable Content */}
       <PagerView
         ref={pagerRef}
         style={{ flex: 1 }}
         initialPage={initialPage}
         onPageSelected={handlePageSelected}
-        overdrag
+        offscreenPageLimit={1}
       >
-        {React.Children.map(children, (child, index) => (
-          <View key={tabs[index]?.key ?? index} style={{ flex: 1 }}>
+        {childrenArray.map((child, index) => (
+          <View key={tabs[index]?.key ?? `page-${index}`} style={{ flex: 1 }} collapsable={false}>
             {child}
           </View>
         ))}
@@ -108,7 +110,6 @@ export function SwipeableTabs({
   );
 }
 
-// Tab Button Component
 interface TabButtonProps {
   label: string;
   isActive: boolean;

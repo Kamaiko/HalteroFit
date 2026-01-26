@@ -42,25 +42,18 @@ src/stores/auth/authStore.ts  - Added enableDevMode()
 
 ## 2. Deviations From Plan
 
-### Deviation #1: SwipeableTabs Replaced with Simple Tabs
+### Deviation #1: SwipeableTabs Replaced with SimpleTabs
 
-**Problem:** `react-native-pager-view` crashed with `IllegalViewOperationException` when used inside the Workout screen structure.
+**Problem:** `react-native-pager-view` crashes with `IllegalViewOperationException` on Android.
 
-**Workaround:** Replaced `SwipeableTabs` with simple `Pressable`-based tabs and conditional rendering.
+**Workaround:** Using SimpleTabs (tap-only navigation) instead of SwipeableTabs.
 
-**Impact:**
-- ❌ No swipe gesture between Overview/Day Details
-- ✅ Tap to switch tabs works
-- 🔄 Can revisit SwipeableTabs later when root cause is identified
+**Attempted fixes:**
+- `collapsable={false}` on child Views
+- `requestAnimationFrame` delay for page changes
+- `offscreenPageLimit={1}`
 
-**Code location:** [workout.tsx:264-282](../src/app/(tabs)/workout.tsx#L264-L282)
-
-```tsx
-// TODO: Restore SwipeableTabs once PagerView crash is resolved
-// See: IllegalViewOperationException with react-native-pager-view
-<View className="flex-row border-b...">
-  <Pressable onPress={() => setActiveTabIndex(0)}>...
-```
+None resolved the crash. See BACKLOG.md for future alternatives.
 
 ### Deviation #2: Dev Mode Authentication
 
