@@ -242,7 +242,7 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onPress }: ExerciseC
             cachePolicy="memory-disk"
             transition={200}
             recyclingKey={exercise.id}
-            placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+            placeholder={{ blurhash: 'L00000fQfQfQfQfQfQfQfQfQfQfQ' }}
             onError={handleImageError}
           />
         )}
