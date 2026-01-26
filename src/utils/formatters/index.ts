@@ -4,7 +4,7 @@
  * Data formatting utilities (weight, date, duration, etc.)
  *
  * USAGE:
- * import { formatWeight, formatDuration, formatDate } from '@/utils/formatters';
+ * import { formatWeight } from '@/utils/formatters';
  */
 
 // Export formatter functions here when implemented

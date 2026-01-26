@@ -1,21 +1,22 @@
 /**
  * Exercise Selector Screen (Muscle Selector)
  *
- * Grid of muscle groups with "Show All" button.
- * Filters exercises by body part or target muscle.
+ * Grid of muscle groups for filtering exercises.
  *
  * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 2.1 (Muscle Selector)
- * @see docs/reference/jefit/screenshots/02-exercises/01-muscle-selector.png
  */
 
 import { Text } from '@/components/ui/text';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors } from '@/constants';
+import { ScreenContainer } from '@/components/layout';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Filter type determines which database field to query
+// ============================================================================
+// Types & Constants
+// ============================================================================
+
 type FilterType = 'bodyPart' | 'targetMuscle';
 
 interface MuscleGroup {
@@ -25,7 +26,7 @@ interface MuscleGroup {
   filterValue?: string;
 }
 
-// Muscle group data mapped to ExerciseDB dataset values
+/** Muscle groups mapped to ExerciseDB dataset values */
 const MUSCLE_GROUPS: MuscleGroup[] = [
   { id: 'triceps', label: 'Triceps', filterType: 'targetMuscle', filterValue: 'triceps' },
   { id: 'chest', label: 'Chest', filterType: 'bodyPart', filterValue: 'chest' },
@@ -40,6 +41,10 @@ const MUSCLE_GROUPS: MuscleGroup[] = [
   { id: 'lower-leg', label: 'Lower Leg', filterType: 'bodyPart', filterValue: 'lower legs' },
   { id: 'show-all', label: 'Show All' },
 ];
+
+// ============================================================================
+// Main Component
+// ============================================================================
 
 export default function ExerciseSelectorScreen() {
   const handleMusclePress = (muscle: MuscleGroup) => {
@@ -58,35 +63,37 @@ export default function ExerciseSelectorScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background-surface" edges={['top']}>
-      <View className="flex-1 bg-background">
-        {/* Header */}
-        <View className="border-b border-background-elevated px-4 py-3">
-          <Text className="text-xl font-semibold text-foreground">Exercises</Text>
-        </View>
-
-        {/* Content */}
-        <ScrollView className="flex-1 px-4 py-4">
-          <Text className="mb-4 text-foreground-secondary">
-            Select a muscle group to browse exercises
-          </Text>
-
-          {/* Grid */}
-          <View className="flex-row flex-wrap justify-between">
-            {MUSCLE_GROUPS.map((muscle) => (
-              <MuscleCard
-                key={muscle.id}
-                label={muscle.label}
-                isShowAll={muscle.id === 'show-all'}
-                onPress={() => handleMusclePress(muscle)}
-              />
-            ))}
-          </View>
-        </ScrollView>
+    <ScreenContainer>
+      {/* Header */}
+      <View className="border-b border-background-elevated px-4 py-3">
+        <Text className="text-xl font-semibold text-foreground">Exercises</Text>
       </View>
-    </SafeAreaView>
+
+      {/* Content */}
+      <ScrollView className="flex-1 px-4 py-4">
+        <Text className="mb-4 text-foreground-secondary">
+          Select a muscle group to browse exercises
+        </Text>
+
+        {/* Grid */}
+        <View className="flex-row flex-wrap justify-between">
+          {MUSCLE_GROUPS.map((muscle) => (
+            <MuscleCard
+              key={muscle.id}
+              label={muscle.label}
+              isShowAll={muscle.id === 'show-all'}
+              onPress={() => handleMusclePress(muscle)}
+            />
+          ))}
+        </View>
+      </ScrollView>
+    </ScreenContainer>
   );
 }
+
+// ============================================================================
+// Sub-components
+// ============================================================================
 
 interface MuscleCardProps {
   label: string;
@@ -103,20 +110,16 @@ function MuscleCard({ label, isShowAll = false, onPress }: MuscleCardProps) {
       }}
       onPress={onPress}
     >
-      {/* Placeholder for muscle illustration */}
       <View className="mb-2 h-12 w-12 items-center justify-center rounded-full bg-background-elevated">
-        {isShowAll ? (
-          <Ionicons name="list" size={24} color={Colors.foreground.DEFAULT} />
-        ) : (
-          <Ionicons name="body" size={24} color={Colors.foreground.secondary} />
-        )}
+        <Ionicons
+          name={isShowAll ? 'list' : 'body'}
+          size={24}
+          color={isShowAll ? Colors.foreground.DEFAULT : Colors.foreground.secondary}
+        />
       </View>
-
       <Text
         className="text-center text-sm font-medium"
-        style={{
-          color: isShowAll ? Colors.foreground.inverse : Colors.foreground.DEFAULT,
-        }}
+        style={{ color: isShowAll ? Colors.foreground.inverse : Colors.foreground.DEFAULT }}
       >
         {label}
       </Text>

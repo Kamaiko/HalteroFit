@@ -1,13 +1,11 @@
-import { View, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text } from 'react-native';
+import { ScreenContainer } from '@/components/layout';
 
 export default function SettingsScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-background-surface" edges={['top']}>
-      <View className="flex-1 bg-background items-center justify-center p-6">
-        <Text className="text-3xl font-bold text-foreground mb-2">Settings</Text>
-        <Text className="text-base text-foreground-secondary">Customize your experience</Text>
-      </View>
-    </SafeAreaView>
+    <ScreenContainer contentClassName="items-center justify-center p-6">
+      <Text className="text-3xl font-bold text-foreground mb-2">Settings</Text>
+      <Text className="text-base text-foreground-secondary">Customize your experience</Text>
+    </ScreenContainer>
   );
 }

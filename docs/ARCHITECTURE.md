@@ -90,6 +90,9 @@ components/
 │   ├── alert.tsx
 │   ├── toast.tsx
 │   └── ...           # Other Reusables components
+├── layout/           # Screen layout components
+│   ├── ScreenContainer.tsx  # SafeAreaView + status bar styling
+│   └── index.ts
 ├── fitness/          # Custom fitness-specific components
 │   ├── RestTimer.tsx
 │   ├── SetLogger.tsx
@@ -110,6 +113,7 @@ components/
 **Organization Notes:**
 
 - `ui/`: Components installed from React Native Reusables CLI (lowercase naming per shadcn convention)
+- `layout/`: Screen structure components (SafeAreaView wrappers, consistent styling)
 - `fitness/`: Custom components specific to workout tracking (not available in Reusables)
 - `charts/`: Victory Native visualization components
 - `lists/`: FlashList optimized list components
