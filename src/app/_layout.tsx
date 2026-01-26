@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PortalHost } from '@rn-primitives/portal';
+import * as SplashScreen from 'expo-splash-screen';
 import { Colors } from '@/constants';
 import { initSentry, setSentryUser } from '@/utils/sentry';
 import { useAuthStore } from '@/stores/auth/authStore';
 import { initializeExercises } from '@/services/database/seed';
 import '../../global.css';
+
+// Keep native splash visible until app is ready
+SplashScreen.preventAutoHideAsync();
 
 /**
  * Root Layout
@@ -33,10 +36,12 @@ export default function RootLayout() {
         await initializeExercises();
 
         setIsReady(true);
+        await SplashScreen.hideAsync();
       } catch (error) {
         console.error('App initialization failed:', error);
         // Still show app even if seeding fails
         setIsReady(true);
+        await SplashScreen.hideAsync();
       }
     }
 
@@ -56,22 +61,9 @@ export default function RootLayout() {
     return unsubscribe;
   }, []);
 
-  // Show loading screen during initialization
+  // Wait for initialization (native splash stays visible)
   if (!isReady) {
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: Colors.background.DEFAULT,
-          }}
-        >
-          <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
-        </View>
-      </GestureHandlerRootView>
-    );
+    return null;
   }
 
   return (

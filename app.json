@@ -7,6 +7,10 @@
     "userInterfaceStyle": "dark",
     "scheme": "halterofit",
     "backgroundColor": "#0A0A0A",
+    "splash": {
+      "backgroundColor": "#0A0A0A",
+      "resizeMode": "contain"
+    },
     "newArchEnabled": true,
     "plugins": ["expo-router", "@sentry/react-native", "expo-asset"],
     "assetBundlePatterns": ["**/*"],
