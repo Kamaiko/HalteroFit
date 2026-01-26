@@ -1,8 +1,8 @@
-# Jefit UI Specification
+# Wireframes & UI Specification
 
-> **Source:** Document PDF de référence (36 pages)
-> **Date:** 2026-01-25
-> **But:** Documenter l'UI de Jefit pour guider l'implémentation de Halterofit
+> **Source:** Jefit app analysis (PDF reference, 36 pages)
+> **Updated:** 2026-01-26
+> **Purpose:** UI patterns and screen specifications for Halterofit MVP
 
 ---
 
