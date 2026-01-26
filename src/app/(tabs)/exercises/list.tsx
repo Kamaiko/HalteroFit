@@ -151,70 +151,72 @@ export default function ExerciseListScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background-surface" edges={['top']}>
-      {/* Header */}
-      <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
-        <Pressable onPress={() => router.back()} className="mr-3">
-          <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
-        </Pressable>
-        <Text className="flex-1 text-xl font-semibold text-foreground">
-          {filterLabel || 'All Exercises'}
-        </Text>
-      </View>
-
-      {/* Search Bar */}
-      <View className="border-b border-background-elevated px-4 py-3">
-        <View className="flex-row items-center rounded-lg bg-background-surface px-3 py-2">
-          <Ionicons
-            name="search"
-            size={20}
-            color={Colors.foreground.secondary}
-            style={{ marginRight: 8 }}
-          />
-          <TextInput
-            className="flex-1 text-foreground"
-            placeholder="Search exercise name"
-            placeholderTextColor={Colors.foreground.tertiary}
-            value={search}
-            onChangeText={setSearch}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          {search.length > 0 && (
-            <Pressable onPress={() => setSearch('')}>
-              <Ionicons name="close" size={20} color={Colors.foreground.secondary} />
-            </Pressable>
-          )}
-        </View>
-      </View>
-
-      {/* Counter */}
-      <View className="px-4 py-2">
-        <Text className="text-sm text-foreground-secondary">
-          {loading ? 'Loading...' : `${totalCount} exercises found`}
-        </Text>
-      </View>
-
-      {/* Exercise List */}
-      {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
-        </View>
-      ) : exercises.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-foreground-secondary">
-            {search ? 'No exercises found matching your search' : 'No exercises available'}
+      <View className="flex-1 bg-background">
+        {/* Header */}
+        <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
+          <Pressable onPress={() => router.back()} className="mr-3">
+            <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
+          </Pressable>
+          <Text className="flex-1 text-xl font-semibold text-foreground">
+            {filterLabel || 'All Exercises'}
           </Text>
         </View>
-      ) : (
-        <FlashList
-          data={exercises}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={loadingMore ? LoadingFooter : null}
-        />
-      )}
+
+        {/* Search Bar */}
+        <View className="border-b border-background-elevated px-4 py-3">
+          <View className="flex-row items-center rounded-lg bg-background-surface px-3 py-2">
+            <Ionicons
+              name="search"
+              size={20}
+              color={Colors.foreground.secondary}
+              style={{ marginRight: 8 }}
+            />
+            <TextInput
+              className="flex-1 text-foreground"
+              placeholder="Search exercise name"
+              placeholderTextColor={Colors.foreground.tertiary}
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {search.length > 0 && (
+              <Pressable onPress={() => setSearch('')}>
+                <Ionicons name="close" size={20} color={Colors.foreground.secondary} />
+              </Pressable>
+            )}
+          </View>
+        </View>
+
+        {/* Counter */}
+        <View className="px-4 py-2">
+          <Text className="text-sm text-foreground-secondary">
+            {loading ? 'Loading...' : `${totalCount} exercises found`}
+          </Text>
+        </View>
+
+        {/* Exercise List */}
+        {loading ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
+          </View>
+        ) : exercises.length === 0 ? (
+          <View className="flex-1 items-center justify-center px-8">
+            <Text className="text-center text-foreground-secondary">
+              {search ? 'No exercises found matching your search' : 'No exercises available'}
+            </Text>
+          </View>
+        ) : (
+          <FlashList
+            data={exercises}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={loadingMore ? LoadingFooter : null}
+          />
+        )}
+      </View>
     </SafeAreaView>
   );
 }

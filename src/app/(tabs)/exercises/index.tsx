@@ -59,29 +59,31 @@ export default function ExerciseSelectorScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background-surface" edges={['top']}>
-      {/* Header */}
-      <View className="border-b border-background-elevated px-4 py-3">
-        <Text className="text-xl font-semibold text-foreground">Exercises</Text>
-      </View>
-
-      {/* Content */}
-      <ScrollView className="flex-1 bg-background px-4 py-4">
-        <Text className="mb-4 text-foreground-secondary">
-          Select a muscle group to browse exercises
-        </Text>
-
-        {/* Grid */}
-        <View className="flex-row flex-wrap justify-between">
-          {MUSCLE_GROUPS.map((muscle) => (
-            <MuscleCard
-              key={muscle.id}
-              label={muscle.label}
-              isShowAll={muscle.id === 'show-all'}
-              onPress={() => handleMusclePress(muscle)}
-            />
-          ))}
+      <View className="flex-1 bg-background">
+        {/* Header */}
+        <View className="border-b border-background-elevated px-4 py-3">
+          <Text className="text-xl font-semibold text-foreground">Exercises</Text>
         </View>
-      </ScrollView>
+
+        {/* Content */}
+        <ScrollView className="flex-1 px-4 py-4">
+          <Text className="mb-4 text-foreground-secondary">
+            Select a muscle group to browse exercises
+          </Text>
+
+          {/* Grid */}
+          <View className="flex-row flex-wrap justify-between">
+            {MUSCLE_GROUPS.map((muscle) => (
+              <MuscleCard
+                key={muscle.id}
+                label={muscle.label}
+                isShowAll={muscle.id === 'show-all'}
+                onPress={() => handleMusclePress(muscle)}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
