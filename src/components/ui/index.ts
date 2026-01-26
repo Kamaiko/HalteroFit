@@ -19,3 +19,6 @@ export type { SwipeableTabsProps, TabConfig } from './swipeable-tabs';
 
 export { BottomSheet } from './bottom-sheet';
 export type { BottomSheetProps, BottomSheetRef } from './bottom-sheet';
+
+export { ConfirmDialog } from './confirm-dialog';
+export type { ConfirmDialogProps } from './confirm-dialog';
