@@ -92,11 +92,15 @@ export const ExerciseCard = memo(function ExerciseCard({
         <Ionicons name="chevron-forward" size={20} color={Colors.foreground.secondary} />
       ) : (
         <View
-          className="h-6 w-6 items-center justify-center rounded-md"
           style={{
+            width: 24,
+            height: 24,
+            borderRadius: 4,
             borderWidth: 2,
-            borderColor: selected ? Colors.primary.DEFAULT : Colors.foreground.secondary,
+            borderColor: selected ? Colors.primary.DEFAULT : '#9CA3AF',
             backgroundColor: selected ? Colors.primary.DEFAULT : 'transparent',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {selected && <Ionicons name="checkmark" size={16} color="white" />}

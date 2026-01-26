@@ -142,13 +142,20 @@ export default function ExercisePickerScreen() {
           onEndReachedThreshold={0.5}
           ListFooterComponent={loadingMore ? LoadingFooter : null}
           extraData={selectedIds}
-          contentContainerStyle={{ paddingBottom: selectedCount > 0 ? 80 : 0 }}
+          contentContainerStyle={{ paddingBottom: selectedCount > 0 ? 100 : 0 }}
         />
       )}
 
       {/* Add Button */}
       {selectedCount > 0 && (
-        <View className="absolute bottom-6 left-4 right-4">
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 40,
+            left: 16,
+            right: 16,
+          }}
+        >
           <Button
             className="w-full items-center justify-center"
             style={{ backgroundColor: Colors.primary.DEFAULT, minHeight: 56 }}
