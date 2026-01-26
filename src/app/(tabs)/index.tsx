@@ -7,6 +7,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/layout';
+import { MaterialIcons } from '@/components/ui/icon';
 
 // Skeleton chart heights (deterministic for consistent skeleton)
 const SKELETON_HEIGHTS = [45, 72, 58, 83, 51, 69, 62];
@@ -23,11 +24,11 @@ export default function HomeScreen() {
 
       {/* Stats Cards */}
       <View className="px-6 mb-8">
-        <Text className="text-xl font-bold text-foreground mb-4">Your Progress</Text>
+        <Text className="text-xl font-bold text-foreground mb-4">Summary</Text>
         <View className="flex-row gap-3">
-          <StatCard icon="⚡" value={0} label="Workouts" />
-          <StatCard icon="🔥" value={0} label="Total Sets" />
-          <StatCard icon="📈" value={0} label="Volume (kg)" />
+          <StatCard icon="bolt" value={0} label="Workouts" />
+          <StatCard icon="layers" value={0} label="Total Sets" />
+          <StatCard icon="trending-up" value={0} label="Volume (kg)" />
         </View>
       </View>
 
@@ -50,10 +51,16 @@ export default function HomeScreen() {
             colors={['#8A2BE2', '#00FFFF']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            className="rounded-2xl p-5 flex-row items-center justify-center shadow-lg"
+            style={{
+              borderRadius: 9999,
+              paddingVertical: 20,
+              paddingHorizontal: 32,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             <Text className="text-lg font-bold text-white tracking-widest">START WORKOUT</Text>
-            <View className="w-2 h-2 rounded-full bg-cyan-400 ml-3" />
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -77,10 +84,13 @@ interface StatCardProps {
 function StatCard({ icon, value, label }: StatCardProps) {
   return (
     <View className="flex-1 bg-background-surface rounded-2xl p-4 items-center border border-background-elevated shadow-sm">
-      <View className="w-10 h-10 rounded-full bg-background-elevated items-center justify-center mb-2">
-        <Text className="text-xl">{icon}</Text>
+      <View
+        className="w-16 h-16 rounded-full items-center justify-center mb-3"
+        style={{ backgroundColor: '#000000' }}
+      >
+        <MaterialIcons name={icon as any} size={32} color="#60a5fa" />
       </View>
-      <Text className="text-2xl font-bold text-primary mb-1">{value}</Text>
+      <Text className="text-2xl font-bold text-foreground mb-1">{value}</Text>
       <Text className="text-xs text-foreground-secondary uppercase tracking-wide">{label}</Text>
     </View>
   );
