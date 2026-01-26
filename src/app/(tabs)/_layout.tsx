@@ -25,13 +25,20 @@ export default function TabsLayout() {
         name="workout"
         options={{
           title: 'Workout',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>💪</Text>,
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>✓</Text>,
+        }}
+      />
+      <Tabs.Screen
+        name="exercises"
+        options={{
+          title: 'Exercises',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>🏋️</Text>,
         }}
       />
       <Tabs.Screen
         name="stats"
         options={{
-          title: 'Analytics',
+          title: 'Progress',
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>📊</Text>,
         }}
       />
