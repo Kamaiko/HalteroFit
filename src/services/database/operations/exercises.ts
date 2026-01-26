@@ -76,23 +76,37 @@ export function observeExercise(id: string): Observable<Exercise> {
   return database.get<ExerciseModel>('exercises').findAndObserve(id).pipe(map(exerciseToPlain));
 }
 
-/**
- * Get all exercises (Promise)
- * With optional search and pagination
- */
-export async function getExercises(options?: {
+export interface ExerciseFilterOptions {
   search?: string;
+  bodyPart?: string;
+  targetMuscle?: string;
   limit?: number;
   offset?: number;
-}): Promise<Exercise[]> {
+}
+
+/**
+ * Get all exercises (Promise)
+ * With optional search, filters, and pagination
+ */
+export async function getExercises(options?: ExerciseFilterOptions): Promise<Exercise[]> {
   try {
-    const { search, limit = 50, offset = 0 } = options ?? {};
+    const { search, bodyPart, targetMuscle, limit = 50, offset = 0 } = options ?? {};
 
     const queries: Q.Clause[] = [];
 
     // Search by name (case-insensitive via SQLite LIKE)
     if (search && search.trim().length > 0) {
       queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(search)}%`)));
+    }
+
+    // Filter by body part (stored as JSON array, search within string)
+    if (bodyPart && bodyPart.trim().length > 0) {
+      queries.push(Q.where('body_parts', Q.like(`%"${Q.sanitizeLikeString(bodyPart)}"%`)));
+    }
+
+    // Filter by target muscle (stored as JSON array, search within string)
+    if (targetMuscle && targetMuscle.trim().length > 0) {
+      queries.push(Q.where('target_muscles', Q.like(`%"${Q.sanitizeLikeString(targetMuscle)}"%`)));
     }
 
     queries.push(Q.sortBy('name', Q.asc));
@@ -140,14 +154,27 @@ export function observeExercises(options?: {
 }
 
 /**
- * Get exercise count (with optional search filter)
+ * Get exercise count (with optional filters)
  */
-export async function getExerciseCount(search?: string): Promise<number> {
+export async function getExerciseCount(options?: {
+  search?: string;
+  bodyPart?: string;
+  targetMuscle?: string;
+}): Promise<number> {
   try {
+    const { search, bodyPart, targetMuscle } = options ?? {};
     const queries: Q.Clause[] = [];
 
     if (search && search.trim().length > 0) {
       queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(search)}%`)));
+    }
+
+    if (bodyPart && bodyPart.trim().length > 0) {
+      queries.push(Q.where('body_parts', Q.like(`%"${Q.sanitizeLikeString(bodyPart)}"%`)));
+    }
+
+    if (targetMuscle && targetMuscle.trim().length > 0) {
+      queries.push(Q.where('target_muscles', Q.like(`%"${Q.sanitizeLikeString(targetMuscle)}"%`)));
     }
 
     return await database

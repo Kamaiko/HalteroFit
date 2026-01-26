@@ -13,7 +13,7 @@ import { Ionicons } from '@/components/ui/icon';
 import { Colors } from '@/constants';
 import { getExercises, getExerciseCount, type Exercise } from '@/services/database/operations';
 import { FlashList } from '@shopify/flash-list';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,6 +41,13 @@ const LoadingFooter = () => (
 );
 
 export default function ExerciseListScreen() {
+  const params = useLocalSearchParams<{
+    filterType?: string;
+    filterValue?: string;
+    filterLabel?: string;
+  }>();
+  const { filterType, filterValue, filterLabel } = params;
+
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -48,27 +55,40 @@ export default function ExerciseListScreen() {
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
+  // Build filter options from route params
+  const getFilterOptions = useCallback(() => {
+    const options: { bodyPart?: string; targetMuscle?: string } = {};
+    if (filterType === 'bodyPart' && filterValue) {
+      options.bodyPart = filterValue;
+    } else if (filterType === 'targetMuscle' && filterValue) {
+      options.targetMuscle = filterValue;
+    }
+    return options;
+  }, [filterType, filterValue]);
+
   // Initial load
   useEffect(() => {
     loadExercises(true);
     loadCount();
-  }, []);
+  }, [filterType, filterValue]);
 
   // Search with debounce - parallelize requests for better performance
   // @see Vercel React Best Practices: async-parallel
   useEffect(() => {
     const timer = setTimeout(() => {
-      const searchQuery = search.trim() || undefined;
       // Run both requests in parallel instead of sequentially
-      Promise.all([loadExercises(true), loadCount(searchQuery)]);
+      Promise.all([loadExercises(true), loadCount()]);
     }, 300);
 
     return () => clearTimeout(timer);
   }, [search]);
 
-  const loadCount = async (searchQuery?: string) => {
+  const loadCount = async () => {
     try {
-      const count = await getExerciseCount(searchQuery);
+      const count = await getExerciseCount({
+        search: search.trim() || undefined,
+        ...getFilterOptions(),
+      });
       setTotalCount(count);
     } catch (error) {
       console.error('Failed to load exercise count:', error);
@@ -87,6 +107,7 @@ export default function ExerciseListScreen() {
       const offset = reset ? 0 : exercises.length;
       const results = await getExercises({
         search: search.trim() || undefined,
+        ...getFilterOptions(),
         limit: BATCH_SIZE,
         offset,
       });
@@ -135,7 +156,9 @@ export default function ExerciseListScreen() {
         <Pressable onPress={() => router.back()} className="mr-3">
           <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
         </Pressable>
-        <Text className="flex-1 text-xl font-semibold text-foreground">Exercises</Text>
+        <Text className="flex-1 text-xl font-semibold text-foreground">
+          {filterLabel || 'All Exercises'}
+        </Text>
       </View>
 
       {/* Search Bar */}
