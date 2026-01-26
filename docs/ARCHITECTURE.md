@@ -55,16 +55,19 @@ src/
 
 ```
 app/
-├── (tabs)/           # Tab navigation group (2 tabs)
-│   ├── workout/      # Workout tab with sub-tabs
-│   │   ├── find.tsx      # Find: Browse pre-made plans
-│   │   ├── planned.tsx   # Planned: Active plan
-│   │   └── _layout.tsx   # Sub-tab configuration
-│   ├── profile.tsx   # Profile screen
-│   └── _layout.tsx   # Tab bar configuration (Workout | Profile)
-├── settings.tsx      # Settings screen (accessed via gear icon)
-├── index.tsx         # Root redirect
-└── _layout.tsx       # Global layout + DB init
+├── (tabs)/               # Main tab navigation
+│   ├── exercises/        # Exercises tab (nested routes)
+│   │   ├── _layout.tsx   # Stack navigator for exercises
+│   │   ├── index.tsx     # Muscle selector grid
+│   │   └── list.tsx      # Exercise list with search
+│   ├── _layout.tsx       # Tab bar configuration
+│   ├── index.tsx         # Home/Dashboard
+│   ├── workout.tsx       # Active workout
+│   ├── stats.tsx         # Statistics
+│   └── settings.tsx      # Settings
+├── _layout.tsx           # Global layout + DB init
+├── +not-found.tsx        # 404 page
+└── index.tsx             # Root redirect
 ```
 
 **Conventions**:
@@ -83,41 +86,29 @@ app/
 ```
 components/
 ├── ui/               # React Native Reusables components (shadcn/ui)
-│   ├── button.tsx    # Installed via CLI
-│   ├── input.tsx
-│   ├── card.tsx
-│   ├── form.tsx
-│   ├── alert.tsx
-│   ├── toast.tsx
-│   └── ...           # Other Reusables components
+│   ├── button.tsx
+│   ├── text.tsx
+│   ├── icon.tsx      # Ionicons wrapper
+│   └── ...
 ├── layout/           # Screen layout components
 │   ├── ScreenContainer.tsx  # SafeAreaView + status bar styling
 │   └── index.ts
-├── fitness/          # Custom fitness-specific components
-│   ├── RestTimer.tsx
-│   ├── SetLogger.tsx
-│   ├── WorkoutCard.tsx
-│   └── ExerciseSelector.tsx
 ├── charts/           # Victory Native chart components
-│   ├── LineChart.tsx
-│   ├── BarChart.tsx
-│   └── ExampleLineChart.tsx
+│   └── ...
 ├── lists/            # FlashList components
-│   ├── WorkoutList.tsx
-│   └── WorkoutListItem.tsx
-└── shared/           # Shared utility components
-    ├── CachedImage.tsx
-    └── LoadingSpinner.tsx
+│   └── ...
+├── fitness/          # (Planned) Custom fitness-specific components
+└── shared/           # (Planned) Shared utility components
 ```
 
 **Organization Notes:**
 
-- `ui/`: Components installed from React Native Reusables CLI (lowercase naming per shadcn convention)
+- `ui/`: Components from React Native Reusables CLI (lowercase naming per shadcn convention)
 - `layout/`: Screen structure components (SafeAreaView wrappers, consistent styling)
-- `fitness/`: Custom components specific to workout tracking (not available in Reusables)
 - `charts/`: Victory Native visualization components
 - `lists/`: FlashList optimized list components
-- `shared/`: Utility components used across features (CachedImage, etc.)
+- `fitness/`: (Planned) Custom workout tracking components
+- `shared/`: (Planned) Cross-feature utility components
 
 **Conventions**:
 
