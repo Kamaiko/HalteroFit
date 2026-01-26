@@ -16,7 +16,7 @@ import { Text } from '@/components/ui/text';
 import { Colors } from '@/constants';
 import type { Exercise } from '@/services/database/operations';
 import { FlashList } from '@shopify/flash-list';
-import { memo, type ReactElement, type ReactNode } from 'react';
+import { memo, useCallback, type ReactElement, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 
 // Memoized loading footer for FlashList
@@ -72,6 +72,10 @@ export const ExerciseListView = memo(function ExerciseListView({
   contentPaddingBottom = 16,
   floatingContent,
 }: ExerciseListViewProps) {
+  const handleClearSearch = useCallback(() => {
+    onSearchChange('');
+  }, [onSearchChange]);
+
   return (
     <ScreenContainer>
       {/* Header */}
@@ -104,7 +108,7 @@ export const ExerciseListView = memo(function ExerciseListView({
             autoCorrect={false}
           />
           {search.length > 0 && (
-            <Pressable onPress={() => onSearchChange('')}>
+            <Pressable onPress={handleClearSearch}>
               <Ionicons name="close" size={20} color={Colors.foreground.secondary} />
             </Pressable>
           )}

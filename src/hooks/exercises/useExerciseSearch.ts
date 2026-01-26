@@ -46,6 +46,11 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
   const exercisesLengthRef = useRef(0);
   exercisesLengthRef.current = exercises.length;
 
+  // Refs to hold latest function versions (avoids stale closure in effects)
+  // See: https://typeofnan.dev/you-probably-shouldnt-ignore-react-hooks-exhaustive-deps-warnings/
+  const loadExercisesRef = useRef<(reset?: boolean) => Promise<void>>(null!);
+  const loadCountRef = useRef<() => Promise<void>>(null!);
+
   // Memoize filter options (simpler than useCallback for a value)
   const filterOptions = useMemo(
     (): ExerciseFilterOptions => initialFilters ?? {},
@@ -103,16 +108,21 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
     [search, filterOptions] // No exercises.length - using ref instead
   );
 
-  // Initial load
+  // Keep refs updated with latest function versions
+  loadExercisesRef.current = loadExercises;
+  loadCountRef.current = loadCount;
+
+  // Initial load when filters change
   useEffect(() => {
-    loadExercises(true);
-    loadCount();
+    loadExercisesRef.current(true);
+    loadCountRef.current();
   }, [initialFilters?.bodyPart, initialFilters?.targetMuscle]);
 
   // Search with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
-      Promise.all([loadExercises(true), loadCount()]);
+      loadExercisesRef.current(true);
+      loadCountRef.current();
     }, 300);
 
     return () => clearTimeout(timer);

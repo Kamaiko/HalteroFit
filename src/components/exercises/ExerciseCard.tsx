@@ -6,18 +6,12 @@
 
 import { Colors } from '@/constants';
 import type { Exercise } from '@/services/database/operations';
+import { capitalizeWords } from '@/utils';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Image } from 'expo-image';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
-
-function capitalizeWords(str: string): string {
-  return str
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 export type ExerciseCardMode = 'browse' | 'select';
 

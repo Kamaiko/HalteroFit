@@ -14,7 +14,7 @@ import { Colors } from '@/constants';
 import { useExerciseSearch } from '@/hooks/exercises';
 import type { Exercise } from '@/services/database/operations';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -69,33 +69,36 @@ export default function ExercisePickerScreen() {
   const selectedCount = selectedIds.size;
   const isButtonDisabled = selectedCount === 0;
 
-  // Floating Add Button
-  const floatingContent = (
-    <View
-      style={{
-        position: 'absolute',
-        bottom: Math.max(insets.bottom, 16) + 24,
-        left: 16,
-        right: 16,
-      }}
-    >
-      <Button
-        className="w-full items-center justify-center"
+  // Floating Add Button - memoized to avoid recreation on every render
+  const floatingContent = useMemo(
+    () => (
+      <View
         style={{
-          backgroundColor: isButtonDisabled ? Colors.foreground.tertiary : Colors.primary.DEFAULT,
-          minHeight: 56,
+          position: 'absolute',
+          bottom: Math.max(insets.bottom, 16) + 24,
+          left: 16,
+          right: 16,
         }}
-        onPress={handleAddExercises}
-        disabled={isButtonDisabled}
       >
-        <Text
-          className="font-semibold text-base"
-          style={{ color: isButtonDisabled ? Colors.foreground.secondary : 'white' }}
+        <Button
+          className="w-full items-center justify-center"
+          style={{
+            backgroundColor: isButtonDisabled ? Colors.foreground.tertiary : Colors.primary.DEFAULT,
+            minHeight: 56,
+          }}
+          onPress={handleAddExercises}
+          disabled={isButtonDisabled}
         >
-          Add {selectedCount} exercise{selectedCount !== 1 ? 's' : ''}
-        </Text>
-      </Button>
-    </View>
+          <Text
+            className="font-semibold text-base"
+            style={{ color: isButtonDisabled ? Colors.foreground.secondary : 'white' }}
+          >
+            Add {selectedCount} exercise{selectedCount !== 1 ? 's' : ''}
+          </Text>
+        </Button>
+      </View>
+    ),
+    [insets.bottom, isButtonDisabled, handleAddExercises, selectedCount]
   );
 
   return (

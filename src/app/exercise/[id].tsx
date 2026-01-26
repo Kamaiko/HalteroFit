@@ -22,25 +22,21 @@ import { Text } from '@/components/ui/text';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors } from '@/constants';
 import { getExerciseById, type Exercise } from '@/services/database/operations';
+import { capitalizeWords } from '@/utils';
 
 // ============================================================================
-// Constants & Helpers
+// Constants
 // ============================================================================
 
-/** Capitalize first letter of each word */
-function capitalizeWords(str: string): string {
-  return str
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
-// Tab configuration
+// Tab configuration (History/Chart tabs disabled until analytics implemented)
 const TABS = [
   { key: 'history', label: 'History', disabled: true },
   { key: 'chart', label: 'Chart', disabled: true },
   { key: 'guide', label: 'Guide', disabled: false },
 ] as const;
+
+// Currently only Guide tab is active
+const ACTIVE_TAB: (typeof TABS)[number]['key'] = 'guide';
 
 // ============================================================================
 // Main Component
@@ -52,7 +48,6 @@ export default function ExerciseDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
-  const [activeTab] = useState<'history' | 'chart' | 'guide'>('guide');
 
   // Load exercise data
   useEffect(() => {
@@ -181,7 +176,7 @@ export default function ExerciseDetailScreen() {
               >
                 <Text
                   className={
-                    tab.key === activeTab
+                    tab.key === ACTIVE_TAB
                       ? 'text-base font-medium text-primary'
                       : tab.disabled
                         ? 'text-base text-foreground-tertiary'
@@ -190,7 +185,7 @@ export default function ExerciseDetailScreen() {
                 >
                   {tab.label}
                 </Text>
-                {tab.key === activeTab && (
+                {tab.key === ACTIVE_TAB && (
                   <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
                 )}
               </Pressable>
