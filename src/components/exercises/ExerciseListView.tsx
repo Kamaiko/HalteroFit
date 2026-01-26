@@ -1,77 +1,88 @@
 /**
- * Exercise List Screen
+ * ExerciseListView - Shared exercise list UI component
  *
- * Displays all exercises with search functionality.
- * Uses FlashList for high-performance rendering.
+ * Provides the common UI structure for exercise browsing and selection:
+ * - Header with back button, title, subtitle
+ * - Search bar with clear button
+ * - Exercise counter
+ * - FlashList with loading/empty states
  *
- * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 2.2 (Exercise List)
+ * Used by: exercise-browser, exercise-picker
  */
 
 import { ScreenContainer } from '@/components/layout';
-import { ExerciseCard } from '@/components/exercises';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Colors } from '@/constants';
-import { useExerciseSearch } from '@/hooks/exercises';
 import type { Exercise } from '@/services/database/operations';
 import { FlashList } from '@shopify/flash-list';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { memo, type ReactElement, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 
-const LoadingFooter = () => (
-  <View className="py-4">
-    <ActivityIndicator size="small" color={Colors.primary.DEFAULT} />
-  </View>
-);
-
-export default function ExerciseListScreen() {
-  const params = useLocalSearchParams<{
-    filterType?: string;
-    filterValue?: string;
-    filterLabel?: string;
-  }>();
-  const { filterType, filterValue, filterLabel } = params;
-
-  const initialFilters = useMemo(() => {
-    if (filterType === 'bodyPart' && filterValue) {
-      return { bodyPart: filterValue };
-    }
-    if (filterType === 'targetMuscle' && filterValue) {
-      return { targetMuscle: filterValue };
-    }
-    return undefined;
-  }, [filterType, filterValue]);
-
-  const { exercises, search, setSearch, loading, loadingMore, totalCount, loadMore } =
-    useExerciseSearch({ initialFilters });
-
-  const handleExercisePress = useCallback((exercise: Exercise) => {
-    router.push({
-      pathname: '/(tabs)/exercises/[id]',
-      params: { id: exercise.id },
-    });
-  }, []);
-
-  const renderItem = useCallback(
-    ({ item }: { item: Exercise }) => (
-      <ExerciseCard exercise={item} onPress={handleExercisePress} />
-    ),
-    [handleExercisePress]
+// Memoized loading footer for FlashList
+const LoadingFooter = memo(function LoadingFooter() {
+  return (
+    <View className="py-4">
+      <ActivityIndicator size="small" color={Colors.primary.DEFAULT} />
+    </View>
   );
+});
 
-  const keyExtractor = useCallback((item: Exercise) => item.id, []);
+export interface ExerciseListViewProps {
+  // Header
+  title: string;
+  subtitle?: string;
+  onBack: () => void;
 
+  // Search
+  search: string;
+  onSearchChange: (text: string) => void;
+
+  // Data
+  exercises: Exercise[];
+  totalCount: number;
+  loading: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
+
+  // Item rendering
+  renderItem: (info: { item: Exercise }) => ReactElement;
+  extraData?: unknown;
+
+  // Optional content padding for floating buttons
+  contentPaddingBottom?: number;
+
+  // Optional floating content (e.g., Add button)
+  floatingContent?: ReactNode;
+}
+
+export const ExerciseListView = memo(function ExerciseListView({
+  title,
+  subtitle,
+  onBack,
+  search,
+  onSearchChange,
+  exercises,
+  totalCount,
+  loading,
+  loadingMore,
+  onLoadMore,
+  renderItem,
+  extraData,
+  contentPaddingBottom = 16,
+  floatingContent,
+}: ExerciseListViewProps) {
   return (
     <ScreenContainer>
       {/* Header */}
       <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
-        <Pressable onPress={() => router.back()} className="mr-3">
+        <Pressable onPress={onBack} className="mr-3">
           <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
         </Pressable>
-        <Text className="flex-1 text-xl font-semibold text-foreground">
-          {filterLabel || 'All Exercises'}
-        </Text>
+        <View className="flex-1">
+          <Text className="text-xl font-semibold text-foreground">{title}</Text>
+          {subtitle && <Text className="text-sm text-foreground-secondary">{subtitle}</Text>}
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -88,12 +99,12 @@ export default function ExerciseListScreen() {
             placeholder="Search exercise name"
             placeholderTextColor={Colors.foreground.tertiary}
             value={search}
-            onChangeText={setSearch}
+            onChangeText={onSearchChange}
             autoCapitalize="none"
             autoCorrect={false}
           />
           {search.length > 0 && (
-            <Pressable onPress={() => setSearch('')}>
+            <Pressable onPress={() => onSearchChange('')}>
               <Ionicons name="close" size={20} color={Colors.foreground.secondary} />
             </Pressable>
           )}
@@ -122,12 +133,19 @@ export default function ExerciseListScreen() {
         <FlashList
           data={exercises}
           renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          onEndReached={loadMore}
+          keyExtractor={(item) => item.id}
+          // NOTE: estimatedItemSize={80} would be optimal but FlashList types
+          // don't include it yet. FlashList will auto-calculate it.
+          onEndReached={onLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={loadingMore ? LoadingFooter : null}
+          extraData={extraData}
+          contentContainerStyle={{ paddingBottom: contentPaddingBottom }}
         />
       )}
+
+      {/* Floating content (e.g., Add button) */}
+      {floatingContent}
     </ScreenContainer>
   );
-}
+});

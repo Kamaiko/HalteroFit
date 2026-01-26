@@ -1,11 +1,13 @@
 /**
- * Exercise Detail Screen
+ * Exercise Detail Screen (Full-screen)
  *
  * Displays detailed information about an exercise including:
  * - Animated GIF demonstration
  * - Target and secondary muscles
  * - Equipment needed
  * - Step-by-step instructions
+ *
+ * Displayed outside tabs (covers entire screen including tab bar).
  *
  * @see docs/reference/jefit/screenshots/Description_exercice1.png
  * @see docs/reference/jefit/screenshots/Description_exercice2.png
@@ -118,17 +120,23 @@ export default function ExerciseDetailScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top']}>
       <View className="flex-1 bg-background">
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          {/* GIF Section with Back Button */}
-          <View style={{ position: 'relative', backgroundColor: '#FFFFFF' }}>
-            {/* Back Button - Absolute position on GIF */}
-            <Pressable
-              onPress={handleBack}
-              className="absolute left-4 top-4 z-10 rounded-full bg-black/50 p-2"
-            >
-              <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
-            </Pressable>
+        {/* Floating Back Button - stays fixed while scrolling */}
+        <Pressable
+          onPress={handleBack}
+          style={{
+            position: 'absolute',
+            left: 16,
+            top: 16,
+            zIndex: 20,
+          }}
+          className="rounded-full bg-black/50 p-2"
+        >
+          <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
+        </Pressable>
 
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          {/* GIF Section */}
+          <View style={{ backgroundColor: '#FFFFFF' }}>
             {/* Exercise GIF - white background for seamless blend */}
             <View
               style={{

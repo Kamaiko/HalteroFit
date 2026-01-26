@@ -149,6 +149,11 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - Multi-select equipment filter (barbell, dumbbell, cable, etc.)
   - Combine muscle + equipment filters
   - **Estimated effort:** ~4-6h
+- **Exercise picker filters** (filter by muscle while selecting exercises for workout)
+  - Current MVP: Search only in exercise picker
+  - Add 2-3 quick filter checkboxes below search bar (e.g., by body part)
+  - Reuse existing filter infrastructure from exercise-browser
+  - **Estimated effort:** ~2-3h
 - **Leftover session handling** (workout abandoned >4h)
   - Current MVP: No timeout handling
   - Detect workouts inactive for 4+ hours

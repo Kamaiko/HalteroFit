@@ -5,7 +5,7 @@
  */
 
 import { getExercises, getExerciseCount, type Exercise } from '@/services/database/operations';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const BATCH_SIZE = 50;
 
@@ -26,6 +26,7 @@ export interface UseExerciseSearchReturn {
   loadingMore: boolean;
   totalCount: number;
   hasMore: boolean;
+  error: string | null;
   loadMore: () => void;
   refresh: () => void;
 }
@@ -39,26 +40,34 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const getFilterOptions = useCallback((): ExerciseFilterOptions => {
-    return initialFilters ?? {};
-  }, [initialFilters]);
+  // Use ref to track exercises length without causing callback recreation
+  const exercisesLengthRef = useRef(0);
+  exercisesLengthRef.current = exercises.length;
+
+  // Memoize filter options (simpler than useCallback for a value)
+  const filterOptions = useMemo(
+    (): ExerciseFilterOptions => initialFilters ?? {},
+    [initialFilters]
+  );
 
   const loadCount = useCallback(async () => {
     try {
       const count = await getExerciseCount({
         search: search.trim() || undefined,
-        ...getFilterOptions(),
+        ...filterOptions,
       });
       setTotalCount(count);
-    } catch (error) {
-      console.error('Failed to load exercise count:', error);
+    } catch (err) {
+      console.error('Failed to load exercise count:', err);
     }
-  }, [search, getFilterOptions]);
+  }, [search, filterOptions]);
 
   const loadExercises = useCallback(
     async (reset = false) => {
       try {
+        setError(null);
         if (reset) {
           setLoading(true);
           setHasMore(true);
@@ -66,10 +75,11 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
           setLoadingMore(true);
         }
 
-        const offset = reset ? 0 : exercises.length;
+        // Use ref to avoid callback recreation when exercises change
+        const offset = reset ? 0 : exercisesLengthRef.current;
         const results = await getExercises({
           search: search.trim() || undefined,
-          ...getFilterOptions(),
+          ...filterOptions,
           limit: BATCH_SIZE,
           offset,
         });
@@ -81,14 +91,16 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
         }
 
         setHasMore(results.length === BATCH_SIZE);
-      } catch (error) {
-        console.error('Failed to load exercises:', error);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to load exercises';
+        setError(message);
+        console.error('Failed to load exercises:', err);
       } finally {
         setLoading(false);
         setLoadingMore(false);
       }
     },
-    [search, getFilterOptions, exercises.length]
+    [search, filterOptions] // No exercises.length - using ref instead
   );
 
   // Initial load
@@ -125,6 +137,7 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
     loadingMore,
     totalCount,
     hasMore,
+    error,
     loadMore,
     refresh,
   };

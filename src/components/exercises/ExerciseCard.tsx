@@ -9,7 +9,7 @@ import type { Exercise } from '@/services/database/operations';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Image } from 'expo-image';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 function capitalizeWords(str: string): string {
@@ -45,8 +45,28 @@ export const ExerciseCard = memo(function ExerciseCard({
     onPress(exercise);
   }, [exercise, onPress]);
 
-  const muscleText = exercise.target_muscles.map(capitalizeWords).join(', ') || 'No muscle info';
+  // Memoize computed values to avoid re-calculation on re-render
+  const displayName = useMemo(() => capitalizeWords(exercise.name), [exercise.name]);
+  const muscleText = useMemo(
+    () => exercise.target_muscles.map(capitalizeWords).join(', ') || 'No muscle info',
+    [exercise.target_muscles]
+  );
   const showPlaceholder = !exercise.gif_url || imageError;
+
+  // Memoize checkbox style to avoid object recreation
+  const checkboxStyle = useMemo(
+    () => ({
+      width: 24,
+      height: 24,
+      borderRadius: 4,
+      borderWidth: 2,
+      borderColor: selected ? Colors.primary.DEFAULT : '#9CA3AF',
+      backgroundColor: selected ? Colors.primary.DEFAULT : 'transparent',
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+    }),
+    [selected]
+  );
 
   return (
     <Pressable
@@ -80,7 +100,7 @@ export const ExerciseCard = memo(function ExerciseCard({
       {/* Info */}
       <View className="flex-1">
         <Text className="font-medium text-foreground" numberOfLines={1}>
-          {capitalizeWords(exercise.name)}
+          {displayName}
         </Text>
         <Text className="mt-0.5 text-sm text-foreground-secondary" numberOfLines={1}>
           {muscleText}
@@ -91,18 +111,7 @@ export const ExerciseCard = memo(function ExerciseCard({
       {mode === 'browse' ? (
         <Ionicons name="chevron-forward" size={20} color={Colors.foreground.secondary} />
       ) : (
-        <View
-          style={{
-            width: 24,
-            height: 24,
-            borderRadius: 4,
-            borderWidth: 2,
-            borderColor: selected ? Colors.primary.DEFAULT : '#9CA3AF',
-            backgroundColor: selected ? Colors.primary.DEFAULT : 'transparent',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <View style={checkboxStyle}>
           {selected && <Ionicons name="checkmark" size={16} color="white" />}
         </View>
       )}

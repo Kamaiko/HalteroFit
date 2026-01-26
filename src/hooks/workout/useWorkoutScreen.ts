@@ -162,6 +162,12 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
         const planWithDays = await getPlanWithDays(activePlan.id);
         setPlanDays(planWithDays.days);
 
+        // Auto-select first day if none selected
+        const firstDay = planWithDays.days[0];
+        if (firstDay && !selectedDay) {
+          setSelectedDay(firstDay);
+        }
+
         // Fetch actual exercise counts
         const dayIds = planWithDays.days.map((d) => d.id);
         const counts = await getExerciseCountsByDays(dayIds);

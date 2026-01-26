@@ -64,7 +64,7 @@ export default function WorkoutScreen() {
   const handleAddExercisePress = useCallback(() => {
     if (!selectedDay) return;
     router.push({
-      pathname: '/(tabs)/exercises/picker',
+      pathname: '/exercise-picker',
       params: { dayId: selectedDay.id, dayName: selectedDay.name },
     });
   }, [selectedDay]);
