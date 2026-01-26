@@ -256,7 +256,15 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onPress }: ExerciseC
       {/* Exercise thumbnail (static, no animation) */}
       <View className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-background-surface">
         {showPlaceholder ? (
-          <View className="h-14 w-14 items-center justify-center bg-background-elevated">
+          <View
+            style={{
+              width: 56,
+              height: 56,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#FFFFFF',
+            }}
+          >
             <Ionicons name="barbell-outline" size={24} color={Colors.foreground.secondary} />
           </View>
         ) : (
