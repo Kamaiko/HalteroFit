@@ -5,12 +5,12 @@
 if git diff --cached --name-only | grep -qE "supabase/migrations/.*\.sql"; then
 
   # Check if schema.ts was modified AND version changed
-  if ! git diff --cached src/services/database/watermelon/schema.ts | grep -qE "^\+.*version:"; then
+  if ! git diff --cached src/services/database/local/schema.ts | grep -qE "^\+.*version:"; then
     echo ""
     echo "❌ Migration SQL detected but schema.version not incremented"
     echo ""
     echo "📋 Action required:"
-    echo "   1. Open: src/services/database/watermelon/schema.ts"
+    echo "   1. Open: src/services/database/local/schema.ts"
     echo "   2. Increment version: version: X → version: X+1"
     echo ""
     echo "📚 Documentation: docs/CONTRIBUTING.md § Database Schema Changes (step 5)"
