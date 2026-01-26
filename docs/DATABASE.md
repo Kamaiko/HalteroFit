@@ -30,20 +30,31 @@ This document provides an overview of Halterofit's hybrid database architecture 
 
 ## Tables Overview
 
-| Table             | Purpose                            | Relationships       |
-| ----------------- | ---------------------------------- | ------------------- |
-| users             | User profiles and preferences      | → workouts          |
-| exercises         | Exercise library (ExerciseDB)      | ← workout_exercises |
-| workouts          | Workout sessions                   | → workout_exercises |
-| workout_exercises | Links workouts to exercises        | → exercise_sets     |
-| exercise_sets     | Individual sets within an exercise | (leaf)              |
+### Core Tables (Logged Workouts)
 
-**Schema SSoT:** `src/services/database/watermelon/schema.ts`
+| Table             | Purpose                            | Relationships                  |
+| ----------------- | ---------------------------------- | ------------------------------ |
+| users             | User profiles and preferences      | → workouts, workout_plans      |
+| exercises         | Exercise library (ExerciseDB)      | ← workout_exercises, plan_day_exercises |
+| workouts          | Logged workout sessions            | → workout_exercises, ← workout_plans |
+| workout_exercises | Links workouts to exercises        | → exercise_sets                |
+| exercise_sets     | Individual sets within an exercise | (leaf)                         |
+
+### Workout Plans Tables (v8)
+
+| Table              | Purpose                              | Relationships            |
+| ------------------ | ------------------------------------ | ------------------------ |
+| workout_plans      | Reusable workout templates/routines  | → plan_days, ← users     |
+| plan_days          | Days within a plan (e.g., "Day 1")   | → plan_day_exercises     |
+| plan_day_exercises | Exercise templates in a day          | ← exercises              |
+
+**Schema SSoT:** `src/services/database/local/schema.ts`
 
 **Cascade Behavior:**
 
 - Deleting a workout cascades to workout_exercises and exercise_sets
-- Exercises cannot be deleted if referenced by workout_exercises
+- Deleting a workout_plan cascades to plan_days and plan_day_exercises
+- Exercises cannot be deleted if referenced by workout_exercises or plan_day_exercises
 
 ---
 
@@ -68,11 +79,11 @@ This document provides an overview of Halterofit's hybrid database architecture 
 
 All database code resides in `src/services/database/`:
 
-| Directory     | Purpose                  |
-| ------------- | ------------------------ |
-| `watermelon/` | Schema, models, sync     |
-| `operations/` | Business logic (CRUD)    |
-| `local/`      | Local database utilities |
+| Directory     | Purpose                        |
+| ------------- | ------------------------------ |
+| `local/`      | Schema, models, migrations     |
+| `operations/` | Business logic (CRUD)          |
+| `remote/`     | Supabase sync, remote types    |
 
 ### Patterns
 
@@ -106,11 +117,11 @@ All database code resides in `src/services/database/`:
    ```
 
 2. **Update WatermelonDB schema**
-   - File: `src/services/database/watermelon/schema.ts`
+   - File: `src/services/database/local/schema.ts`
    - Increment version number
 
 3. **Add WatermelonDB migration** (if existing data)
-   - File: `src/services/database/watermelon/migrations.ts`
+   - File: `src/services/database/local/migrations.ts`
 
 4. **Test migration**
    ```bash
@@ -146,12 +157,13 @@ All database code resides in `src/services/database/`:
 
 ### Schema (Single Source of Truth)
 
-| Component           | Location                                         |
-| ------------------- | ------------------------------------------------ |
-| WatermelonDB Schema | `src/services/database/watermelon/schema.ts`     |
-| WatermelonDB Models | `src/services/database/watermelon/models/`       |
-| Migrations (local)  | `src/services/database/watermelon/migrations.ts` |
-| Migrations (cloud)  | `supabase/migrations/`                           |
+| Component           | Location                                   |
+| ------------------- | ------------------------------------------ |
+| WatermelonDB Schema | `src/services/database/local/schema.ts`    |
+| WatermelonDB Models | `src/services/database/local/models/`      |
+| Migrations (local)  | `src/services/database/local/migrations.ts`|
+| Migrations (cloud)  | `supabase/migrations/`                     |
+| Operations (CRUD)   | `src/services/database/operations/`        |
 
 ### External Documentation
 

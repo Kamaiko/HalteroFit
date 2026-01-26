@@ -11,11 +11,13 @@
 - [x] Structure dossiers screenshots créée
 - [x] JEFIT_UI_SPEC.md créé (~400 lignes)
 - [x] Screenshots extraits et réorganisés (35 fichiers)
-- [x] Migration BD v8 complétée (3 nouvelles tables + modifications)
-- [x] Composants UI de base créés (SwipeableTabs, BottomSheet)
+- [x] Migration BD v8 complétée (WatermelonDB + Supabase)
+- [x] Composants UI de base créés (SwipeableTabs, BottomSheet, ConfirmDialog)
+- [x] Database operations layer créé (plans.ts)
+- [x] DATABASE.md mis à jour
 
 ### Prochaines Étapes
-1. **Phase B: Exercise Library** - ExerciseSelectorScreen, ExerciseListScreen
+1. ~~**Phase B: Exercise Library** - ExerciseSelectorScreen, ExerciseListScreen~~ ✅
 2. **Phase C: Plans & Templates** - PlansListScreen, PlanDetailScreen, etc.
 3. **Phase D: Active Workout** - ActiveWorkoutScreen, SetLogging, RestTimer
 4. **Phase E: Settings** - SettingsScreen, ProfileScreen
@@ -112,9 +114,10 @@ rest_timer_seconds, notes, created_at, updated_at
 
 ## Écrans à Implémenter (MVP)
 
-### Phase B: Exercise Library
-- [ ] ExerciseSelectorScreen → `(tabs)/exercises/index.tsx`
-- [ ] ExerciseListScreen → `(tabs)/exercises/list.tsx`
+### Phase B: Exercise Library ✅
+- [x] ExerciseSelectorScreen → `(tabs)/exercises/index.tsx`
+- [x] ExerciseListScreen → `(tabs)/exercises/list.tsx`
+- [x] exercises.ts operations layer created
 
 ### Phase C: Plans & Templates
 - [ ] PlansListScreen → `plans/index.tsx`
@@ -140,7 +143,7 @@ rest_timer_seconds, notes, created_at, updated_at
 |-----------|---------|--------|
 | SwipeableTabs | react-native-pager-view | ✅ Créé |
 | BottomSheet | @gorhom/bottom-sheet | ✅ Créé |
-| ConfirmDialog | custom | À créer |
+| ConfirmDialog | custom | ✅ Créé |
 | ExerciseCard | custom | À créer |
 | SetRow | custom | À créer |
 | RestTimerWidget | custom | À créer |
