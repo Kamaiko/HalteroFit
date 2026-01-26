@@ -4,3 +4,4 @@
 
 export { PlanHeader } from './PlanHeader';
 export { DayCard } from './DayCard';
+export { DayExerciseCard } from './DayExerciseCard';

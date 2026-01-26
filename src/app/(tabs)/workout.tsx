@@ -5,6 +5,7 @@
  */
 
 import { FlashList } from '@shopify/flash-list';
+import { router } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
@@ -15,7 +16,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Ionicons } from '@/components/ui/icon';
 import { SimpleTabs } from '@/components/ui/simple-tabs';
 import { Text } from '@/components/ui/text';
-import { DayCard, PlanHeader } from '@/components/workout';
+import { DayCard, DayExerciseCard, PlanHeader } from '@/components/workout';
 import { Colors } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
 import type { PlanDay } from '@/services/database/operations/plans';
@@ -26,6 +27,8 @@ export default function WorkoutScreen() {
     activePlan,
     planDays,
     selectedDay,
+    selectedDayExercises,
+    loadingExercises,
     loading,
     activeTabIndex,
     exerciseCounts,
@@ -58,6 +61,14 @@ export default function WorkoutScreen() {
     [exerciseCounts, selectedDay?.id, handleDayPress, handleDayMenuPress]
   );
 
+  const handleAddExercisePress = useCallback(() => {
+    if (!selectedDay) return;
+    router.push({
+      pathname: '/(tabs)/exercises/picker',
+      params: { dayId: selectedDay.id, dayName: selectedDay.name },
+    });
+  }, [selectedDay]);
+
   if (loading) {
     return (
       <ScreenContainer contentClassName="items-center justify-center">
@@ -77,6 +88,8 @@ export default function WorkoutScreen() {
       </ScreenContainer>
     );
   }
+
+  const dayExercises = selectedDayExercises?.exercises ?? [];
 
   return (
     <ScreenContainer>
@@ -138,38 +151,59 @@ export default function WorkoutScreen() {
                 Tap on a day in Overview to see its exercises
               </Text>
             </View>
+          ) : loadingExercises ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
+            </View>
           ) : (
-            <View className="flex-1 p-4">
-              <View className="flex-row items-center justify-between mb-4">
+            <View className="flex-1">
+              {/* Day header */}
+              <View className="flex-row items-center justify-between px-4 py-3 border-b border-background-elevated">
                 <View>
                   <Text className="text-lg font-semibold text-foreground">{selectedDay.name}</Text>
                   <Text className="text-sm text-foreground-secondary">
-                    {exerciseCounts[selectedDay.id] ?? 0} exercises
+                    {dayExercises.length} exercise{dayExercises.length !== 1 ? 's' : ''}
                   </Text>
                 </View>
               </View>
 
-              <View className="flex-1 items-center justify-center">
-                <Pressable
-                  onPress={() => console.log('Add exercise')}
-                  className="bg-background-surface border border-background-elevated rounded-xl p-4 w-full"
-                >
-                  <View className="flex-row items-center">
-                    <View
-                      className="w-12 h-12 rounded-full items-center justify-center mr-3"
-                      style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
+              {/* Exercise list */}
+              {dayExercises.length === 0 ? (
+                <View className="flex-1 items-center justify-center p-8">
+                  <Ionicons name="barbell-outline" size={48} color={Colors.foreground.tertiary} />
+                  <Text className="text-base text-foreground-secondary text-center mt-4">
+                    No exercises yet
+                  </Text>
+                  <Button className="mt-6" onPress={handleAddExercisePress}>
+                    <Text className="text-white font-medium">+ Add Exercise</Text>
+                  </Button>
+                </View>
+              ) : (
+                <FlashList
+                  data={dayExercises}
+                  renderItem={({ item }) => (
+                    <DayExerciseCard
+                      exercise={item}
+                      onPress={() => console.log('Edit exercise:', item.id)}
+                    />
+                  )}
+                  keyExtractor={(item) => item.id}
+                  ListFooterComponent={
+                    <Pressable
+                      onPress={handleAddExercisePress}
+                      className="flex-row items-center mx-4 py-3"
                     >
-                      <Ionicons name="add" size={24} color={Colors.primary.DEFAULT} />
-                    </View>
-                    <View>
-                      <Text className="text-base font-medium text-foreground">Add Exercise</Text>
-                      <Text className="text-sm text-foreground-secondary">
-                        sets x reps • interval
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              </View>
+                      <View
+                        className="w-8 h-8 rounded-full items-center justify-center mr-3"
+                        style={{ backgroundColor: Colors.primary.DEFAULT }}
+                      >
+                        <Ionicons name="add" size={20} color="white" />
+                      </View>
+                      <Text className="text-primary font-medium">Add Exercise</Text>
+                    </Pressable>
+                  }
+                />
+              )}
             </View>
           )}
         </View>

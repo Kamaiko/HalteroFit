@@ -1,14 +1,14 @@
 /**
- * Exercise List Screen
+ * Exercise Picker Screen
  *
- * Displays all exercises with search functionality.
- * Uses FlashList for high-performance rendering.
+ * Full-screen multi-select exercise picker for adding exercises to a workout day.
  *
- * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 2.2 (Exercise List)
+ * @see docs/reference/jefit/screenshots/02-exercises/06-exercise-picker.png
  */
 
 import { ScreenContainer } from '@/components/layout';
 import { ExerciseCard } from '@/components/exercises';
+import { Button } from '@/components/ui/button';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Colors } from '@/constants';
@@ -16,7 +16,7 @@ import { useExerciseSearch } from '@/hooks/exercises';
 import type { Exercise } from '@/services/database/operations';
 import { FlashList } from '@shopify/flash-list';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 
 const LoadingFooter = () => (
@@ -25,42 +25,52 @@ const LoadingFooter = () => (
   </View>
 );
 
-export default function ExerciseListScreen() {
-  const params = useLocalSearchParams<{
-    filterType?: string;
-    filterValue?: string;
-    filterLabel?: string;
-  }>();
-  const { filterType, filterValue, filterLabel } = params;
+export default function ExercisePickerScreen() {
+  const params = useLocalSearchParams<{ dayId?: string; dayName?: string }>();
+  const { dayId, dayName } = params;
 
-  const initialFilters = useMemo(() => {
-    if (filterType === 'bodyPart' && filterValue) {
-      return { bodyPart: filterValue };
-    }
-    if (filterType === 'targetMuscle' && filterValue) {
-      return { targetMuscle: filterValue };
-    }
-    return undefined;
-  }, [filterType, filterValue]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { exercises, search, setSearch, loading, loadingMore, totalCount, loadMore } =
-    useExerciseSearch({ initialFilters });
+    useExerciseSearch();
 
   const handleExercisePress = useCallback((exercise: Exercise) => {
-    router.push({
-      pathname: '/(tabs)/exercises/[id]',
-      params: { id: exercise.id },
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(exercise.id)) {
+        next.delete(exercise.id);
+      } else {
+        next.add(exercise.id);
+      }
+      return next;
     });
   }, []);
 
+  const handleAddExercises = useCallback(() => {
+    if (selectedIds.size === 0 || !dayId) return;
+
+    const selectedExerciseIds = Array.from(selectedIds);
+    // Navigate back with selected exercises
+    router.back();
+    // TODO: Call addExerciseToPlanDay for each selected exercise
+    console.log('Adding exercises to day:', dayId, selectedExerciseIds);
+  }, [selectedIds, dayId]);
+
   const renderItem = useCallback(
     ({ item }: { item: Exercise }) => (
-      <ExerciseCard exercise={item} onPress={handleExercisePress} />
+      <ExerciseCard
+        exercise={item}
+        mode="select"
+        selected={selectedIds.has(item.id)}
+        onPress={handleExercisePress}
+      />
     ),
-    [handleExercisePress]
+    [selectedIds, handleExercisePress]
   );
 
   const keyExtractor = useCallback((item: Exercise) => item.id, []);
+
+  const selectedCount = selectedIds.size;
 
   return (
     <ScreenContainer>
@@ -69,9 +79,10 @@ export default function ExerciseListScreen() {
         <Pressable onPress={() => router.back()} className="mr-3">
           <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
         </Pressable>
-        <Text className="flex-1 text-xl font-semibold text-foreground">
-          {filterLabel || 'All Exercises'}
-        </Text>
+        <View className="flex-1">
+          <Text className="text-xl font-semibold text-foreground">Add Exercises</Text>
+          {dayName && <Text className="text-sm text-foreground-secondary">{dayName}</Text>}
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -126,7 +137,24 @@ export default function ExerciseListScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={loadingMore ? LoadingFooter : null}
+          extraData={selectedIds}
+          contentContainerStyle={{ paddingBottom: selectedCount > 0 ? 80 : 0 }}
         />
+      )}
+
+      {/* Add Button */}
+      {selectedCount > 0 && (
+        <View className="absolute bottom-6 left-4 right-4">
+          <Button
+            className="w-full py-4"
+            style={{ backgroundColor: Colors.primary.DEFAULT }}
+            onPress={handleAddExercises}
+          >
+            <Text className="text-white font-semibold text-base">
+              Add {selectedCount} exercise{selectedCount !== 1 ? 's' : ''}
+            </Text>
+          </Button>
+        </View>
       )}
     </ScreenContainer>
   );

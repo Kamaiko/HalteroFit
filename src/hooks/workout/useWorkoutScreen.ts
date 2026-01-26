@@ -14,9 +14,11 @@ import {
   createPlanDay,
   deletePlanDay,
   getExerciseCountsByDays,
+  getPlanDayWithExercises,
   getPlanWithDays,
   observeActivePlan,
   type PlanDay,
+  type PlanDayWithExercises,
   type WorkoutPlan,
 } from '@/services/database/operations/plans';
 import { useAuthStore } from '@/stores/auth/authStore';
@@ -27,6 +29,8 @@ export interface UseWorkoutScreenReturn {
   activePlan: WorkoutPlan | null;
   planDays: PlanDay[];
   selectedDay: PlanDay | null;
+  selectedDayExercises: PlanDayWithExercises | null;
+  loadingExercises: boolean;
   loading: boolean;
   activeTabIndex: number;
   exerciseCounts: Record<string, number>;
@@ -73,6 +77,12 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
 
   // Exercise counts per day (fetched from database)
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
+
+  // Selected day exercises
+  const [selectedDayExercises, setSelectedDayExercises] = useState<PlanDayWithExercises | null>(
+    null
+  );
+  const [loadingExercises, setLoadingExercises] = useState(false);
 
   // FIXME: refetchTrigger is a workaround because we don't use observables for days/counts.
   // Ideally, we'd use observePlanDays() + observeExerciseCounts() for automatic updates
@@ -164,6 +174,28 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     fetchDays();
   }, [activePlan?.id, refetchTrigger, handleError]);
 
+  // Load exercises when selected day changes
+  useEffect(() => {
+    if (!selectedDay?.id) {
+      setSelectedDayExercises(null);
+      return;
+    }
+
+    const fetchExercises = async () => {
+      setLoadingExercises(true);
+      try {
+        const dayWithExercises = await getPlanDayWithExercises(selectedDay.id);
+        setSelectedDayExercises(dayWithExercises);
+      } catch (error) {
+        handleError(error, 'fetchDayExercises');
+      } finally {
+        setLoadingExercises(false);
+      }
+    };
+
+    fetchExercises();
+  }, [selectedDay?.id, refetchTrigger, handleError]);
+
   // Handle day selection
   const handleDayPress = useCallback((day: PlanDay) => {
     setSelectedDay(day);
@@ -235,6 +267,8 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     activePlan,
     planDays,
     selectedDay,
+    selectedDayExercises,
+    loadingExercises,
     loading,
     activeTabIndex,
     exerciseCounts,
