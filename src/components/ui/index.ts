@@ -5,7 +5,7 @@
  * Convention: Library-agnostic interfaces with sophisticated internals
  *
  * Usage:
- *   import { CachedImage, SwipeableTabs, BottomSheet } from '@/components/ui';
+ *   import { CachedImage, Tabs, BottomSheet } from '@/components/ui';
  *
  * @see components/ui/README.md - Complete usage guide
  * @see docs/ARCHITECTURE.md - Component organization principles
@@ -14,8 +14,8 @@
 export { CachedImage, CachedImageStyles } from './CachedImage';
 export type { CachedImageProps } from './CachedImage';
 
-export { SwipeableTabs } from './swipeable-tabs';
-export type { SwipeableTabsProps, Route as SwipeableTabRoute } from './swipeable-tabs';
+export { Tabs } from './tabs';
+export type { TabsProps, Route as TabRoute } from './tabs';
 
 export { BottomSheet } from './bottom-sheet';
 export type { BottomSheetProps, BottomSheetRef } from './bottom-sheet';

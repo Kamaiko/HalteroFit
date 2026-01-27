@@ -112,14 +112,22 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
   loadExercisesRef.current = loadExercises;
   loadCountRef.current = loadCount;
 
+  // Track if component has mounted (to skip search effect on initial render)
+  const isMountedRef = useRef(false);
+
   // Initial load when filters change
   useEffect(() => {
     loadExercisesRef.current(true);
     loadCountRef.current();
   }, [initialFilters?.bodyPart, initialFilters?.targetMuscle]);
 
-  // Search with debounce
+  // Search with debounce - skip on mount to avoid double load with filter effect
   useEffect(() => {
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      return;
+    }
+
     const timer = setTimeout(() => {
       loadExercisesRef.current(true);
       loadCountRef.current();

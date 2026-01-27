@@ -54,6 +54,9 @@ export interface ExerciseListViewProps {
 
   // Optional floating content (e.g., Add button)
   floatingContent?: ReactNode;
+
+  // Safe area edges to apply (default: ['top'])
+  edges?: ('top' | 'bottom' | 'left' | 'right')[];
 }
 
 export const ExerciseListView = memo(function ExerciseListView({
@@ -71,13 +74,14 @@ export const ExerciseListView = memo(function ExerciseListView({
   extraData,
   contentPaddingBottom = 16,
   floatingContent,
+  edges,
 }: ExerciseListViewProps) {
   const handleClearSearch = useCallback(() => {
     onSearchChange('');
   }, [onSearchChange]);
 
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={edges}>
       {/* Header */}
       <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
         <Pressable onPress={onBack} className="mr-3">

@@ -13,7 +13,7 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Ionicons } from '@/components/ui/icon';
-import { SwipeableTabs, type SwipeableTabRoute } from '@/components/ui';
+import { Tabs, type TabRoute } from '@/components/ui';
 import { Text } from '@/components/ui/text';
 import {
   PlanHeader,
@@ -66,7 +66,7 @@ export default function WorkoutScreen() {
 
   // Render scene for swipeable tabs
   const renderScene = useCallback(
-    ({ route }: { route: SwipeableTabRoute }) => {
+    ({ route }: { route: TabRoute }) => {
       if (route.key === 'tab-0') {
         return (
           <WorkoutOverviewContent
@@ -135,7 +135,7 @@ export default function WorkoutScreen() {
         coverImageUrl={activePlan?.cover_image_url}
       />
 
-      <SwipeableTabs
+      <Tabs
         tabs={['Overview', 'Day Details']}
         activeIndex={activeTabIndex}
         onChange={setActiveTabIndex}

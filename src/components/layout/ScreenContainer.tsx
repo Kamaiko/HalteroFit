@@ -4,7 +4,10 @@
  * Provides consistent screen layout with:
  * - Gray status bar band (bg-background-surface)
  * - Dark content area (bg-background)
- * - Proper SafeAreaView handling for iOS notch/Dynamic Island
+ * - Proper safe area handling for iOS notch/Dynamic Island
+ *
+ * Uses useSafeAreaInsets() directly to avoid layout shift
+ * that can occur with SafeAreaView's delayed inset calculation.
  *
  * @example
  * <ScreenContainer>
@@ -15,11 +18,16 @@
  * <ScreenContainer scroll>
  *   <View>Scrollable content</View>
  * </ScreenContainer>
+ *
+ * @example Without top safe area (fullscreen modals)
+ * <ScreenContainer edges={[]}>
+ *   <View>Fullscreen content</View>
+ * </ScreenContainer>
  */
 
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ScreenContainerProps {
   children: ReactNode;
@@ -27,13 +35,29 @@ interface ScreenContainerProps {
   scroll?: boolean;
   /** Additional className for the content View */
   contentClassName?: string;
+  /** Safe area edges to apply (default: ['top']) */
+  edges?: ('top' | 'bottom' | 'left' | 'right')[];
 }
 
 export function ScreenContainer({
   children,
   scroll = false,
   contentClassName = '',
+  edges = ['top'],
 }: ScreenContainerProps) {
+  const insets = useSafeAreaInsets();
+
+  // Memoize padding to avoid recalculation on every render
+  const paddingStyle = useMemo(
+    () => ({
+      paddingTop: edges.includes('top') ? insets.top : 0,
+      paddingBottom: edges.includes('bottom') ? insets.bottom : 0,
+      paddingLeft: edges.includes('left') ? insets.left : 0,
+      paddingRight: edges.includes('right') ? insets.right : 0,
+    }),
+    [edges, insets.top, insets.bottom, insets.left, insets.right]
+  );
+
   const content = scroll ? (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
       {children}
@@ -43,8 +67,8 @@ export function ScreenContainer({
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-surface" edges={['top']}>
+    <View className="flex-1 bg-background-surface" style={paddingStyle}>
       <View className={`flex-1 bg-background ${contentClassName}`.trim()}>{content}</View>
-    </SafeAreaView>
+    </View>
   );
 }
