@@ -15,7 +15,7 @@ export { CachedImage, CachedImageStyles } from './CachedImage';
 export type { CachedImageProps } from './CachedImage';
 
 export { SwipeableTabs } from './swipeable-tabs';
-export type { SwipeableTabsProps, TabConfig } from './swipeable-tabs';
+export type { SwipeableTabsProps, Route as SwipeableTabRoute } from './swipeable-tabs';
 
 export { BottomSheet } from './bottom-sheet';
 export type { BottomSheetProps, BottomSheetRef } from './bottom-sheet';

@@ -1,140 +1,126 @@
 /**
- * SwipeableTabs - Horizontal swipeable tab navigation
+ * SwipeableTabs - Swipeable tab navigation component
  *
- * KNOWN ISSUE: Crashes on Android with IllegalViewOperationException.
- * Use SimpleTabs until this is resolved. See BACKLOG.md for details.
+ * Uses reanimated-tab-view for smooth swipe gestures.
+ * This replaces the old PagerView-based implementation that crashed on Android.
+ *
+ * @see BACKLOG.md § Swipeable tabs for history
+ *
+ * @example
+ * ```tsx
+ * <SwipeableTabs
+ *   tabs={['Overview', 'Day Details']}
+ *   activeIndex={activeTabIndex}
+ *   onChange={setActiveTabIndex}
+ *   renderScene={({ route }) => {
+ *     if (route.key === 'tab-0') return <OverviewContent />;
+ *     if (route.key === 'tab-1') return <DayDetailsContent />;
+ *     return null;
+ *   }}
+ * />
+ * ```
  */
 
-import { cn } from '@/lib/utils';
-import * as React from 'react';
-import { Pressable, View } from 'react-native';
-import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager-view';
+import { Colors } from '@/constants';
+import { memo, useCallback, useMemo, type ReactNode } from 'react';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import {
+  TabBar,
+  TabView,
+  type NavigationState,
+  type TabBarProps,
+  type SceneRendererProps,
+} from 'reanimated-tab-view';
 
-import { Text } from './text';
-
-export interface TabConfig {
+export interface Route {
   key: string;
-  label: string;
+  title?: string;
 }
 
 export interface SwipeableTabsProps {
-  tabs: TabConfig[];
-  children: React.ReactNode[];
-  initialPage?: number;
-  activeIndex?: number;
-  onPageChange?: (index: number) => void;
-  className?: string;
-  tabBarClassName?: string;
+  /** Tab labels */
+  tabs: string[];
+  /** Currently active tab index */
+  activeIndex: number;
+  /** Callback when tab changes */
+  onChange: (index: number) => void;
+  /** Render function for tab content */
+  renderScene: (props: SceneRendererProps) => ReactNode;
 }
 
-export function SwipeableTabs({
+export const SwipeableTabs = memo(function SwipeableTabs({
   tabs,
-  children,
-  initialPage = 0,
-  activeIndex: controlledIndex,
-  onPageChange,
-  className,
-  tabBarClassName,
+  activeIndex,
+  onChange,
+  renderScene,
 }: SwipeableTabsProps) {
-  const pagerRef = React.useRef<PagerView>(null);
-  const [internalIndex, setInternalIndex] = React.useState(initialPage);
+  const layout = useWindowDimensions();
 
-  const isControlled = controlledIndex !== undefined;
-  const activeIndex = isControlled ? controlledIndex : internalIndex;
-
-  React.useEffect(() => {
-    if (isControlled && pagerRef.current) {
-      // eslint-disable-next-line no-undef
-      requestAnimationFrame(() => {
-        pagerRef.current?.setPageWithoutAnimation(controlledIndex);
-      });
-    }
-  }, [isControlled, controlledIndex]);
-
-  const handlePageSelected = React.useCallback(
-    (event: PagerViewOnPageSelectedEvent) => {
-      const { position } = event.nativeEvent;
-      if (!isControlled) {
-        setInternalIndex(position);
-      }
-      onPageChange?.(position);
-    },
-    [onPageChange, isControlled]
+  // Convert tabs array to routes format
+  const routes = useMemo(
+    () => tabs.map((title, index) => ({ key: `tab-${index}`, title })),
+    [tabs]
   );
 
-  const handleTabPress = React.useCallback(
-    (index: number) => {
-      pagerRef.current?.setPage(index);
-      if (!isControlled) {
-        setInternalIndex(index);
-      }
-      onPageChange?.(index);
-    },
-    [isControlled, onPageChange]
+  // Navigation state for TabView
+  const navigationState = useMemo<NavigationState>(
+    () => ({
+      index: activeIndex,
+      routes,
+    }),
+    [activeIndex, routes]
   );
 
-  const childrenArray = React.Children.toArray(children);
+  // Custom tab bar with our theme
+  const renderTabBar = useCallback(
+    (props: TabBarProps) => (
+      <TabBar
+        {...props}
+        style={styles.tabBar}
+        indicatorStyle={styles.indicator}
+        activeColor={Colors.primary.DEFAULT}
+        inactiveColor={Colors.foreground.tertiary}
+        labelStyle={styles.label}
+      />
+    ),
+    []
+  );
 
   return (
-    <View className={cn('flex-1', className)}>
-      <View
-        className={cn(
-          'flex-row border-b border-background-elevated bg-background-surface',
-          tabBarClassName
-        )}
-      >
-        {tabs.map((tab, index) => (
-          <TabButton
-            key={tab.key}
-            label={tab.label}
-            isActive={index === activeIndex}
-            onPress={() => handleTabPress(index)}
-          />
-        ))}
-      </View>
-
-      <PagerView
-        ref={pagerRef}
-        style={{ flex: 1 }}
-        initialPage={initialPage}
-        onPageSelected={handlePageSelected}
-        offscreenPageLimit={1}
-      >
-        {childrenArray.map((child, index) => (
-          <View key={tabs[index]?.key ?? `page-${index}`} style={{ flex: 1 }} collapsable={false}>
-            {child}
-          </View>
-        ))}
-      </PagerView>
-    </View>
+    <TabView
+      style={styles.container}
+      navigationState={navigationState}
+      renderScene={renderScene}
+      onIndexChange={onChange}
+      initialLayout={{ tabView: { width: layout.width } }}
+      tabBarConfig={{
+        renderTabBar,
+        tabBarPosition: 'top',
+      }}
+      swipeEnabled={true}
+      renderMode="all"
+    />
   );
-}
+});
 
-interface TabButtonProps {
-  label: string;
-  isActive: boolean;
-  onPress: () => void;
-}
-
-function TabButton({ label, isActive, onPress }: TabButtonProps) {
-  return (
-    <Pressable
-      className={cn(
-        'flex-1 items-center justify-center py-3',
-        isActive && 'border-b-2 border-primary'
-      )}
-      onPress={onPress}
-      accessibilityRole="tab"
-      accessibilityState={{ selected: isActive }}
-    >
-      <Text
-        className={cn(
-          'text-sm font-medium',
-          isActive ? 'text-primary' : 'text-foreground-tertiary'
-        )}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  tabBar: {
+    backgroundColor: Colors.background.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.background.elevated,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  indicator: {
+    backgroundColor: Colors.primary.DEFAULT,
+    height: 2,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    textTransform: 'none',
+  },
+});

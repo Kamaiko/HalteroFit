@@ -4,7 +4,6 @@
  * @see docs/reference/jefit/screenshots/03-plans/
  */
 
-import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
@@ -14,12 +13,16 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Ionicons } from '@/components/ui/icon';
-import { SimpleTabs } from '@/components/ui/simple-tabs';
+import { SwipeableTabs, type SwipeableTabRoute } from '@/components/ui';
 import { Text } from '@/components/ui/text';
-import { DayCard, DayExerciseCard, PlanHeader } from '@/components/workout';
+import {
+  PlanHeader,
+  WorkoutOverviewContent,
+  WorkoutDayDetailsContent,
+  type DayExercise,
+} from '@/components/workout';
 import { Colors } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
-import type { PlanDay } from '@/services/database/operations/plans';
 
 export default function WorkoutScreen() {
   const {
@@ -45,21 +48,7 @@ export default function WorkoutScreen() {
     handleDeleteDayPress,
     handleConfirmDelete,
     handleAddDayPress,
-    keyExtractor,
   } = useWorkoutScreen();
-
-  const renderDayItem = useCallback(
-    ({ item }: { item: PlanDay }) => (
-      <DayCard
-        day={item}
-        exerciseCount={exerciseCounts[item.id] ?? 0}
-        isSelected={selectedDay?.id === item.id}
-        onPress={handleDayPress}
-        onMenuPress={handleDayMenuPress}
-      />
-    ),
-    [exerciseCounts, selectedDay?.id, handleDayPress, handleDayMenuPress]
-  );
 
   const handleAddExercisePress = useCallback(() => {
     if (!selectedDay) return;
@@ -68,6 +57,56 @@ export default function WorkoutScreen() {
       params: { dayId: selectedDay.id, dayName: selectedDay.name },
     });
   }, [selectedDay]);
+
+  const handleExercisePress = useCallback((exercise: DayExercise) => {
+    console.log('Edit exercise:', exercise.id);
+  }, []);
+
+  const dayExercises = selectedDayExercises?.exercises ?? [];
+
+  // Render scene for swipeable tabs
+  const renderScene = useCallback(
+    ({ route }: { route: SwipeableTabRoute }) => {
+      if (route.key === 'tab-0') {
+        return (
+          <WorkoutOverviewContent
+            planDays={planDays}
+            exerciseCounts={exerciseCounts}
+            selectedDayId={selectedDay?.id}
+            onDayPress={handleDayPress}
+            onDayMenuPress={handleDayMenuPress}
+            onAddDayPress={handleAddDayPress}
+          />
+        );
+      }
+
+      if (route.key === 'tab-1') {
+        return (
+          <WorkoutDayDetailsContent
+            selectedDay={selectedDay}
+            exercises={dayExercises}
+            loading={loadingExercises}
+            onAddExercisePress={handleAddExercisePress}
+            onExercisePress={handleExercisePress}
+          />
+        );
+      }
+
+      return null;
+    },
+    [
+      planDays,
+      exerciseCounts,
+      selectedDay,
+      handleDayPress,
+      handleDayMenuPress,
+      handleAddDayPress,
+      dayExercises,
+      loadingExercises,
+      handleAddExercisePress,
+      handleExercisePress,
+    ]
+  );
 
   if (loading) {
     return (
@@ -89,8 +128,6 @@ export default function WorkoutScreen() {
     );
   }
 
-  const dayExercises = selectedDayExercises?.exercises ?? [];
-
   return (
     <ScreenContainer>
       <PlanHeader
@@ -98,110 +135,12 @@ export default function WorkoutScreen() {
         coverImageUrl={activePlan?.cover_image_url}
       />
 
-      <SimpleTabs
+      <SwipeableTabs
         tabs={['Overview', 'Day Details']}
         activeIndex={activeTabIndex}
         onChange={setActiveTabIndex}
+        renderScene={renderScene}
       />
-
-      {activeTabIndex === 0 ? (
-        <View className="flex-1">
-          {planDays.length === 0 ? (
-            <View className="flex-1 items-center justify-center p-8">
-              <Ionicons name="calendar-outline" size={48} color={Colors.foreground.tertiary} />
-              <Text className="text-lg font-semibold text-foreground mt-4">
-                No workout days yet
-              </Text>
-              <Text className="text-sm text-foreground-secondary text-center mt-2">
-                Add your first workout day to get started
-              </Text>
-              <Button className="mt-6" onPress={handleAddDayPress}>
-                <Text className="text-white font-medium">+ Add a day</Text>
-              </Button>
-            </View>
-          ) : (
-            <FlashList
-              data={planDays}
-              renderItem={renderDayItem}
-              keyExtractor={keyExtractor}
-              ListHeaderComponent={<View style={{ height: 12 }} />}
-              ListFooterComponent={
-                <Pressable onPress={handleAddDayPress} className="flex-row items-center mx-4 py-3">
-                  <View
-                    className="w-8 h-8 rounded-full items-center justify-center mr-3"
-                    style={{ backgroundColor: Colors.primary.DEFAULT }}
-                  >
-                    <Ionicons name="add" size={20} color="white" />
-                  </View>
-                  <Text className="text-primary font-medium">Add a day</Text>
-                </Pressable>
-              }
-            />
-          )}
-        </View>
-      ) : (
-        <View className="flex-1">
-          {!selectedDay ? (
-            <View className="flex-1 items-center justify-center p-8">
-              <Ionicons name="list-outline" size={48} color={Colors.foreground.tertiary} />
-              <Text className="text-lg font-semibold text-foreground mt-4">
-                Select a workout day
-              </Text>
-              <Text className="text-sm text-foreground-secondary text-center mt-2">
-                Tap on a day in Overview to see its exercises
-              </Text>
-            </View>
-          ) : loadingExercises ? (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
-            </View>
-          ) : (
-            <View className="flex-1">
-              {/* Day header */}
-              <View className="flex-row items-center justify-between px-4 py-3 border-b border-background-elevated">
-                <View>
-                  <Text className="text-lg font-semibold text-foreground">{selectedDay.name}</Text>
-                  <Text className="text-sm text-foreground-secondary">
-                    {dayExercises.length} exercise{dayExercises.length !== 1 ? 's' : ''}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Exercise list with Add Exercise button */}
-              <FlashList
-                data={dayExercises}
-                renderItem={({ item }) => (
-                  <DayExerciseCard
-                    exercise={item}
-                    onPress={() => console.log('Edit exercise:', item.id)}
-                  />
-                )}
-                keyExtractor={(item) => item.id}
-                ListFooterComponent={
-                  <Pressable
-                    onPress={handleAddExercisePress}
-                    className="flex-row items-center px-4 py-3 border-b border-background-elevated"
-                  >
-                    <View
-                      className="w-12 h-12 rounded-full items-center justify-center mr-3"
-                      style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
-                    >
-                      <Ionicons name="add" size={24} color={Colors.primary.DEFAULT} />
-                    </View>
-                    <View>
-                      <Text className="text-base font-medium text-foreground">Add Exercise</Text>
-                      <Text className="text-sm text-foreground-secondary">
-                        sets x reps • interval
-                      </Text>
-                    </View>
-                  </Pressable>
-                }
-                ListEmptyComponent={null}
-              />
-            </View>
-          )}
-        </View>
-      )}
 
       {canStartWorkout && (
         <View className="absolute bottom-6 right-4">

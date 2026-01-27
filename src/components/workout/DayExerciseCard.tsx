@@ -13,7 +13,7 @@ import { Image } from 'expo-image';
 import { memo, useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-type DayExercise = PlanDayWithExercises['exercises'][number];
+export type DayExercise = PlanDayWithExercises['exercises'][number];
 
 export interface DayExerciseCardProps {
   exercise: DayExercise;
