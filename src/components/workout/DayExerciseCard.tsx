@@ -97,37 +97,41 @@ export const DayExerciseCard = memo(function DayExerciseCard({
       >
         {/* Drag Handle */}
         {drag && (
-          <Pressable onLongPress={drag} delayLongPress={100} className="mr-1 py-2">
-            <View className="items-center justify-center" style={{ width: 12, height: 18 }}>
+          <Pressable
+            onLongPress={drag}
+            delayLongPress={100}
+            style={{ marginLeft: -8, marginRight: 4, paddingVertical: 8, paddingHorizontal: 4 }}
+          >
+            <View className="items-center justify-center" style={{ width: 10, height: 16 }}>
               {/* 6-dot grid: 2 columns x 3 rows */}
-              <View className="flex-row" style={{ gap: 3 }}>
+              <View className="flex-row" style={{ gap: 2 }}>
                 <View
                   className="rounded-full"
-                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                  style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
                 />
                 <View
                   className="rounded-full"
-                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
-                />
-              </View>
-              <View className="flex-row" style={{ gap: 3, marginTop: 2 }}>
-                <View
-                  className="rounded-full"
-                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
-                />
-                <View
-                  className="rounded-full"
-                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                  style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
                 />
               </View>
-              <View className="flex-row" style={{ gap: 3, marginTop: 2 }}>
+              <View className="flex-row" style={{ gap: 2, marginTop: 2 }}>
                 <View
                   className="rounded-full"
-                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                  style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
                 />
                 <View
                   className="rounded-full"
-                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                  style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
+                />
+              </View>
+              <View className="flex-row" style={{ gap: 2, marginTop: 2 }}>
+                <View
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
+                />
+                <View
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
                 />
               </View>
             </View>

@@ -170,10 +170,10 @@ export default function WorkoutScreen() {
       />
 
       {canStartWorkout && (
-        <View className="absolute bottom-6 right-4">
+        <View className="absolute bottom-6 left-4 right-4">
           <Button
-            className="rounded-full px-8 shadow-lg"
-            style={{ backgroundColor: Colors.primary.DEFAULT, paddingVertical: 18 }}
+            className="rounded-xl shadow-lg items-center justify-center"
+            style={{ backgroundColor: Colors.primary.DEFAULT, height: 56 }}
             onPress={() => {
               // TODO: Navigate to active workout session
             }}
