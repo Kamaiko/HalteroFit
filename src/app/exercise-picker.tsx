@@ -13,6 +13,7 @@ import { Text } from '@/components/ui/text';
 import { Colors } from '@/constants';
 import { useExerciseSearch } from '@/hooks/exercises';
 import type { Exercise } from '@/services/database/operations';
+import { addExerciseToPlanDay, getExerciseCountByDay } from '@/services/database/operations/plans';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
@@ -24,6 +25,7 @@ export default function ExercisePickerScreen() {
   const insets = useSafeAreaInsets();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isAdding, setIsAdding] = useState(false);
 
   const { exercises, search, setSearch, loading, loadingMore, totalCount, loadMore } =
     useExerciseSearch();
@@ -44,15 +46,36 @@ export default function ExercisePickerScreen() {
     });
   }, []);
 
-  const handleAddExercises = useCallback(() => {
-    if (selectedIds.size === 0 || !dayId) return;
+  const handleAddExercises = useCallback(async () => {
+    const targetDayId = dayId;
+    if (selectedIds.size === 0 || !targetDayId || isAdding) return;
 
-    const selectedExerciseIds = Array.from(selectedIds);
-    // TODO: Call addExerciseToPlanDay for each selected exercise
-    void selectedExerciseIds; // Placeholder until implementation
-    // Go back to previous screen
-    router.back();
-  }, [selectedIds, dayId]);
+    setIsAdding(true);
+    try {
+      // Get current exercise count to determine order_index
+      const currentCount = await getExerciseCountByDay(targetDayId);
+      const selectedExerciseIds = Array.from(selectedIds);
+
+      // Add each exercise sequentially
+      let orderOffset = 0;
+      for (const exerciseId of selectedExerciseIds) {
+        await addExerciseToPlanDay({
+          plan_day_id: targetDayId,
+          exercise_id: exerciseId,
+          order_index: currentCount + orderOffset,
+          target_sets: 3,
+          target_reps: 10,
+        });
+        orderOffset++;
+      }
+
+      router.back();
+    } catch (error) {
+      console.error('Failed to add exercises:', error);
+    } finally {
+      setIsAdding(false);
+    }
+  }, [selectedIds, dayId, isAdding]);
 
   const renderItem = useCallback(
     ({ item }: { item: Exercise }) => (
@@ -67,7 +90,7 @@ export default function ExercisePickerScreen() {
   );
 
   const selectedCount = selectedIds.size;
-  const isButtonDisabled = selectedCount === 0;
+  const isButtonDisabled = selectedCount === 0 || isAdding;
 
   // Floating Add Button - memoized to avoid recreation on every render
   const floatingContent = useMemo(

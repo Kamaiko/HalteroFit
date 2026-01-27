@@ -4,7 +4,7 @@
  * @see docs/reference/jefit/screenshots/03-plans/
  */
 
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
@@ -48,7 +48,15 @@ export default function WorkoutScreen() {
     handleDeleteDayPress,
     handleConfirmDelete,
     handleAddDayPress,
+    refetchDays,
   } = useWorkoutScreen();
+
+  // Refresh data when screen gains focus (e.g., after adding exercises)
+  useFocusEffect(
+    useCallback(() => {
+      refetchDays();
+    }, [refetchDays])
+  );
 
   const handleAddExercisePress = useCallback(() => {
     if (!selectedDay) return;
