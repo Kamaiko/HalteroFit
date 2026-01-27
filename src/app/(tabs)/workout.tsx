@@ -23,7 +23,6 @@ import {
 } from '@/components/workout';
 import { Colors } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
-import { removeExerciseFromPlanDay } from '@/services/database/operations/plans';
 
 export default function WorkoutScreen() {
   const {
@@ -50,6 +49,7 @@ export default function WorkoutScreen() {
     handleConfirmDelete,
     handleAddDayPress,
     refetchDays,
+    deleteExerciseOptimistic,
   } = useWorkoutScreen();
 
   // Refresh data when screen gains focus (e.g., after adding exercises)
@@ -76,15 +76,10 @@ export default function WorkoutScreen() {
   }, []);
 
   const handleDeleteExercise = useCallback(
-    async (exercise: DayExercise) => {
-      try {
-        await removeExerciseFromPlanDay(exercise.id);
-        refetchDays();
-      } catch (error) {
-        console.error('Failed to delete exercise:', error);
-      }
+    (exercise: DayExercise) => {
+      deleteExerciseOptimistic(exercise.id);
     },
-    [refetchDays]
+    [deleteExerciseOptimistic]
   );
 
   const dayExercises = selectedDayExercises?.exercises ?? [];

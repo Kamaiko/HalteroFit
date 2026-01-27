@@ -6,6 +6,7 @@
  */
 
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LayoutAnimation, Platform, UIManager } from 'react-native';
 
 import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
@@ -17,10 +18,16 @@ import {
   getPlanDayWithExercises,
   getPlanWithDays,
   observeActivePlan,
+  removeExerciseFromPlanDay,
   type PlanDay,
   type PlanDayWithExercises,
   type WorkoutPlan,
 } from '@/services/database/operations/plans';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import { useAuthStore } from '@/stores/auth/authStore';
 
 export interface UseWorkoutScreenReturn {
@@ -52,6 +59,7 @@ export interface UseWorkoutScreenReturn {
   handleConfirmDelete: () => Promise<void>;
   handleAddDayPress: () => void;
   refetchDays: () => void;
+  deleteExerciseOptimistic: (exerciseId: string) => Promise<void>;
 
   // Render helpers
   keyExtractor: (item: PlanDay) => string;
@@ -258,6 +266,43 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     console.log('Add day pressed');
   }, []);
 
+  // Delete exercise with optimistic update and animation
+  const deleteExerciseOptimistic = useCallback(
+    async (exerciseId: string) => {
+      if (!selectedDayExercises) return;
+
+      // Configure layout animation for smooth transition
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+      // Optimistic update: remove from local state immediately
+      setSelectedDayExercises((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          exercises: prev.exercises.filter((e) => e.id !== exerciseId),
+        };
+      });
+
+      // Update exercise count optimistically
+      if (selectedDay) {
+        setExerciseCounts((prev) => ({
+          ...prev,
+          [selectedDay.id]: Math.max(0, (prev[selectedDay.id] ?? 0) - 1),
+        }));
+      }
+
+      // Delete from database in background
+      try {
+        await removeExerciseFromPlanDay(exerciseId);
+      } catch (error) {
+        // Revert on error by refetching
+        handleError(error, 'deleteExercise');
+        refetchDays();
+      }
+    },
+    [selectedDayExercises, selectedDay, handleError, refetchDays]
+  );
+
   // Check if Start Workout should be visible
   const canStartWorkout = useMemo(() => {
     if (!selectedDay) return false;
@@ -296,6 +341,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     handleConfirmDelete,
     handleAddDayPress,
     refetchDays,
+    deleteExerciseOptimistic,
 
     // Render helpers
     keyExtractor,
