@@ -96,7 +96,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         onDragEnd={({ data }) => onReorder?.(data)}
-        contentContainerStyle={{ paddingTop: 8 }}
+        contentContainerStyle={{ paddingTop: 8, paddingBottom: 160 }}
         ListFooterComponent={
           <Pressable
             onPress={onAddExercisePress}
