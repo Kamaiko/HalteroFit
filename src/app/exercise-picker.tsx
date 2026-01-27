@@ -49,7 +49,7 @@ export default function ExercisePickerScreen() {
 
     const selectedExerciseIds = Array.from(selectedIds);
     // TODO: Call addExerciseToPlanDay for each selected exercise
-    console.log('Adding exercises to day:', dayId, selectedExerciseIds);
+    void selectedExerciseIds; // Placeholder until implementation
     // Go back to previous screen
     router.back();
   }, [selectedIds, dayId]);

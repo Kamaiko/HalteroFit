@@ -58,8 +58,8 @@ export default function WorkoutScreen() {
     });
   }, [selectedDay]);
 
-  const handleExercisePress = useCallback((exercise: DayExercise) => {
-    console.log('Edit exercise:', exercise.id);
+  const handleExercisePress = useCallback((_exercise: DayExercise) => {
+    // TODO: Navigate to edit exercise screen
   }, []);
 
   const dayExercises = selectedDayExercises?.exercises ?? [];
@@ -147,7 +147,9 @@ export default function WorkoutScreen() {
           <Button
             className="rounded-full px-6 py-3 shadow-lg"
             style={{ backgroundColor: Colors.primary.DEFAULT }}
-            onPress={() => console.log('Start workout')}
+            onPress={() => {
+              // TODO: Navigate to active workout session
+            }}
           >
             <Text className="text-white font-semibold text-base">Start Workout</Text>
           </Button>
