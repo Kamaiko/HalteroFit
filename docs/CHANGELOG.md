@@ -4,12 +4,65 @@ This document tracks completed development milestones and major changes across a
 
 ## 📑 Table of Contents
 
+- [2026-01-27 - DayDetailsScreen Complete](#2026-01-27---daydetailsscreen-complete-)
 - [2026-01-26 - Exercise Architecture Refactor](#2026-01-26---exercise-architecture-refactor-)
 - [2026-01-17 - SDK 54 Migration](#2026-01-17---sdk-54-migration-)
 - [2026-01-13 - Reanimated 4 & React Lock](#2026-01-13---reanimated-4--react-lock-)
 - [2026-01-12 - SDK 53 Stabilization](#2026-01-12---sdk-53-stabilization-)
 - [2025-11-06 - Phase 0.6 Complete](#2025-11-06---phase-06-complete-)
 - [2025-11-04 - Phase 0.5 Complete](#2025-11-04---phase-05-complete-)
+
+---
+
+## 2026-01-27 - DayDetailsScreen Complete ✅
+
+**Status**: Complete
+**Task**: 2.1.2 - DayDetailsScreen implementation
+**Phase**: 2 - Plans & Routines
+
+<details>
+<summary>📋 Changes (Click to expand)</summary>
+
+### Day Details Tab
+
+- [x] Created WorkoutDayDetailsContent component
+- [x] Created DayExerciseCard with thumbnail, muscle info, sets/reps display
+- [x] Implemented "Add Exercise" button → exercise-picker navigation
+- [x] Added useFocusEffect for data refresh on return
+
+### Drag-to-Reorder
+
+- [x] Integrated react-native-draggable-flatlist
+- [x] Added 6-dot drag handle (subtle, dark gray)
+- [x] Created reorderPlanDayExercises() for batch order updates
+- [x] Implemented reorderExercisesOptimistic() with instant UI feedback
+
+### Swipe-to-Delete
+
+- [x] Added ReanimatedSwipeable with Edit/Delete actions
+- [x] Created deleteExerciseOptimistic() with LayoutAnimation
+- [x] Optimistic count update for immediate feedback
+
+### UI Polish
+
+- [x] Improved Start Workout button (full-width, height: 56)
+- [x] Added paddingBottom: 160 for over-scroll past floating button
+- [x] Created stripStepPrefix utility for instruction cleanup
+
+</details>
+
+**Key Achievements:**
+
+- **Drag-to-reorder** with optimistic updates and database persistence
+- **Swipe-to-delete** with smooth LayoutAnimation transitions
+- **Exercise picker integration** with multi-select and sequential add
+- **79 tests passing** - All unit/integration tests green
+
+**Files Changed:**
+
+- Created: WorkoutDayDetailsContent.tsx, DayExerciseCard.tsx
+- Modified: workout.tsx, useWorkoutScreen.ts, plans.ts, strings.ts
+- Added: reorderPlanDayExercises(), stripStepPrefix()
 
 ---
 

@@ -22,7 +22,7 @@ import { Text } from '@/components/ui/text';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors } from '@/constants';
 import { getExerciseById, type Exercise } from '@/services/database/operations';
-import { capitalizeWords } from '@/utils';
+import { capitalizeWords, stripStepPrefix } from '@/utils';
 
 // ============================================================================
 // Constants
@@ -239,7 +239,7 @@ export default function ExerciseDetailScreen() {
                   {exercise.instructions.map((instruction, index) => (
                     <View key={index} className="mb-4 flex-row">
                       <Text className="mr-2 text-foreground-secondary">{index + 1}.</Text>
-                      <Text className="flex-1 text-foreground">{instruction}</Text>
+                      <Text className="flex-1 text-foreground">{stripStepPrefix(instruction)}</Text>
                     </View>
                   ))}
                 </View>

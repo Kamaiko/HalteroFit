@@ -2,7 +2,7 @@
 
 Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](./ROADMAP.md).
 
-**Last Updated:** 2026-01-26
+**Last Updated:** 2026-01-27
 
 ## Table of Contents
 
@@ -17,11 +17,11 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 | TODO (Top 5)                              | DOING | DONE (Last 5)                        |
 | ----------------------------------------- | ----- | ------------------------------------ |
-| **2.1.2** DayDetailsScreen `[M]` 🔴       |       | **1.2.3** ExerciseCard component     |
-| **2.1.3** AllPlansScreen `[M]`            |       | **1.2.2** useExerciseSearch hook     |
-| **2.1.4** EditDayScreen `[M]`             |       | **1.2.1** ExerciseListView component |
-| **2.1.5** CreateEditPlanScreen `[S]`      |       | **2.1.1** WorkoutOverviewScreen      |
-| **2.1.6** AddDayDialog `[S]`              |       | **1.1.3** Exercise detail screen     |
+| **2.1.3** AllPlansScreen `[M]` 🔴         |       | **2.1.2** DayDetailsScreen           |
+| **2.1.4** EditDayScreen `[M]`             |       | **1.2.3** ExerciseCard component     |
+| **2.1.5** CreateEditPlanScreen `[S]`      |       | **1.2.2** useExerciseSearch hook     |
+| **2.1.6** AddDayDialog `[S]`              |       | **1.2.1** ExerciseListView component |
+| **2.3.3** PlanCard component `[S]`        |       | **2.1.1** WorkoutOverviewScreen      |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
@@ -99,12 +99,15 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       **Components:** PlanHeader, DayCard (src/components/workout/)
       **Hook:** useWorkoutScreen (src/hooks/workout/)
 
-- [ ] **2.1.2** DayDetailsScreen (M - 3h) 🔴 NEXT
-      Exercise list for selected day
-      "Add Exercise" button → Exercise picker
-      **Ready:** Exercise count query implemented ✅
+- [x] **2.1.2** DayDetailsScreen (M - 3h) ✅ DONE
+      Exercise list with drag-to-reorder (react-native-draggable-flatlist)
+      Swipe-to-reveal Edit/Delete actions
+      "Add Exercise" button → exercise-picker with multi-select
+      **Components:** WorkoutDayDetailsContent, DayExerciseCard
+      **Hook:** reorderExercisesOptimistic, deleteExerciseOptimistic
+      **Utility:** stripStepPrefix (instruction cleanup)
 
-- [ ] **2.1.3** AllPlansScreen (M - 3h) `[src/app/plans/index.tsx]`
+- [ ] **2.1.3** AllPlansScreen (M - 3h) `[src/app/plans/index.tsx]` 🔴 NEXT
       Grid of PlanCards (2 columns)
       "Create Plan" button, plan selection
       **Status:** Placeholder created
