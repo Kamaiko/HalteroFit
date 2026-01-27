@@ -4,6 +4,7 @@ This document tracks completed development milestones and major changes across a
 
 ## 📑 Table of Contents
 
+- [2026-01-27 - Exercise Detail Screen Polish](#2026-01-27---exercise-detail-screen-polish-)
 - [2026-01-27 - DayDetailsScreen Complete](#2026-01-27---daydetailsscreen-complete-)
 - [2026-01-26 - Exercise Architecture Refactor](#2026-01-26---exercise-architecture-refactor-)
 - [2026-01-17 - SDK 54 Migration](#2026-01-17---sdk-54-migration-)
@@ -11,6 +12,30 @@ This document tracks completed development milestones and major changes across a
 - [2026-01-12 - SDK 53 Stabilization](#2026-01-12---sdk-53-stabilization-)
 - [2025-11-06 - Phase 0.6 Complete](#2025-11-06---phase-06-complete-)
 - [2025-11-04 - Phase 0.5 Complete](#2025-11-04---phase-05-complete-)
+
+---
+
+## 2026-01-27 - Exercise Detail Screen Polish ✅
+
+**Status**: Complete
+**Scope**: UI/UX improvement for exercise detail screen
+
+### Changes
+
+- **Edge-to-edge GIF**: GIF section now extends to true screen edge (under status bar)
+- **Safe area handling**: Replaced SafeAreaView with useSafeAreaInsets for precise control
+- **Scroll fade effect**: Overlay fades in over GIF when scrolling for smooth transition
+- **Back button positioning**: Respects safe area insets dynamically
+
+**Technical Details:**
+
+- Used `react-native-reanimated` for performant scroll-based animation
+- Overlay fade-in strategy (vs fade-out) ensures uniform coverage of GIF + background
+- `scrollEventThrottle={16}` for 60fps smooth animation
+
+**Files Changed:**
+
+- Modified: src/app/exercise/[id].tsx
 
 ---
 

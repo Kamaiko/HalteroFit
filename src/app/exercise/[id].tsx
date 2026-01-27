@@ -15,8 +15,15 @@
 
 import { useLocalSearchParams, router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Pressable, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedScrollHandler,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { Text } from '@/components/ui/text';
 import { Ionicons } from '@/components/ui/icon';
@@ -38,12 +45,16 @@ const TABS = [
 // Currently only Guide tab is active
 const ACTIVE_TAB: (typeof TABS)[number]['key'] = 'guide';
 
+// Distance in pixels over which the GIF fades out when scrolling
+const GIF_FADE_DISTANCE = 150;
+
 // ============================================================================
 // Main Component
 // ============================================================================
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const insets = useSafeAreaInsets();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,21 +93,35 @@ export default function ExerciseDetailScreen() {
     setImageError(true);
   }, []);
 
+  // Scroll-based fade animation for GIF section
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  // Overlay that fades IN (0 → 1) to cover the GIF uniformly
+  const overlayFadeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, GIF_FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
+  }));
+
   // Loading state
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Error state
   if (error || !exercise) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
         <View className="flex-1 items-center justify-center px-8">
           <Ionicons name="alert-circle-outline" size={48} color={Colors.danger} />
           <Text className="mt-4 text-center text-foreground-secondary">
@@ -106,150 +131,167 @@ export default function ExerciseDetailScreen() {
             <Text className="font-medium text-foreground">Go Back</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const showPlaceholder = !exercise.gif_url || imageError;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.surface.white }} edges={['top']}>
-      <View className="flex-1 bg-background">
-        {/* Floating Back Button - stays fixed while scrolling */}
-        <Pressable
-          onPress={handleBack}
-          style={{
-            position: 'absolute',
-            left: 16,
-            top: 16,
-            zIndex: 20,
-          }}
-          className="rounded-full bg-black/50 p-2"
-        >
-          <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
-        </Pressable>
+    <View style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
+      {/* Floating Back Button - stays fixed while scrolling, respects safe area */}
+      <Pressable
+        onPress={handleBack}
+        style={{
+          position: 'absolute',
+          left: 16,
+          top: insets.top + 8,
+          zIndex: 20,
+        }}
+        className="rounded-full bg-black/50 p-2"
+      >
+        <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
+      </Pressable>
 
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          {/* GIF Section - white background for exercise demonstrations */}
-          <View style={{ backgroundColor: Colors.surface.white }}>
-            <View
-              style={{
-                height: 256,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: Colors.surface.white,
-              }}
+      <Animated.ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
+        {/* GIF Section - edge-to-edge with overlay fade */}
+        <View style={{ position: 'relative' }}>
+          <View
+            style={{
+              height: 256 + insets.top,
+              paddingTop: insets.top,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: Colors.surface.white,
+            }}
+          >
+            {showPlaceholder ? (
+              <View className="items-center justify-center">
+                <Ionicons name="barbell-outline" size={64} color={Colors.foreground.secondary} />
+              </View>
+            ) : (
+              <Image
+                source={{ uri: exercise.gif_url! }}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="contain"
+                autoplay={true}
+                cachePolicy="memory-disk"
+                onError={handleImageError}
+              />
+            )}
+          </View>
+          {/* Overlay that fades in to cover GIF uniformly */}
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: Colors.background.DEFAULT,
+              },
+              overlayFadeStyle,
+            ]}
+          />
+        </View>
+
+        {/* Exercise Title - Below GIF */}
+        <View style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 24 }}>
+          <Text className="text-xl font-bold text-foreground">
+            {capitalizeWords(exercise.name)}
+          </Text>
+        </View>
+
+        {/* Tabs */}
+        <View className="flex-row border-b border-background-elevated px-4">
+          {TABS.map((tab, index) => (
+            <Pressable
+              key={tab.key}
+              style={{ marginRight: index < TABS.length - 1 ? 32 : 0 }}
+              className="relative pb-3"
+              disabled={tab.disabled}
             >
-              {showPlaceholder ? (
-                <View className="items-center justify-center">
-                  <Ionicons name="barbell-outline" size={64} color={Colors.foreground.secondary} />
-                </View>
-              ) : (
-                <Image
-                  source={{ uri: exercise.gif_url! }}
-                  style={{ width: '100%', height: '100%' }}
-                  contentFit="contain"
-                  autoplay={true}
-                  cachePolicy="memory-disk"
-                  onError={handleImageError}
-                />
-              )}
-            </View>
-          </View>
-
-          {/* Exercise Title - Below GIF */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 24 }}>
-            <Text className="text-xl font-bold text-foreground">
-              {capitalizeWords(exercise.name)}
-            </Text>
-          </View>
-
-          {/* Tabs */}
-          <View className="flex-row border-b border-background-elevated px-4">
-            {TABS.map((tab, index) => (
-              <Pressable
-                key={tab.key}
-                style={{ marginRight: index < TABS.length - 1 ? 32 : 0 }}
-                className="relative pb-3"
-                disabled={tab.disabled}
+              <Text
+                className={
+                  tab.key === ACTIVE_TAB
+                    ? 'text-base font-medium text-primary'
+                    : tab.disabled
+                      ? 'text-base text-foreground-tertiary'
+                      : 'text-base text-foreground-secondary'
+                }
               >
-                <Text
-                  className={
-                    tab.key === ACTIVE_TAB
-                      ? 'text-base font-medium text-primary'
-                      : tab.disabled
-                        ? 'text-base text-foreground-tertiary'
-                        : 'text-base text-foreground-secondary'
-                  }
-                >
-                  {tab.label}
-                </Text>
-                {tab.key === ACTIVE_TAB && (
-                  <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                )}
-              </Pressable>
-            ))}
+                {tab.label}
+              </Text>
+              {tab.key === ACTIVE_TAB && (
+                <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+              )}
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Guide Content */}
+        <View className="p-4">
+          {/* Target Muscles Section */}
+          <View className="mb-6">
+            <Text className="mb-2 text-sm font-medium text-foreground-secondary">
+              Target Muscles
+            </Text>
+            {exercise.target_muscles[0] && (
+              <Text className="text-foreground">
+                {capitalizeWords(exercise.target_muscles[0])} (primary)
+              </Text>
+            )}
+            {exercise.secondary_muscles.length > 0 && (
+              <Text className="mt-1 text-foreground-secondary">
+                {exercise.secondary_muscles.map(capitalizeWords).join(', ')}
+              </Text>
+            )}
+            {exercise.target_muscles.length === 0 && exercise.secondary_muscles.length === 0 && (
+              <Text className="text-foreground-tertiary">No muscle information available</Text>
+            )}
           </View>
 
-          {/* Guide Content */}
-          <View className="p-4">
-            {/* Target Muscles Section */}
-            <View className="mb-6">
-              <Text className="mb-2 text-sm font-medium text-foreground-secondary">
-                Target Muscles
-              </Text>
-              {exercise.target_muscles[0] && (
-                <Text className="text-foreground">
-                  {capitalizeWords(exercise.target_muscles[0])} (primary)
-                </Text>
-              )}
-              {exercise.secondary_muscles.length > 0 && (
-                <Text className="mt-1 text-foreground-secondary">
-                  {exercise.secondary_muscles.map(capitalizeWords).join(', ')}
-                </Text>
-              )}
-              {exercise.target_muscles.length === 0 && exercise.secondary_muscles.length === 0 && (
-                <Text className="text-foreground-tertiary">No muscle information available</Text>
-              )}
-            </View>
-
-            {/* Equipment Section */}
-            <View className="mb-6">
-              <Text className="mb-2 text-sm font-medium text-foreground-secondary">Equipment</Text>
-              {exercise.equipments.length > 0 ? (
-                <View className="flex-row flex-wrap" style={{ gap: 8 }}>
-                  {exercise.equipments.map((equipment, index) => (
-                    <View key={index} className="rounded-full border border-primary px-3 py-1">
-                      <Text className="text-sm text-primary">{capitalizeWords(equipment)}</Text>
-                    </View>
-                  ))}
-                </View>
-              ) : (
-                <Text className="text-foreground-tertiary">No equipment needed</Text>
-              )}
-            </View>
-
-            {/* Instructions Section */}
-            <View className="mb-6">
-              <Text className="mb-2 text-sm font-medium text-foreground-secondary">
-                Instructions
-              </Text>
-              {exercise.instructions.length > 0 ? (
-                <View>
-                  {exercise.instructions.map((instruction, index) => (
-                    <View key={index} className="mb-4 flex-row">
-                      <Text className="mr-2 text-foreground-secondary">{index + 1}.</Text>
-                      <Text className="flex-1 text-foreground">{stripStepPrefix(instruction)}</Text>
-                    </View>
-                  ))}
-                </View>
-              ) : (
-                <Text className="text-foreground-tertiary">No instructions available</Text>
-              )}
-            </View>
+          {/* Equipment Section */}
+          <View className="mb-6">
+            <Text className="mb-2 text-sm font-medium text-foreground-secondary">Equipment</Text>
+            {exercise.equipments.length > 0 ? (
+              <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                {exercise.equipments.map((equipment, index) => (
+                  <View key={index} className="rounded-full border border-primary px-3 py-1">
+                    <Text className="text-sm text-primary">{capitalizeWords(equipment)}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text className="text-foreground-tertiary">No equipment needed</Text>
+            )}
           </View>
-        </ScrollView>
-      </View>
-    </SafeAreaView>
+
+          {/* Instructions Section */}
+          <View className="mb-6">
+            <Text className="mb-2 text-sm font-medium text-foreground-secondary">Instructions</Text>
+            {exercise.instructions.length > 0 ? (
+              <View>
+                {exercise.instructions.map((instruction, index) => (
+                  <View key={index} className="mb-4 flex-row">
+                    <Text className="mr-2 text-foreground-secondary">{index + 1}.</Text>
+                    <Text className="flex-1 text-foreground">{stripStepPrefix(instruction)}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text className="text-foreground-tertiary">No instructions available</Text>
+            )}
+          </View>
+        </View>
+      </Animated.ScrollView>
+    </View>
   );
 }
