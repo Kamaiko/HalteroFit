@@ -22,6 +22,8 @@ export interface DayExerciseCardProps {
   onPress: (exercise: DayExercise) => void;
   onEdit?: (exercise: DayExercise) => void;
   onDelete?: (exercise: DayExercise) => void;
+  drag?: () => void;
+  isActive?: boolean;
 }
 
 export const DayExerciseCard = memo(function DayExerciseCard({
@@ -29,6 +31,8 @@ export const DayExerciseCard = memo(function DayExerciseCard({
   onPress,
   onEdit,
   onDelete,
+  drag,
+  isActive,
 }: DayExerciseCardProps) {
   const [imageError, setImageError] = useState(false);
   const swipeableRef = useRef<React.ComponentRef<typeof ReanimatedSwipeable>>(null);
@@ -89,7 +93,47 @@ export const DayExerciseCard = memo(function DayExerciseCard({
       <Pressable
         className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
         onPress={handlePress}
+        style={isActive ? { transform: [{ scale: 1.02 }], opacity: 0.9 } : undefined}
       >
+        {/* Drag Handle */}
+        {drag && (
+          <Pressable onLongPress={drag} delayLongPress={100} className="mr-1 py-2">
+            <View className="items-center justify-center" style={{ width: 12, height: 18 }}>
+              {/* 6-dot grid: 2 columns x 3 rows */}
+              <View className="flex-row" style={{ gap: 3 }}>
+                <View
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                />
+                <View
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                />
+              </View>
+              <View className="flex-row" style={{ gap: 3, marginTop: 2 }}>
+                <View
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                />
+                <View
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                />
+              </View>
+              <View className="flex-row" style={{ gap: 3, marginTop: 2 }}>
+                <View
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                />
+                <View
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, backgroundColor: Colors.foreground.secondary }}
+                />
+              </View>
+            </View>
+          </Pressable>
+        )}
+
         {/* Thumbnail */}
         <View
           className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg"

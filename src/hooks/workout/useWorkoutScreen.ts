@@ -19,6 +19,7 @@ import {
   getPlanWithDays,
   observeActivePlan,
   removeExerciseFromPlanDay,
+  reorderPlanDayExercises,
   type PlanDay,
   type PlanDayWithExercises,
   type WorkoutPlan,
@@ -60,6 +61,9 @@ export interface UseWorkoutScreenReturn {
   handleAddDayPress: () => void;
   refetchDays: () => void;
   deleteExerciseOptimistic: (exerciseId: string) => Promise<void>;
+  reorderExercisesOptimistic: (
+    reorderedExercises: PlanDayWithExercises['exercises']
+  ) => Promise<void>;
 
   // Render helpers
   keyExtractor: (item: PlanDay) => string;
@@ -303,6 +307,33 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     [selectedDayExercises, selectedDay, handleError, refetchDays]
   );
 
+  // Reorder exercises with optimistic update
+  const reorderExercisesOptimistic = useCallback(
+    async (reorderedExercises: PlanDayWithExercises['exercises']) => {
+      if (!selectedDayExercises) return;
+
+      // Optimistic update: update local state immediately
+      setSelectedDayExercises((prev) => {
+        if (!prev) return prev;
+        return { ...prev, exercises: reorderedExercises };
+      });
+
+      // Persist to database in background
+      try {
+        const updates = reorderedExercises.map((exercise, index) => ({
+          id: exercise.id,
+          order_index: index,
+        }));
+        await reorderPlanDayExercises(updates);
+      } catch (error) {
+        // Revert on error by refetching
+        handleError(error, 'reorderExercises');
+        refetchDays();
+      }
+    },
+    [selectedDayExercises, handleError, refetchDays]
+  );
+
   // Check if Start Workout should be visible
   const canStartWorkout = useMemo(() => {
     if (!selectedDay) return false;
@@ -342,6 +373,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     handleAddDayPress,
     refetchDays,
     deleteExerciseOptimistic,
+    reorderExercisesOptimistic,
 
     // Render helpers
     keyExtractor,

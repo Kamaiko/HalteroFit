@@ -2,10 +2,14 @@
  * WorkoutDayDetailsContent - Day Details tab content for workout screen
  *
  * Displays exercises for the selected day with add exercise functionality.
+ * Supports drag-to-reorder via react-native-draggable-flatlist.
  */
 
-import { FlashList } from '@shopify/flash-list';
-import { memo } from 'react';
+import DraggableFlatList, {
+  type RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
+import { memo, useCallback } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { Ionicons } from '@/components/ui/icon';
@@ -23,6 +27,7 @@ export interface WorkoutDayDetailsContentProps {
   onExercisePress: (exercise: DayExercise) => void;
   onEditExercise?: (exercise: DayExercise) => void;
   onDeleteExercise?: (exercise: DayExercise) => void;
+  onReorder?: (exercises: DayExercise[]) => void;
 }
 
 export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
@@ -33,7 +38,26 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   onExercisePress,
   onEditExercise,
   onDeleteExercise,
+  onReorder,
 }: WorkoutDayDetailsContentProps) {
+  // Render item for draggable list
+  const renderItem = useCallback(
+    ({ item, drag, isActive }: RenderItemParams<DayExercise>) => (
+      <ScaleDecorator>
+        <DayExerciseCard
+          exercise={item}
+          onPress={() => onExercisePress(item)}
+          onEdit={onEditExercise}
+          onDelete={onDeleteExercise}
+          drag={drag}
+          isActive={isActive}
+        />
+      </ScaleDecorator>
+    ),
+    [onExercisePress, onEditExercise, onDeleteExercise]
+  );
+
+  const keyExtractor = useCallback((item: DayExercise) => item.id, []);
   if (!selectedDay) {
     return (
       <View className="flex-1 items-center justify-center p-8">
@@ -66,20 +90,12 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
         </View>
       </View>
 
-      {/* Exercise list with Add Exercise button */}
-      <FlashList
+      {/* Exercise list with drag-to-reorder */}
+      <DraggableFlatList
         data={exercises}
-        renderItem={({ item }) => (
-          <DayExerciseCard
-            exercise={item}
-            onPress={() => onExercisePress(item)}
-            onEdit={onEditExercise}
-            onDelete={onDeleteExercise}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        // @ts-expect-error estimatedItemSize improves performance but FlashList types are outdated
-        estimatedItemSize={72}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        onDragEnd={({ data }) => onReorder?.(data)}
         contentContainerStyle={{ paddingTop: 8 }}
         ListFooterComponent={
           <Pressable

@@ -50,6 +50,7 @@ export default function WorkoutScreen() {
     handleAddDayPress,
     refetchDays,
     deleteExerciseOptimistic,
+    reorderExercisesOptimistic,
   } = useWorkoutScreen();
 
   // Refresh data when screen gains focus (e.g., after adding exercises)
@@ -110,6 +111,7 @@ export default function WorkoutScreen() {
             onExercisePress={handleExercisePress}
             onEditExercise={handleEditExercise}
             onDeleteExercise={handleDeleteExercise}
+            onReorder={reorderExercisesOptimistic}
           />
         );
       }
@@ -129,6 +131,7 @@ export default function WorkoutScreen() {
       handleExercisePress,
       handleEditExercise,
       handleDeleteExercise,
+      reorderExercisesOptimistic,
     ]
   );
 
@@ -169,13 +172,13 @@ export default function WorkoutScreen() {
       {canStartWorkout && (
         <View className="absolute bottom-6 right-4">
           <Button
-            className="rounded-full px-6 shadow-lg"
-            style={{ backgroundColor: Colors.primary.DEFAULT, paddingVertical: 14 }}
+            className="rounded-full px-8 shadow-lg"
+            style={{ backgroundColor: Colors.primary.DEFAULT, paddingVertical: 18 }}
             onPress={() => {
               // TODO: Navigate to active workout session
             }}
           >
-            <Text className="text-white font-semibold text-base">Start Workout</Text>
+            <Text className="text-white font-bold text-lg">Start Workout</Text>
           </Button>
         </View>
       )}

@@ -727,6 +727,62 @@ export async function updatePlanDayExercise(
   }
 }
 
+/**
+ * Reorder exercises within a plan day (batch update)
+ * @param exercises Array of {id, order_index} to update
+ */
+export async function reorderPlanDayExercises(
+  exercises: Array<{ id: string; order_index: number }>
+): Promise<void> {
+  if (exercises.length === 0) return;
+
+  try {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser?.id) {
+      throw new AuthError(
+        'Please sign in to reorder exercises',
+        'User not authenticated - no user.id in authStore'
+      );
+    }
+
+    await database.write(async () => {
+      // Verify ownership via first exercise
+      const firstExercise = exercises[0];
+      if (!firstExercise) return; // Already checked above, but TypeScript needs this
+
+      const firstPde = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .find(firstExercise.id);
+      const planDay = await database.get<PlanDayModel>('plan_days').find(firstPde.planDayId);
+      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+
+      if (plan.userId !== currentUser.id) {
+        throw new AuthError(
+          'You do not have permission to reorder these exercises',
+          `User ${currentUser.id} attempted to reorder exercises in plan owned by ${plan.userId}`
+        );
+      }
+
+      // Batch update all exercises
+      for (const { id, order_index } of exercises) {
+        const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
+        await pde.update((e) => {
+          e.orderIndex = order_index;
+        });
+      }
+    });
+  } catch (error) {
+    if (error instanceof AuthError || error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError(
+      'Unable to reorder exercises. Please try again.',
+      `Failed to reorder exercises: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
 // ============================================================================
 // DELETE Operations
 // ============================================================================
