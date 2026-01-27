@@ -71,13 +71,14 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
         keyExtractor={(item) => item.id}
         // @ts-expect-error estimatedItemSize improves performance but FlashList types are outdated
         estimatedItemSize={72}
+        contentContainerStyle={{ paddingTop: 8 }}
         ListFooterComponent={
           <Pressable
             onPress={onAddExercisePress}
-            className="flex-row items-center px-4 py-3 border-b border-background-elevated"
+            className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
           >
             <View
-              className="w-12 h-12 rounded-full items-center justify-center mr-3"
+              className="mr-3 h-12 w-12 items-center justify-center rounded-full"
               style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
             >
               <Ionicons name="add" size={24} color={Colors.primary.DEFAULT} />

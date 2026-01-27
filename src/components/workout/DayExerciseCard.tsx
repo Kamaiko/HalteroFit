@@ -40,7 +40,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
 
   return (
     <Pressable
-      className="flex-row items-center border-b border-background-elevated px-4 py-3"
+      className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
       onPress={handlePress}
     >
       {/* Thumbnail */}
