@@ -181,7 +181,17 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - Current: SimpleTabs (tap-only)
   - Issue: PagerView crashes with `IllegalViewOperationException` on Android
   - Tried: `collapsable={false}`, `requestAnimationFrame`, `offscreenPageLimit` - none worked
-  - Alternatives to explore: `react-native-tab-view`, custom gesture handler
+  - **Root cause:** PagerView has known compatibility issues with complex nested views
+  - **Solution:** `react-native-tab-view` - maintained by React Navigation team
+    - Built on top of react-native-pager-view but with better abstractions
+    - Handles edge cases that raw PagerView doesn't (view hierarchy, lazy loading)
+    - Well-tested with Expo and React Navigation ecosystem
+    - Used internally by @react-navigation/material-top-tabs
+  - **Why NOT Expo Native Tabs:**
+    - SDK 54+ Native Tabs is for *main app navigation* (bottom/top tab bar)
+    - NOT designed for internal sub-tabs within screens
+    - Uses different native primitives (UITabBarController on iOS)
+  - **Estimated effort:** ~2-3h
 
 **Estimated effort:** ~25-30h
 

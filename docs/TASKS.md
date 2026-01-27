@@ -17,11 +17,11 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 | TODO (Top 5)                              | DOING | DONE (Last 5)                        |
 | ----------------------------------------- | ----- | ------------------------------------ |
-| **2.1.2** DayDetailsScreen `[M]` 🔴       |       | **2.1.1** WorkoutOverviewScreen      |
-| **2.1.3** AllPlansScreen `[M]`            |       | **1.1.3** Exercise detail screen     |
-| **2.1.4** EditDayScreen `[M]`             |       | **1.1.2** ExerciseListScreen         |
-| **2.1.5** CreateEditPlanScreen `[S]`      |       | **1.1.1** ExerciseSelectorScreen     |
-| **2.1.6** AddDayDialog `[S]`              |       | **1.0.1** Wireframes documentation   |
+| **2.1.2** DayDetailsScreen `[M]` 🔴       |       | **1.2.3** ExerciseCard component     |
+| **2.1.3** AllPlansScreen `[M]`            |       | **1.2.2** useExerciseSearch hook     |
+| **2.1.4** EditDayScreen `[M]`             |       | **1.2.1** ExerciseListView component |
+| **2.1.5** CreateEditPlanScreen `[S]`      |       | **2.1.1** WorkoutOverviewScreen      |
+| **2.1.6** AddDayDialog `[S]`              |       | **1.1.3** Exercise detail screen     |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
@@ -49,13 +49,33 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Muscle group grid with "Show All" button
       Files: src/app/(tabs)/exercises/index.tsx
 
-- [x] **1.1.2** Create ExerciseListScreen (L - 4h) `[src/app/(tabs)/exercises/list.tsx]`
-      Search bar, filter chips, FlashList of 1,300+ exercises
-      Files: src/app/(tabs)/exercises/list.tsx
+- [x] **1.1.2** Create ExerciseBrowserScreen (L - 4h) `[src/app/exercise-browser.tsx]`
+      Full-screen browser with search, FlashList of 1,300+ exercises
+      Files: src/app/exercise-browser.tsx, src/components/exercises/ExerciseListView.tsx
+      **Refactored 2026-01-26:** Moved to root-level route (full-screen, no tabs)
 
-- [x] **1.1.3** Create ExerciseDetailScreen (M - 3h) `[src/app/(tabs)/exercises/[id].tsx]`
-      Exercise GIF, description, muscles, equipment
-      Files: src/app/(tabs)/exercises/[id].tsx
+- [x] **1.1.3** Create ExerciseDetailScreen (M - 3h) `[src/app/exercise/[id].tsx]`
+      Full-screen detail with floating back button, GIF, instructions
+      Files: src/app/exercise/[id].tsx
+      **Refactored 2026-01-26:** Moved to root-level route (full-screen, no tabs)
+
+</details>
+
+<details>
+<summary><b>1.2: Shared Components & Hooks</b> • 3 tasks ✅ (added 2026-01-26)</summary>
+
+- [x] **1.2.1** Create ExerciseListView shared component (M - 2h)
+      Reusable list UI for browser and picker (90% code reuse)
+      Files: src/components/exercises/ExerciseListView.tsx
+
+- [x] **1.2.2** Create useExerciseSearch hook (M - 2h)
+      Search, filter, pagination with proper React patterns
+      Files: src/hooks/exercises/useExerciseSearch.ts
+      **Applied:** Ref pattern for stale closure prevention
+
+- [x] **1.2.3** Create ExerciseCard component (S - 1h)
+      Reusable card with browse/select modes
+      Files: src/components/exercises/ExerciseCard.tsx
 
 </details>
 

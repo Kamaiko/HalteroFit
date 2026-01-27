@@ -83,15 +83,17 @@ export default function ExercisePickerScreen() {
         <Button
           className="w-full items-center justify-center"
           style={{
-            backgroundColor: isButtonDisabled ? Colors.foreground.tertiary : Colors.primary.DEFAULT,
+            backgroundColor: isButtonDisabled ? Colors.background.surface : Colors.primary.DEFAULT,
             minHeight: 56,
+            borderRadius: 12,
+            opacity: 1,
           }}
           onPress={handleAddExercises}
           disabled={isButtonDisabled}
         >
           <Text
             className="font-semibold text-base"
-            style={{ color: isButtonDisabled ? Colors.foreground.secondary : 'white' }}
+            style={{ color: isButtonDisabled ? Colors.foreground.tertiary : 'white' }}
           >
             Add {selectedCount} exercise{selectedCount !== 1 ? 's' : ''}
           </Text>

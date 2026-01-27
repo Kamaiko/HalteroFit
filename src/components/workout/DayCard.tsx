@@ -133,8 +133,7 @@ export const DayCard = memo(function DayCard({
       {/* Menu button */}
       <Pressable
         onPress={handleMenuPress}
-        className="p-3"
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        className="p-1"
         accessibilityRole="button"
         accessibilityLabel="Day options menu"
       >
@@ -142,7 +141,7 @@ export const DayCard = memo(function DayCard({
       </Pressable>
 
       {/* Navigation arrow */}
-      <View className="pr-3">
+      <View className="pl-2 pr-3">
         <Ionicons name="chevron-forward" size={20} color={Colors.foreground.tertiary} />
       </View>
     </Pressable>

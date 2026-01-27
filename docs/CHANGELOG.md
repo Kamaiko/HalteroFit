@@ -4,11 +4,68 @@ This document tracks completed development milestones and major changes across a
 
 ## 📑 Table of Contents
 
+- [2026-01-26 - Exercise Architecture Refactor](#2026-01-26---exercise-architecture-refactor-)
 - [2026-01-17 - SDK 54 Migration](#2026-01-17---sdk-54-migration-)
 - [2026-01-13 - Reanimated 4 & React Lock](#2026-01-13---reanimated-4--react-lock-)
 - [2026-01-12 - SDK 53 Stabilization](#2026-01-12---sdk-53-stabilization-)
 - [2025-11-06 - Phase 0.6 Complete](#2025-11-06---phase-06-complete-)
 - [2025-11-04 - Phase 0.5 Complete](#2025-11-04---phase-05-complete-)
+
+---
+
+## 2026-01-26 - Exercise Architecture Refactor ✅
+
+**Status**: Complete
+**Reason**: Full-screen navigation + React best practices + code reuse optimization
+
+<details>
+<summary>📋 Changes (Click to expand)</summary>
+
+### Navigation Architecture
+
+- [x] Moved exercise-browser to root-level route (full-screen, no tabs)
+- [x] Moved exercise-picker to root-level route (full-screen, no tabs)
+- [x] Moved exercise/[id] detail to root-level route (full-screen, floating back button)
+- [x] Updated _layout.tsx with new Stack.Screen routes
+- [x] Deleted deprecated files: (tabs)/exercises/list.tsx, (tabs)/exercises/[id].tsx, (tabs)/exercises/picker.tsx
+
+### Shared Components
+
+- [x] Created ExerciseListView shared component (90% code reuse between browser/picker)
+- [x] Refactored ExerciseCard with browse/select modes
+- [x] Exported components via barrel file (src/components/exercises/index.ts)
+
+### React Best Practices Applied
+
+- [x] Fixed stale closure in useExerciseSearch with useRef pattern
+- [x] Added useCallback for clearSearch in ExerciseListView
+- [x] Memoized floatingContent with useMemo in exercise-picker
+- [x] Converted activeTab from state to constant in exercise detail
+- [x] Created shared capitalizeWords utility in src/utils/strings.ts
+
+### Performance Optimizations
+
+- [x] memo() on ExerciseCard, ExerciseListView, LoadingFooter
+- [x] useMemo for computed values (displayName, muscleText, checkboxStyle)
+- [x] useCallback for all handlers
+- [x] useRef to avoid callback recreation in useExerciseSearch
+
+</details>
+
+**Key Achievements:**
+
+- **90% code reuse** between exercise browser and exercise picker via ExerciseListView
+- **Zero ESLint warnings** on exhaustive-deps (proper ref pattern)
+- **Full-screen UX** for all exercise screens (no tab bar interference)
+- **Floating back button** stays visible while scrolling in exercise detail
+- **79 tests passing** - All unit/integration tests green
+
+**Files Changed:**
+
+- Created: ExerciseListView.tsx, exercise-browser.tsx, exercise/[id].tsx, strings.ts
+- Refactored: exercise-picker.tsx, ExerciseCard.tsx, useExerciseSearch.ts
+- Updated: _layout.tsx, exercises/index.tsx, utils/index.ts, BACKLOG.md
+- Deleted: (tabs)/exercises/list.tsx, (tabs)/exercises/[id].tsx, (tabs)/exercises/picker.tsx
 
 ---
 

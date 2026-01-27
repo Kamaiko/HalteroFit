@@ -47,6 +47,12 @@ export const Colors = {
   border: {
     DEFAULT: '#2d3748', // border-border
     light: '#4a5568', // border-border-light
+    input: '#9CA3AF', // Checkbox/input borders (unselected state)
+  },
+
+  // Surface colors (for image backgrounds, overlays)
+  surface: {
+    white: '#FFFFFF', // White background for image thumbnails
   },
 
   // RPE Colors (Rate of Perceived Exertion)
