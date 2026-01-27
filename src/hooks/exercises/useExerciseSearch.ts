@@ -48,8 +48,9 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
 
   // Refs to hold latest function versions (avoids stale closure in effects)
   // See: https://typeofnan.dev/you-probably-shouldnt-ignore-react-hooks-exhaustive-deps-warnings/
-  const loadExercisesRef = useRef<(reset?: boolean) => Promise<void>>(null!);
-  const loadCountRef = useRef<() => Promise<void>>(null!);
+  // NOTE: Initialized with no-op functions instead of null! for type safety
+  const loadExercisesRef = useRef<(reset?: boolean) => Promise<void>>(async () => {});
+  const loadCountRef = useRef<() => Promise<void>>(async () => {});
 
   // Memoize filter options (simpler than useCallback for a value)
   const filterOptions = useMemo(

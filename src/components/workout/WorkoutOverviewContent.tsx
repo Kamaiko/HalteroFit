@@ -62,7 +62,9 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
           />
         )}
         keyExtractor={(item) => item.id}
-        // @ts-expect-error estimatedItemSize improves performance but FlashList types are outdated
+        // FIXME: Remove @ts-expect-error when @shopify/flash-list types include estimatedItemSize
+        // See: https://shopify.github.io/flash-list/docs/usage#estimateditemsize
+        // @ts-expect-error FlashList v2.0.2 supports this prop but types are incomplete
         estimatedItemSize={80}
         ListHeaderComponent={<View style={{ height: 12 }} />}
         ListFooterComponent={

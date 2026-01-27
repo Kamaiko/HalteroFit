@@ -84,7 +84,12 @@ export const ExerciseListView = memo(function ExerciseListView({
     <ScreenContainer edges={edges}>
       {/* Header */}
       <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
-        <Pressable onPress={onBack} className="mr-3">
+        <Pressable
+          onPress={onBack}
+          className="mr-3"
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
         </Pressable>
         <View className="flex-1">
@@ -112,7 +117,11 @@ export const ExerciseListView = memo(function ExerciseListView({
             autoCorrect={false}
           />
           {search.length > 0 && (
-            <Pressable onPress={handleClearSearch}>
+            <Pressable
+              onPress={handleClearSearch}
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+            >
               <Ionicons name="close" size={20} color={Colors.foreground.secondary} />
             </Pressable>
           )}
@@ -142,7 +151,9 @@ export const ExerciseListView = memo(function ExerciseListView({
           data={exercises}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          // @ts-expect-error estimatedItemSize improves initial render but FlashList types are outdated
+          // FIXME: Remove @ts-expect-error when @shopify/flash-list types include estimatedItemSize
+          // See: https://shopify.github.io/flash-list/docs/usage#estimateditemsize
+          // @ts-expect-error FlashList v2.0.2 supports this prop but types are incomplete
           estimatedItemSize={80}
           onEndReached={onLoadMore}
           onEndReachedThreshold={0.5}

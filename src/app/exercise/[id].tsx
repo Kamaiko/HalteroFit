@@ -142,6 +142,8 @@ export default function ExerciseDetailScreen() {
           zIndex: 20,
         }}
         className="rounded-full bg-black/50 p-2"
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
       >
         <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
       </Pressable>

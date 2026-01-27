@@ -28,6 +28,10 @@ export const ExerciseCard = memo(function ExerciseCard({
   selected = false,
   onPress,
 }: ExerciseCardProps) {
+  // Track which exercise ID had an image error.
+  // When FlashList recycles this component for a different exercise,
+  // imageError automatically becomes false (errorExerciseId !== exercise.id).
+  // This avoids setState in useEffect while handling recycling correctly.
   const [errorExerciseId, setErrorExerciseId] = useState<string | null>(null);
   const imageError = errorExerciseId === exercise.id;
 
@@ -62,10 +66,17 @@ export const ExerciseCard = memo(function ExerciseCard({
     [selected]
   );
 
+  const accessibilityHint =
+    mode === 'browse' ? 'Double tap to view exercise details' : 'Double tap to select exercise';
+
   return (
     <Pressable
       className="flex-row items-center border-b border-background-elevated px-4 py-3"
       onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={`${displayName}, targets ${muscleText}`}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ selected: mode === 'select' ? selected : undefined }}
     >
       {/* Thumbnail */}
       <View
