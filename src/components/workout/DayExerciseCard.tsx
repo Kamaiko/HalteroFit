@@ -58,11 +58,11 @@ export const DayExerciseCard = memo(function DayExerciseCard({
   // Render right swipe actions (Edit + Delete buttons)
   const renderRightActions = useCallback(() => {
     return (
-      <View className="mr-4 mb-2 flex-row items-stretch">
-        {/* Edit button */}
+      <View className="mb-2 mr-4 flex-row items-stretch overflow-hidden rounded-xl">
+        {/* Edit button - flat left edge to connect with card */}
         <Pressable
           onPress={handleEdit}
-          className="w-16 items-center justify-center rounded-l-xl"
+          className="w-16 items-center justify-center"
           style={{ backgroundColor: Colors.background.elevated }}
         >
           <Ionicons name="pencil-outline" size={24} color={Colors.foreground.DEFAULT} />
@@ -70,7 +70,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         {/* Delete button */}
         <Pressable
           onPress={handleDelete}
-          className="w-16 items-center justify-center rounded-r-xl"
+          className="w-16 items-center justify-center"
           style={{ backgroundColor: Colors.danger }}
         >
           <Ionicons name="trash-outline" size={24} color="white" />
