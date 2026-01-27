@@ -102,6 +102,8 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
             onPress={onAddExercisePress}
             className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
           >
+            {/* Spacer to align with exercise cards that have drag handle */}
+            <View style={{ width: 16 }} />
             <View
               className="mr-3 h-12 w-12 items-center justify-center rounded-full"
               style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
