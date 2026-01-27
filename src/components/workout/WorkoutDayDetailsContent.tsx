@@ -21,6 +21,8 @@ export interface WorkoutDayDetailsContentProps {
   loading: boolean;
   onAddExercisePress: () => void;
   onExercisePress: (exercise: DayExercise) => void;
+  onEditExercise?: (exercise: DayExercise) => void;
+  onDeleteExercise?: (exercise: DayExercise) => void;
 }
 
 export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
@@ -29,6 +31,8 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   loading,
   onAddExercisePress,
   onExercisePress,
+  onEditExercise,
+  onDeleteExercise,
 }: WorkoutDayDetailsContentProps) {
   if (!selectedDay) {
     return (
@@ -66,7 +70,12 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
       <FlashList
         data={exercises}
         renderItem={({ item }) => (
-          <DayExerciseCard exercise={item} onPress={() => onExercisePress(item)} />
+          <DayExerciseCard
+            exercise={item}
+            onPress={() => onExercisePress(item)}
+            onEdit={onEditExercise}
+            onDelete={onDeleteExercise}
+          />
         )}
         keyExtractor={(item) => item.id}
         // @ts-expect-error estimatedItemSize improves performance but FlashList types are outdated

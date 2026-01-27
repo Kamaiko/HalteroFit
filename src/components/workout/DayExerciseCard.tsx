@@ -2,6 +2,7 @@
  * DayExerciseCard - Exercise card for Day Details view
  *
  * Shows exercise name, thumbnail, and target sets/reps.
+ * Supports swipe-to-reveal for edit and delete actions.
  */
 
 import { Colors } from '@/constants';
@@ -10,21 +11,27 @@ import { Text } from '@/components/ui/text';
 import type { PlanDayWithExercises } from '@/services/database/operations/plans';
 import { capitalizeWords } from '@/utils';
 import { Image } from 'expo-image';
-import { memo, useCallback, useState } from 'react';
+import React, { memo, useCallback, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 export type DayExercise = PlanDayWithExercises['exercises'][number];
 
 export interface DayExerciseCardProps {
   exercise: DayExercise;
   onPress: (exercise: DayExercise) => void;
+  onEdit?: (exercise: DayExercise) => void;
+  onDelete?: (exercise: DayExercise) => void;
 }
 
 export const DayExerciseCard = memo(function DayExerciseCard({
   exercise,
   onPress,
+  onEdit,
+  onDelete,
 }: DayExerciseCardProps) {
   const [imageError, setImageError] = useState(false);
+  const swipeableRef = useRef<React.ComponentRef<typeof ReanimatedSwipeable>>(null);
 
   const handlePress = useCallback(() => {
     onPress(exercise);
@@ -34,52 +41,90 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     setImageError(true);
   }, []);
 
+  const handleEdit = useCallback(() => {
+    swipeableRef.current?.close();
+    onEdit?.(exercise);
+  }, [exercise, onEdit]);
+
+  const handleDelete = useCallback(() => {
+    swipeableRef.current?.close();
+    onDelete?.(exercise);
+  }, [exercise, onDelete]);
+
+  // Render right swipe actions (Edit + Delete buttons)
+  const renderRightActions = useCallback(() => {
+    return (
+      <View className="mr-4 mb-2 flex-row items-stretch">
+        {/* Edit button */}
+        <Pressable
+          onPress={handleEdit}
+          className="w-16 items-center justify-center rounded-l-xl"
+          style={{ backgroundColor: Colors.background.elevated }}
+        >
+          <Ionicons name="pencil-outline" size={24} color={Colors.foreground.DEFAULT} />
+        </Pressable>
+        {/* Delete button */}
+        <Pressable
+          onPress={handleDelete}
+          className="w-16 items-center justify-center rounded-r-xl"
+          style={{ backgroundColor: Colors.danger }}
+        >
+          <Ionicons name="trash-outline" size={24} color="white" />
+        </Pressable>
+      </View>
+    );
+  }, [handleEdit, handleDelete]);
+
   const showPlaceholder = !exercise.exercise.gif_url || imageError;
   const muscleText =
     exercise.exercise.target_muscles.map(capitalizeWords).join(', ') || 'No muscle info';
 
   return (
-    <Pressable
-      className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
-      onPress={handlePress}
+    <ReanimatedSwipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      overshootRight={false}
+      friction={2}
     >
-      {/* Thumbnail */}
-      <View
-        className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg"
-        style={{ backgroundColor: Colors.surface.white }}
+      <Pressable
+        className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
+        onPress={handlePress}
       >
-        {showPlaceholder ? (
-          <View className="h-14 w-14 items-center justify-center bg-white">
-            <Ionicons name="barbell-outline" size={24} color={Colors.foreground.secondary} />
-          </View>
-        ) : (
-          <Image
-            source={{ uri: exercise.exercise.gif_url }}
-            style={{ width: 56, height: 56 }}
-            contentFit="cover"
-            autoplay={false}
-            cachePolicy="memory-disk"
-            transition={200}
-            onError={handleImageError}
-          />
-        )}
-      </View>
+        {/* Thumbnail */}
+        <View
+          className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg"
+          style={{ backgroundColor: Colors.surface.white }}
+        >
+          {showPlaceholder ? (
+            <View className="h-14 w-14 items-center justify-center bg-white">
+              <Ionicons name="barbell-outline" size={24} color={Colors.foreground.secondary} />
+            </View>
+          ) : (
+            <Image
+              source={{ uri: exercise.exercise.gif_url }}
+              style={{ width: 56, height: 56 }}
+              contentFit="cover"
+              autoplay={false}
+              cachePolicy="memory-disk"
+              transition={200}
+              onError={handleImageError}
+            />
+          )}
+        </View>
 
-      {/* Info */}
-      <View className="flex-1">
-        <Text className="font-medium text-foreground" numberOfLines={1}>
-          {capitalizeWords(exercise.exercise.name)}
-        </Text>
-        <Text className="mt-0.5 text-sm text-foreground-secondary" numberOfLines={1}>
-          {muscleText}
-        </Text>
-        <Text className="mt-0.5 text-sm text-primary">
-          {exercise.target_sets} sets × {exercise.target_reps} reps
-        </Text>
-      </View>
-
-      {/* Chevron */}
-      <Ionicons name="chevron-forward" size={20} color={Colors.foreground.secondary} />
-    </Pressable>
+        {/* Info */}
+        <View className="flex-1">
+          <Text className="font-medium text-foreground" numberOfLines={1}>
+            {capitalizeWords(exercise.exercise.name)}
+          </Text>
+          <Text className="mt-0.5 text-sm text-foreground-secondary" numberOfLines={1}>
+            {muscleText}
+          </Text>
+          <Text className="mt-0.5 text-sm text-primary">
+            {exercise.target_sets} sets × {exercise.target_reps} reps
+          </Text>
+        </View>
+      </Pressable>
+    </ReanimatedSwipeable>
   );
 });

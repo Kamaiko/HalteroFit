@@ -23,6 +23,7 @@ import {
 } from '@/components/workout';
 import { Colors } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
+import { removeExerciseFromPlanDay } from '@/services/database/operations/plans';
 
 export default function WorkoutScreen() {
   const {
@@ -70,6 +71,22 @@ export default function WorkoutScreen() {
     // TODO: Navigate to edit exercise screen
   }, []);
 
+  const handleEditExercise = useCallback((_exercise: DayExercise) => {
+    // TODO: Navigate to edit exercise sets/reps screen (Task 2.1.4)
+  }, []);
+
+  const handleDeleteExercise = useCallback(
+    async (exercise: DayExercise) => {
+      try {
+        await removeExerciseFromPlanDay(exercise.id);
+        refetchDays();
+      } catch (error) {
+        console.error('Failed to delete exercise:', error);
+      }
+    },
+    [refetchDays]
+  );
+
   const dayExercises = selectedDayExercises?.exercises ?? [];
 
   // Render scene for swipeable tabs
@@ -96,6 +113,8 @@ export default function WorkoutScreen() {
             loading={loadingExercises}
             onAddExercisePress={handleAddExercisePress}
             onExercisePress={handleExercisePress}
+            onEditExercise={handleEditExercise}
+            onDeleteExercise={handleDeleteExercise}
           />
         );
       }
@@ -113,6 +132,8 @@ export default function WorkoutScreen() {
       loadingExercises,
       handleAddExercisePress,
       handleExercisePress,
+      handleEditExercise,
+      handleDeleteExercise,
     ]
   );
 
@@ -153,8 +174,8 @@ export default function WorkoutScreen() {
       {canStartWorkout && (
         <View className="absolute bottom-6 right-4">
           <Button
-            className="rounded-full px-6 py-3 shadow-lg"
-            style={{ backgroundColor: Colors.primary.DEFAULT }}
+            className="rounded-full px-6 shadow-lg"
+            style={{ backgroundColor: Colors.primary.DEFAULT, paddingVertical: 14 }}
             onPress={() => {
               // TODO: Navigate to active workout session
             }}
