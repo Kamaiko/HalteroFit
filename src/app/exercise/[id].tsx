@@ -24,8 +24,8 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { Image } from 'expo-image';
 import { Text } from '@/components/ui/text';
+import { ExerciseGifHeader } from '@/components/exercises';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors } from '@/constants';
 import { getExerciseById, type Exercise } from '@/services/database/operations';
@@ -58,7 +58,6 @@ export default function ExerciseDetailScreen() {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [imageError, setImageError] = useState(false);
 
   // Load exercise data
   useEffect(() => {
@@ -87,10 +86,6 @@ export default function ExerciseDetailScreen() {
 
   const handleBack = useCallback(() => {
     router.back();
-  }, []);
-
-  const handleImageError = useCallback(() => {
-    setImageError(true);
   }, []);
 
   // Scroll-based fade animation for GIF section
@@ -135,8 +130,6 @@ export default function ExerciseDetailScreen() {
     );
   }
 
-  const showPlaceholder = !exercise.gif_url || imageError;
-
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
       {/* Floating Back Button - stays fixed while scrolling, respects safe area */}
@@ -161,30 +154,7 @@ export default function ExerciseDetailScreen() {
       >
         {/* GIF Section - edge-to-edge with overlay fade */}
         <View style={{ position: 'relative' }}>
-          <View
-            style={{
-              height: 256 + insets.top,
-              paddingTop: insets.top,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: Colors.surface.white,
-            }}
-          >
-            {showPlaceholder ? (
-              <View className="items-center justify-center">
-                <Ionicons name="barbell-outline" size={64} color={Colors.foreground.secondary} />
-              </View>
-            ) : (
-              <Image
-                source={{ uri: exercise.gif_url! }}
-                style={{ width: '100%', height: '100%' }}
-                contentFit="contain"
-                autoplay={true}
-                cachePolicy="memory-disk"
-                onError={handleImageError}
-              />
-            )}
-          </View>
+          <ExerciseGifHeader gifUrl={exercise.gif_url} />
           {/* Overlay that fades in to cover GIF uniformly */}
           <Animated.View
             pointerEvents="none"
