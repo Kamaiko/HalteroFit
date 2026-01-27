@@ -45,14 +45,16 @@ function formatLastPerformed(timestamp?: number): string {
   return `${days}d ago`;
 }
 
+// Time estimation: average minutes per exercise (includes sets, rest, transitions)
+const MINUTES_PER_EXERCISE = 5;
+
 /**
  * Estimate workout time based on exercise count
- * Rough estimate: ~5 min per exercise (including rest)
  */
 function estimateTime(exerciseCount: number): string {
   if (exerciseCount === 0) return '0m';
 
-  const minutes = exerciseCount * 5;
+  const minutes = exerciseCount * MINUTES_PER_EXERCISE;
   if (minutes < 60) return `${minutes}m`;
 
   const hours = Math.floor(minutes / 60);

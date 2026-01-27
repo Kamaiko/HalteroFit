@@ -7,4 +7,4 @@
  * import { Colors } from '@/constants';
  */
 
-export * from './colors';
+export * from './Colors';

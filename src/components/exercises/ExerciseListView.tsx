@@ -138,8 +138,8 @@ export const ExerciseListView = memo(function ExerciseListView({
           data={exercises}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          // NOTE: estimatedItemSize={80} would be optimal but FlashList types
-          // don't include it yet. FlashList will auto-calculate it.
+          // @ts-expect-error estimatedItemSize improves initial render but FlashList types are outdated
+          estimatedItemSize={80}
           onEndReached={onLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={loadingMore ? LoadingFooter : null}

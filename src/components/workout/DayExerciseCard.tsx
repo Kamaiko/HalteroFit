@@ -8,16 +8,10 @@ import { Colors } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { PlanDayWithExercises } from '@/services/database/operations/plans';
+import { capitalizeWords } from '@/utils';
 import { Image } from 'expo-image';
 import { memo, useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
-
-function capitalizeWords(str: string): string {
-  return str
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 type DayExercise = PlanDayWithExercises['exercises'][number];
 
@@ -52,7 +46,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
       {/* Thumbnail */}
       <View
         className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg"
-        style={{ backgroundColor: '#FFFFFF' }}
+        style={{ backgroundColor: Colors.surface.white }}
       >
         {showPlaceholder ? (
           <View className="h-14 w-14 items-center justify-center bg-white">

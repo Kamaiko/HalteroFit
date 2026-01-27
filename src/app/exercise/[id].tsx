@@ -113,7 +113,7 @@ export default function ExerciseDetailScreen() {
   const showPlaceholder = !exercise.gif_url || imageError;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'Colors.surface.white' }} edges={['top']}>
       <View className="flex-1 bg-background">
         {/* Floating Back Button - stays fixed while scrolling */}
         <Pressable
@@ -131,14 +131,14 @@ export default function ExerciseDetailScreen() {
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {/* GIF Section */}
-          <View style={{ backgroundColor: '#FFFFFF' }}>
+          <View style={{ backgroundColor: 'Colors.surface.white' }}>
             {/* Exercise GIF - white background for seamless blend */}
             <View
               style={{
                 height: 256,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'Colors.surface.white',
               }}
             >
               {showPlaceholder ? (

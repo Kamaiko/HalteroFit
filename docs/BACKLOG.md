@@ -135,6 +135,11 @@ function detectPlateauWithContext(exerciseHistory, user) {
 
 **Priority:** MEDIUM
 
+- **Accessibility labels** (screen reader support)
+  - Add `accessibilityRole`, `accessibilityLabel`, `accessibilityHint` to Pressable components
+  - Priority components: ExerciseCard, DayExerciseCard, back buttons
+  - Enables VoiceOver (iOS) and TalkBack (Android) for visually impaired users
+  - **Estimated effort:** ~3-4h (repetitive but straightforward)
 - **Light theme support** (toggle in settings, follow system preference option)
   - Current MVP: Dark theme only (brand focus)
   - Requires: Theme context, color palette for light mode, persist preference
@@ -218,6 +223,14 @@ function detectPlateauWithContext(exerciseHistory, user) {
 
 **Priority:** AS NEEDED
 
+- **Observable pattern for plan data** (HIGH - Phase 5)
+  - Current: Manual refetch triggers in useWorkoutScreen.ts (workaround)
+  - Target: Use WatermelonDB observables for planDays and exerciseCounts
+  - Benefits: Automatic UI updates when data changes, eliminates state sync bugs
+  - Pattern: Similar to existing `observeActivePlan()` implementation
+  - **Files:** src/hooks/workout/useWorkoutScreen.ts (lines 87-90, 236-238)
+  - **Estimated effort:** ~2-3h (refactoring with testing)
+  - **Risk:** Medium - requires careful testing of reactive updates
 - **Auto-Sync ExerciseDB Updates** (Supabase Edge Function)
   - Automated weekly check for new ExerciseDB exercises
   - Supabase Edge Function calls ExerciseDB API

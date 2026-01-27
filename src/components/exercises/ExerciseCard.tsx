@@ -54,7 +54,7 @@ export const ExerciseCard = memo(function ExerciseCard({
       height: 24,
       borderRadius: 4,
       borderWidth: 2,
-      borderColor: selected ? Colors.primary.DEFAULT : '#9CA3AF',
+      borderColor: selected ? Colors.primary.DEFAULT : Colors.border.input,
       backgroundColor: selected ? Colors.primary.DEFAULT : 'transparent',
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
@@ -70,7 +70,7 @@ export const ExerciseCard = memo(function ExerciseCard({
       {/* Thumbnail */}
       <View
         className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg"
-        style={{ backgroundColor: '#FFFFFF' }}
+        style={{ backgroundColor: Colors.surface.white }}
       >
         {showPlaceholder ? (
           <View className="h-14 w-14 items-center justify-center bg-white">
