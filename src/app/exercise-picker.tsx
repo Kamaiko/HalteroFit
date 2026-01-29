@@ -34,6 +34,10 @@ export default function ExercisePickerScreen() {
     router.back();
   }, []);
 
+  const handleExerciseImagePress = useCallback((exercise: Exercise) => {
+    router.push({ pathname: '/exercise/[id]', params: { id: exercise.id } });
+  }, []);
+
   const handleExercisePress = useCallback((exercise: Exercise) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -57,16 +61,14 @@ export default function ExercisePickerScreen() {
       const selectedExerciseIds = Array.from(selectedIds);
 
       // Add each exercise sequentially
-      let orderOffset = 0;
-      for (const exerciseId of selectedExerciseIds) {
+      for (const [i, exerciseId] of selectedExerciseIds.entries()) {
         await addExerciseToPlanDay({
           plan_day_id: targetDayId,
           exercise_id: exerciseId,
-          order_index: currentCount + orderOffset,
+          order_index: currentCount + i,
           target_sets: 3,
           target_reps: 10,
         });
-        orderOffset++;
       }
 
       router.back();
@@ -84,9 +86,10 @@ export default function ExercisePickerScreen() {
         mode="select"
         selected={selectedIds.has(item.id)}
         onPress={handleExercisePress}
+        onImagePress={handleExerciseImagePress}
       />
     ),
-    [selectedIds, handleExercisePress]
+    [selectedIds, handleExercisePress, handleExerciseImagePress]
   );
 
   const selectedCount = selectedIds.size;
@@ -109,7 +112,7 @@ export default function ExercisePickerScreen() {
             backgroundColor: isButtonDisabled ? Colors.background.surface : Colors.primary.DEFAULT,
             minHeight: 56,
             borderRadius: 12,
-            opacity: 1,
+            opacity: isButtonDisabled ? 0.85 : 1,
           }}
           onPress={handleAddExercises}
           disabled={isButtonDisabled}

@@ -20,6 +20,8 @@ export interface ExerciseCardProps {
   mode?: ExerciseCardMode;
   selected?: boolean;
   onPress: (exercise: Exercise) => void;
+  /** Tap on image thumbnail. If provided, the image gets its own tap zone. */
+  onImagePress?: (exercise: Exercise) => void;
 }
 
 export const ExerciseCard = memo(function ExerciseCard({
@@ -27,6 +29,7 @@ export const ExerciseCard = memo(function ExerciseCard({
   mode = 'browse',
   selected = false,
   onPress,
+  onImagePress,
 }: ExerciseCardProps) {
   // Track which exercise ID had an image error.
   // When FlashList recycles this component for a different exercise,
@@ -42,6 +45,10 @@ export const ExerciseCard = memo(function ExerciseCard({
   const handlePress = useCallback(() => {
     onPress(exercise);
   }, [exercise, onPress]);
+
+  const handleImagePress = useCallback(() => {
+    onImagePress?.(exercise);
+  }, [exercise, onImagePress]);
 
   // Memoize computed values to avoid re-calculation on re-render
   const displayName = useMemo(() => capitalizeWords(exercise.name), [exercise.name]);
@@ -78,10 +85,13 @@ export const ExerciseCard = memo(function ExerciseCard({
       accessibilityHint={accessibilityHint}
       accessibilityState={{ selected: mode === 'select' ? selected : undefined }}
     >
-      {/* Thumbnail */}
-      <View
+      {/* Thumbnail — separate tap zone when onImagePress provided */}
+      <Pressable
         className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg"
         style={{ backgroundColor: Colors.surface.white }}
+        onPress={onImagePress ? handleImagePress : undefined}
+        accessibilityRole={onImagePress ? 'button' : undefined}
+        accessibilityLabel={onImagePress ? `View ${displayName} details` : undefined}
       >
         {showPlaceholder ? (
           <View className="h-14 w-14 items-center justify-center bg-white">
@@ -100,7 +110,7 @@ export const ExerciseCard = memo(function ExerciseCard({
             onError={handleImageError}
           />
         )}
-      </View>
+      </Pressable>
 
       {/* Info */}
       <View className="flex-1">
