@@ -89,7 +89,6 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 **Goal:** Create, edit, and manage workout plans with days and exercises
 **Dependencies:** Phase 1 (Exercise Library)
 **Reference:** [WIREFRAMES.md § 3. Workout Tab](./WIREFRAMES.md#3-workout-tab)
-**Audit:** [PHASE2_AUDIT.md](./PHASE2_AUDIT.md)
 
 ### 2.1: Workout Tab Screens
 

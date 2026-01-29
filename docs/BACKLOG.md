@@ -177,6 +177,12 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - **Requires:** `expo-audio` - Install when implementing rest timer
   - Beep sounds at 3, 2, 1 seconds before rest ends
   - User can toggle sound on/off in settings
+- **DayCard enhancements** (richer workout day information)
+  - Last performed date per day (requires workout history query from Phase 3)
+  - Estimated workout time (calculate from exercise count × avg set duration)
+  - Dynamic muscle group icons based on day's exercises (replace generic fitness icon)
+  - **Estimated effort:** ~3-4h (query + UI updates)
+  - **Dependencies:** Phase 3 (workout history) for last performed date
 - **Swipeable tabs** (restore gesture-based tab switching)
   - Current: SimpleTabs (tap-only)
   - Issue: PagerView crashes with `IllegalViewOperationException` on Android
