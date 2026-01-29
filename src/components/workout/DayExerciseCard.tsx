@@ -71,7 +71,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         <Pressable
           onPress={handleDelete}
           className="w-16 items-center justify-center"
-          style={{ backgroundColor: Colors.danger }}
+          style={{ backgroundColor: Colors.destructive }}
         >
           <Ionicons name="trash-outline" size={24} color="white" />
         </Pressable>

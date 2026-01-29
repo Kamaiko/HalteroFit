@@ -20,12 +20,13 @@ const config: Config = {
           DEFAULT: '#4299e1', // Brand blue
           dark: '#2b6cb0', // Darker blue for pressed states
           light: '#63b3ed', // Lighter blue for highlights
+          foreground: '#FFFFFF', // Text on primary buttons
         },
 
         // Semantic colors
         success: '#38a169', // Progress green
         warning: '#d69e2e', // Caution amber
-        danger: '#e53e3e', // Critical red
+        destructive: '#e53e3e', // Critical red (delete, errors)
         info: '#3182ce', // Information blue
 
         // Text colors (using Tailwind's text-* convention)
@@ -41,6 +42,26 @@ const config: Config = {
           DEFAULT: '#2d3748', // Default borders
           light: '#4a5568', // Lighter borders
         },
+
+        // UI library tokens (required by copied react-native-reusables components)
+        accent: {
+          DEFAULT: '#27272A', // Hover/active background
+          foreground: '#E2E8F0', // Text on accent
+        },
+        secondary: {
+          DEFAULT: '#27272A', // Secondary button background
+          foreground: '#E2E8F0', // Text on secondary
+        },
+        card: {
+          DEFAULT: '#1A1A1A', // Card background
+          foreground: '#E2E8F0', // Text inside cards
+        },
+        input: '#27272A', // Input borders and dark-mode bg
+        muted: {
+          DEFAULT: '#27272A', // Muted backgrounds (code blocks, disabled)
+          foreground: '#94A3B8', // Muted text (placeholders, descriptions)
+        },
+        ring: '#4299e1', // Focus ring color
 
         // RPE Colors (Rate of Perceived Exertion)
         rpe: {

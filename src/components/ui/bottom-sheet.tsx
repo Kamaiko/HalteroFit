@@ -2,7 +2,7 @@
  * BottomSheet Component
  *
  * Wrapper around @gorhom/bottom-sheet for modal-style content.
- * Used for: Filters, Rest Timer config, Context menus.
+ * Uses glassmorphism (semi-transparent overlay + subtle borders) for a modern look.
  *
  * NOTE: Uses React.forwardRef instead of React 19 ref-as-prop because
  * @gorhom/bottom-sheet internally inspects the component type.
@@ -15,9 +15,10 @@ import GorhomBottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
   type BottomSheetBackdropProps,
+  type BottomSheetBackgroundProps,
 } from '@gorhom/bottom-sheet';
 import * as React from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Text } from './text';
 
@@ -38,8 +39,17 @@ export interface BottomSheetRef {
   snapToIndex: (index: number) => void;
 }
 
+/** Glassmorphism background for the bottom sheet */
+function GlassBackground({ style }: BottomSheetBackgroundProps) {
+  return (
+    <View style={[style, styles.backgroundContainer]}>
+      <View style={[StyleSheet.absoluteFill, styles.backgroundOverlay]} />
+    </View>
+  );
+}
+
 /**
- * BottomSheet - Modal-style bottom sheet
+ * BottomSheet - Modal-style bottom sheet with glassmorphism
  *
  * @example
  * ```tsx
@@ -91,18 +101,14 @@ export const BottomSheet = React.forwardRef<BottomSheetRef, BottomSheetProps>(
         snapPoints={snapPoints}
         enablePanDownToClose={enablePanDownToClose}
         backdropComponent={renderBackdrop}
+        backgroundComponent={GlassBackground}
         onChange={handleSheetChanges}
-        backgroundStyle={{
-          backgroundColor: '#1A1A1A', // background-surface
-        }}
-        handleIndicatorStyle={{
-          backgroundColor: '#666666', // foreground-tertiary
-        }}
+        handleIndicatorStyle={styles.handleIndicator}
       >
         <BottomSheetView className={cn('flex-1 px-4', className)}>
           {/* Header with title */}
           {title && (
-            <View className="mb-4 border-b border-background-elevated pb-3">
+            <View className="mb-4 border-b border-white/10 pb-3">
               <Text className="text-center text-lg font-semibold text-foreground">{title}</Text>
             </View>
           )}
@@ -116,3 +122,17 @@ export const BottomSheet = React.forwardRef<BottomSheetRef, BottomSheetProps>(
 );
 
 BottomSheet.displayName = 'BottomSheet';
+
+const styles = StyleSheet.create({
+  backgroundContainer: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    overflow: 'hidden',
+  },
+  backgroundOverlay: {
+    backgroundColor: 'rgba(26, 26, 26, 0.7)',
+  },
+  handleIndicator: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+});

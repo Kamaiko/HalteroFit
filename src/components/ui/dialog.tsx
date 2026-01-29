@@ -2,7 +2,7 @@
  * Dialog - Base modal dialog shell
  *
  * Provides the common structure shared by all modal dialogs:
- * Portal + Modal + backdrop + centered card container.
+ * Portal + Modal + backdrop + centered opaque card container.
  *
  * Use this as a building block for specific dialog types
  * (ConfirmDialog, InputDialog, etc.) rather than directly in screens.
@@ -38,7 +38,7 @@ export function Dialog({ open, onClose, children, portalName = 'dialog', onShow 
       >
         <Pressable className="flex-1 items-center justify-center bg-black/60" onPress={onClose}>
           <View
-            className="mx-6 w-full max-w-sm rounded-xl bg-background-surface p-6 shadow-lg"
+            className="mx-10 w-full max-w-xs rounded-xl bg-background-surface p-6"
             onStartShouldSetResponder={() => true}
           >
             {children}

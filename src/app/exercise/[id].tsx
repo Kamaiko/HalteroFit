@@ -122,7 +122,7 @@ export default function ExerciseDetailScreen() {
     return (
       <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
         <View className="flex-1 items-center justify-center px-8">
-          <Ionicons name="alert-circle-outline" size={48} color={Colors.danger} />
+          <Ionicons name="alert-circle-outline" size={48} color={Colors.destructive} />
           <Text className="mt-4 text-center text-foreground-secondary">
             {error || 'Exercise not found'}
           </Text>

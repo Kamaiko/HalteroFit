@@ -23,7 +23,7 @@ const iconVariants = cva('', {
       secondary: 'text-foreground-secondary',
       muted: 'text-foreground-tertiary',
       success: 'text-success',
-      danger: 'text-danger',
+      destructive: 'text-destructive',
       warning: 'text-warning',
       info: 'text-info',
     },

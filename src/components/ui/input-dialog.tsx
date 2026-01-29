@@ -50,11 +50,11 @@ export function InputDialog({
 
   return (
     <Dialog open={open} onClose={onClose} portalName="input-dialog" onShow={handleShow}>
-      <Text className="text-center text-lg font-semibold text-foreground">{title}</Text>
+      <Text className="text-center text-xl font-semibold text-foreground">{title}</Text>
 
       <Input
         ref={inputRef}
-        className="mt-4"
+        className="mt-5"
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
@@ -63,7 +63,7 @@ export function InputDialog({
         autoCapitalize="words"
       />
 
-      <View className="mt-6 flex-row gap-3">
+      <View className="mt-6 flex-row gap-4">
         <Button variant="outline" className="flex-1" onPress={onClose} disabled={loading}>
           <Text>{cancelLabel}</Text>
         </Button>

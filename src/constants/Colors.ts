@@ -2,7 +2,7 @@
  * Color Constants
  *
  * Central source of truth for colors used outside of Tailwind className.
- * These values MUST match tailwind.config.js to ensure consistency.
+ * These values MUST match tailwind.config.ts to ensure consistency.
  *
  * Use cases:
  * - React Native components that don't support className (expo-router tabs, gradients, etc.)
@@ -27,12 +27,13 @@ export const Colors = {
     DEFAULT: '#4299e1', // bg-primary
     dark: '#2b6cb0', // bg-primary-dark
     light: '#63b3ed', // bg-primary-light
+    foreground: '#FFFFFF', // text-primary-foreground
   },
 
   // Semantic colors
   success: '#38a169', // text-success
   warning: '#d69e2e', // text-warning
-  danger: '#e53e3e', // text-danger
+  destructive: '#e53e3e', // text-destructive
   info: '#3182ce', // text-info
 
   // Text colors
@@ -49,6 +50,26 @@ export const Colors = {
     light: '#4a5568', // border-border-light
     input: '#9CA3AF', // Checkbox/input borders (unselected state)
   },
+
+  // UI library tokens (match copied react-native-reusables components)
+  accent: {
+    DEFAULT: '#27272A', // bg-accent
+    foreground: '#E2E8F0', // text-accent-foreground
+  },
+  secondary: {
+    DEFAULT: '#27272A', // bg-secondary
+    foreground: '#E2E8F0', // text-secondary-foreground
+  },
+  card: {
+    DEFAULT: '#1A1A1A', // bg-card
+    foreground: '#E2E8F0', // text-card-foreground
+  },
+  input: '#27272A', // border-input
+  muted: {
+    DEFAULT: '#27272A', // bg-muted
+    foreground: '#94A3B8', // text-muted-foreground
+  },
+  ring: '#4299e1', // ring-ring
 
   // Surface colors (for image backgrounds, overlays)
   surface: {

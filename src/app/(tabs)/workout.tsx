@@ -10,9 +10,9 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { Ionicons } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Ionicons } from '@/components/ui/icon';
 import { InputDialog } from '@/components/ui/input-dialog';
 import { Tabs, type TabRoute } from '@/components/ui';
 import { Text } from '@/components/ui/text';
@@ -191,19 +191,20 @@ export default function WorkoutScreen() {
       )}
 
       <BottomSheet ref={menuSheetRef} title={menuDay?.name ?? 'Options'}>
-        <View className="px-4 pb-6">
+        <View className="pb-6">
           <Pressable
             onPress={handleEditDay}
-            className="flex-row items-center py-4 border-b border-background-elevated"
+            className="flex-row items-center px-4 py-3 active:opacity-60"
           >
-            <Ionicons name="pencil-outline" size={24} color={Colors.foreground.DEFAULT} />
-            <Text className="text-foreground text-base ml-4">Edit</Text>
+            <Ionicons name="pencil-outline" size={20} color={Colors.foreground.DEFAULT} />
+            <Text className="text-foreground text-base ml-3">Edit</Text>
           </Pressable>
-          <Pressable onPress={handleDeleteDayPress} className="flex-row items-center py-4">
-            <Ionicons name="trash-outline" size={24} color={Colors.danger} />
-            <Text className="text-base ml-4" style={{ color: Colors.danger }}>
-              Delete
-            </Text>
+          <Pressable
+            onPress={handleDeleteDayPress}
+            className="flex-row items-center px-4 py-3 active:opacity-60"
+          >
+            <Ionicons name="trash-outline" size={20} color={Colors.destructive} />
+            <Text className="text-destructive text-base ml-3">Delete</Text>
           </Pressable>
         </View>
       </BottomSheet>
@@ -211,13 +212,10 @@ export default function WorkoutScreen() {
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        title="Delete Workout Day?"
-        description={`Are you sure you want to delete "${menuDay?.name}"? This will also remove all exercises in this day.`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        variant="destructive"
-        loading={isDeleting}
+        title="Delete this workout day?"
+        confirmLabel="Confirm"
         onConfirm={handleConfirmDelete}
+        loading={isDeleting}
       />
 
       <InputDialog
