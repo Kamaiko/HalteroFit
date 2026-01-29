@@ -21,8 +21,6 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   useAnimatedScrollHandler,
-  interpolate,
-  Extrapolation,
 } from 'react-native-reanimated';
 import { Text } from '@/components/ui/text';
 import { ExerciseGifHeader } from '@/components/exercises';
@@ -45,7 +43,10 @@ const TABS = [
 // Currently only Guide tab is active
 const ACTIVE_TAB: (typeof TABS)[number]['key'] = 'guide';
 
-// Distance in pixels over which the GIF fades out when scrolling
+// Scroll distance before fade begins (dead zone)
+const GIF_FADE_DELAY = 30;
+
+// Distance in pixels over which the GIF fades out after the delay (ease-in curve)
 const GIF_FADE_DISTANCE = 150;
 
 // ============================================================================
@@ -97,10 +98,13 @@ export default function ExerciseDetailScreen() {
     },
   });
 
-  // Overlay that fades IN (0 → 1) to cover the GIF uniformly
-  const overlayFadeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [0, GIF_FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
-  }));
+  // Overlay that fades IN (0 → 1) with delayed ease-in curve
+  const overlayFadeStyle = useAnimatedStyle(() => {
+    'worklet';
+    const adjusted = Math.max(scrollY.value - GIF_FADE_DELAY, 0);
+    const progress = Math.min(adjusted / GIF_FADE_DISTANCE, 1);
+    return { opacity: progress * progress };
+  });
 
   // Loading state
   if (loading) {
