@@ -49,7 +49,7 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View className="flex-1">
       <FlashList
         data={planDays}
         renderItem={({ item }) => (
@@ -66,7 +66,7 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
         // See: https://shopify.github.io/flash-list/docs/usage#estimateditemsize
         // @ts-expect-error FlashList v2.0.2 supports this prop but types are incomplete
         estimatedItemSize={80}
-        ListHeaderComponent={<View style={{ height: 12 }} />}
+        ListHeaderComponent={<View className="h-3" />}
         ListFooterComponent={
           <Pressable onPress={onAddDayPress} className="flex-row items-center mx-4 py-3">
             <View

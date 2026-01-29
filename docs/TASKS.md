@@ -15,13 +15,13 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 ## Kanban
 
-| TODO (Top 5)                              | DOING | DONE (Last 5)                        |
-| ----------------------------------------- | ----- | ------------------------------------ |
-| **2.1.3** AllPlansScreen `[M]` 🔴         |       | **2.1.2** DayDetailsScreen           |
-| **2.1.4** EditDayScreen `[M]`             |       | **1.2.3** ExerciseCard component     |
-| **2.1.5** CreateEditPlanScreen `[S]`      |       | **1.2.2** useExerciseSearch hook     |
-| **2.1.6** AddDayDialog `[S]`              |       | **1.2.1** ExerciseListView component |
-| **2.3.3** PlanCard component `[S]`        |       | **2.1.1** WorkoutOverviewScreen      |
+| TODO (Top 5)                              | DOING                                    | DONE (Last 5)                        |
+| ----------------------------------------- | ---------------------------------------- | ------------------------------------ |
+| **2.1.3** AllPlansScreen `[M]` 🔴         | **UX** Popup/BottomSheet visual rework   | **2.1.6** AddDayDialog               |
+| **2.1.4** EditDayScreen `[M]`             |                                          | **2.1.2** DayDetailsScreen           |
+| **2.1.5** CreateEditPlanScreen `[S]`      |                                          | **1.2.3** ExerciseCard component     |
+| **2.3.3** PlanCard component `[S]`        |                                          | **1.2.2** useExerciseSearch hook     |
+|                                           |                                          | **2.1.1** WorkoutOverviewScreen      |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
@@ -120,9 +120,8 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Plan name, description, cover image
       Create new / Edit existing
 
-- [ ] **2.1.6** AddDayDialog (S - 1h)
-      Day name input
-      Day of week selector (optional)
+- [x] **2.1.6** AddDayDialog (S - 1h) ✅ `[src/components/ui/dialog.tsx, input-dialog.tsx]`
+      Day name input (day of week selector deferred to BACKLOG.md)
 
 ### 2.2: Plan Operations (Existing)
 

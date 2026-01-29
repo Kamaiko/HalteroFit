@@ -79,7 +79,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View className="flex-1">
       {/* Day header */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-background-elevated">
         <View>
@@ -103,7 +103,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
             className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
           >
             {/* Spacer to align with exercise cards that have drag handle */}
-            <View style={{ width: 16 }} />
+            <View className="w-4" />
             <View
               className="mr-3 h-12 w-12 items-center justify-center rounded-full"
               style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
