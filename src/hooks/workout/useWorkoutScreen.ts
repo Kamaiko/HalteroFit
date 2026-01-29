@@ -59,6 +59,12 @@ export interface UseWorkoutScreenReturn {
   handleDeleteDayPress: () => void;
   handleConfirmDelete: () => Promise<void>;
   handleAddDayPress: () => void;
+  showAddDayDialog: boolean;
+  addDayName: string;
+  setAddDayName: (name: string) => void;
+  isAddingDay: boolean;
+  handleConfirmAddDay: () => Promise<void>;
+  handleCancelAddDay: () => void;
   refetchDays: () => void;
   deleteExerciseOptimistic: (exerciseId: string) => Promise<void>;
   reorderExercisesOptimistic: (
@@ -86,6 +92,11 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const menuSheetRef = useRef<BottomSheetRef>(null);
+
+  // Add day dialog state
+  const [showAddDayDialog, setShowAddDayDialog] = useState(false);
+  const [addDayName, setAddDayName] = useState('');
+  const [isAddingDay, setIsAddingDay] = useState(false);
 
   // Exercise counts per day (fetched from database)
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
@@ -265,9 +276,59 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
   }, [menuDay, selectedDay, handleError]);
 
   // Handle Add Day press
-  const handleAddDayPress = useCallback(() => {
-    // TODO: Open Add Day dialog (Task 2.1.6)
-    console.log('Add day pressed');
+  const handleAddDayPress = useCallback(async () => {
+    if (!activePlan?.id) return;
+
+    // Empty state: auto-create first day without dialog
+    if (planDays.length === 0) {
+      setIsAddingDay(true);
+      try {
+        const newDay = await createPlanDay({
+          plan_id: activePlan.id,
+          name: 'Workout Day #1',
+          order_index: 0,
+        });
+        setPlanDays([newDay]);
+        setSelectedDay(newDay);
+        setExerciseCounts((prev) => ({ ...prev, [newDay.id]: 0 }));
+      } catch (error) {
+        handleError(error, 'createFirstDay');
+      } finally {
+        setIsAddingDay(false);
+      }
+      return;
+    }
+
+    // Normal: show dialog
+    setAddDayName('');
+    setShowAddDayDialog(true);
+  }, [activePlan?.id, planDays.length, handleError]);
+
+  const handleConfirmAddDay = useCallback(async () => {
+    if (!activePlan?.id || isAddingDay) return;
+
+    const name = addDayName.trim() || 'New day';
+    setIsAddingDay(true);
+    try {
+      const newDay = await createPlanDay({
+        plan_id: activePlan.id,
+        name,
+        order_index: planDays.length,
+      });
+      setPlanDays((prev) => [...prev, newDay]);
+      setExerciseCounts((prev) => ({ ...prev, [newDay.id]: 0 }));
+      setShowAddDayDialog(false);
+      setAddDayName('');
+    } catch (error) {
+      handleError(error, 'createPlanDay');
+    } finally {
+      setIsAddingDay(false);
+    }
+  }, [activePlan?.id, addDayName, planDays.length, isAddingDay, handleError]);
+
+  const handleCancelAddDay = useCallback(() => {
+    setShowAddDayDialog(false);
+    setAddDayName('');
   }, []);
 
   // Delete exercise with optimistic update and animation
@@ -371,6 +432,12 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     handleDeleteDayPress,
     handleConfirmDelete,
     handleAddDayPress,
+    showAddDayDialog,
+    addDayName,
+    setAddDayName,
+    isAddingDay,
+    handleConfirmAddDay,
+    handleCancelAddDay,
     refetchDays,
     deleteExerciseOptimistic,
     reorderExercisesOptimistic,

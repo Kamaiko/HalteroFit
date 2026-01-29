@@ -22,3 +22,9 @@ export type { BottomSheetProps, BottomSheetRef } from './bottom-sheet';
 
 export { ConfirmDialog } from './confirm-dialog';
 export type { ConfirmDialogProps } from './confirm-dialog';
+
+export { Dialog } from './dialog';
+export type { DialogProps } from './dialog';
+
+export { InputDialog } from './input-dialog';
+export type { InputDialogProps } from './input-dialog';

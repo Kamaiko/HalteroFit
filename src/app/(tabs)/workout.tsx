@@ -13,6 +13,7 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Ionicons } from '@/components/ui/icon';
+import { InputDialog } from '@/components/ui/input-dialog';
 import { Tabs, type TabRoute } from '@/components/ui';
 import { Text } from '@/components/ui/text';
 import {
@@ -48,6 +49,12 @@ export default function WorkoutScreen() {
     handleDeleteDayPress,
     handleConfirmDelete,
     handleAddDayPress,
+    showAddDayDialog,
+    addDayName,
+    setAddDayName,
+    isAddingDay,
+    handleConfirmAddDay,
+    handleCancelAddDay,
     refetchDays,
     deleteExerciseOptimistic,
     reorderExercisesOptimistic,
@@ -211,6 +218,17 @@ export default function WorkoutScreen() {
         variant="destructive"
         loading={isDeleting}
         onConfirm={handleConfirmDelete}
+      />
+
+      <InputDialog
+        open={showAddDayDialog}
+        onClose={handleCancelAddDay}
+        title="Add a Day"
+        placeholder="New day"
+        value={addDayName}
+        onChangeText={setAddDayName}
+        onConfirm={handleConfirmAddDay}
+        loading={isAddingDay}
       />
     </ScreenContainer>
   );

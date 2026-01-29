@@ -199,6 +199,11 @@ function detectPlateauWithContext(exerciseHistory, user) {
     - Uses different native primitives (UITabBarController on iOS)
   - **Estimated effort:** ~2-3h
 
+- **Add Day dialog enhancements**
+  - "Set a workout day" selector (assign day of week: MON, TUE, etc.)
+  - "Set as a rest day" checkbox
+  - Schema already supports `day_of_week` column in `plan_days`
+
 **Estimated effort:** ~25-30h
 
 ---

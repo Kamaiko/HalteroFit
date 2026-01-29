@@ -4,15 +4,16 @@
  * Modal confirmation dialog for destructive actions.
  * Used for: Delete routines, Discard workout, etc.
  *
+ * Built on the Dialog shell component for consistent modal behavior.
+ *
  * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 7.3 (ConfirmDialog)
  */
 
-import { cn } from '@/lib/utils';
-import { Portal } from '@rn-primitives/portal';
 import * as React from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button } from './button';
+import { Dialog } from './dialog';
 import { Text } from './text';
 
 export interface ConfirmDialogProps {
@@ -69,59 +70,29 @@ export function ConfirmDialog({
   }, [onConfirm, onOpenChange]);
 
   return (
-    <Portal name="confirm-dialog">
-      <Modal
-        visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={handleCancel}
-        statusBarTranslucent
-      >
-        {/* Backdrop */}
-        <Pressable
-          className="flex-1 items-center justify-center bg-black/60"
-          onPress={handleCancel}
+    <Dialog open={open} onClose={handleCancel} portalName="confirm-dialog">
+      {/* Title */}
+      <Text className="text-center text-lg font-semibold text-foreground">{title}</Text>
+
+      {/* Description */}
+      {description && (
+        <Text className="mt-2 text-center text-sm text-foreground-secondary">{description}</Text>
+      )}
+
+      {/* Actions */}
+      <View className="mt-6 flex-row gap-3">
+        <Button variant="outline" className="flex-1" onPress={handleCancel} disabled={loading}>
+          <Text>{cancelLabel}</Text>
+        </Button>
+        <Button
+          variant={variant === 'destructive' ? 'destructive' : 'default'}
+          className="flex-1"
+          onPress={handleConfirm}
+          disabled={loading}
         >
-          {/* Dialog */}
-          <Pressable
-            className={cn('mx-6 w-full max-w-sm rounded-xl bg-background-surface p-6', 'shadow-lg')}
-            onPress={(e) => e.stopPropagation()}
-          >
-            {/* Title */}
-            <Text className="text-center text-lg font-semibold text-foreground">{title}</Text>
-
-            {/* Description */}
-            {description && (
-              <Text className="mt-2 text-center text-sm text-foreground-secondary">
-                {description}
-              </Text>
-            )}
-
-            {/* Actions */}
-            <View className="mt-6 flex-row gap-3">
-              {/* Cancel Button */}
-              <Button
-                variant="outline"
-                className="flex-1"
-                onPress={handleCancel}
-                disabled={loading}
-              >
-                <Text>{cancelLabel}</Text>
-              </Button>
-
-              {/* Confirm Button */}
-              <Button
-                variant={variant === 'destructive' ? 'destructive' : 'default'}
-                className="flex-1"
-                onPress={handleConfirm}
-                disabled={loading}
-              >
-                <Text>{confirmLabel}</Text>
-              </Button>
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
-    </Portal>
+          <Text>{confirmLabel}</Text>
+        </Button>
+      </View>
+    </Dialog>
   );
 }
