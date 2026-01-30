@@ -45,27 +45,31 @@ export const EditDayExerciseCard = memo(function EditDayExerciseCard({
       entering={FadeIn.duration(200)}
       exiting={FadeOut.duration(200)}
       layout={LinearTransition.duration(200)}
-      className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
-      style={isActive ? CARD_ACTIVE_STYLE : undefined}
+      className="mx-4 mb-2"
     >
-      {drag && <DragHandle onDrag={drag} />}
+      <View
+        className="flex-row items-center rounded-xl bg-background-surface px-4 py-3"
+        style={isActive ? CARD_ACTIVE_STYLE : undefined}
+      >
+        {drag && <DragHandle onDrag={drag} />}
 
-      <ExerciseThumbnail imageUrl={exercise.exercise.gif_url} onPress={handleImagePress} />
+        <ExerciseThumbnail imageUrl={exercise.exercise.gif_url} onPress={handleImagePress} />
 
-      {/* Info */}
-      <View className="flex-1">
-        <Text className="font-medium text-foreground" numberOfLines={1}>
-          {capitalizeWords(exercise.exercise.name)}
-        </Text>
-        <Text className="mt-0.5 text-sm text-primary">
-          {exercise.target_sets} sets × {exercise.target_reps} reps
-        </Text>
+        {/* Info */}
+        <View className="flex-1">
+          <Text className="font-medium text-foreground" numberOfLines={1}>
+            {capitalizeWords(exercise.exercise.name)}
+          </Text>
+          <Text className="mt-0.5 text-sm text-primary">
+            {exercise.target_sets} sets × {exercise.target_reps} reps
+          </Text>
+        </View>
+
+        {/* Remove button */}
+        <Pressable onPress={handleRemove} hitSlop={8} className="ml-2 active:opacity-60">
+          <Ionicons name="close-circle-outline" size={24} color={Colors.foreground.secondary} />
+        </Pressable>
       </View>
-
-      {/* Remove button */}
-      <Pressable onPress={handleRemove} hitSlop={8} className="ml-2 active:opacity-60">
-        <Ionicons name="close-circle-outline" size={24} color={Colors.foreground.secondary} />
-      </Pressable>
     </Animated.View>
   );
 });
