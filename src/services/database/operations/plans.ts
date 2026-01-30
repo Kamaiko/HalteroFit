@@ -8,6 +8,7 @@
  * All operations are LOCAL FIRST (instant), sync happens separately
  */
 
+import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS } from '@/constants';
 import { Q } from '@nozbe/watermelondb';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -294,8 +295,8 @@ export async function addExerciseToPlanDay(data: AddExerciseToPlanDay): Promise<
         pde.planDayId = data.plan_day_id;
         pde.exerciseId = data.exercise_id;
         pde.orderIndex = data.order_index;
-        pde.targetSets = data.target_sets ?? 3;
-        pde.targetReps = data.target_reps ?? 10;
+        pde.targetSets = data.target_sets ?? DEFAULT_TARGET_SETS;
+        pde.targetReps = data.target_reps ?? DEFAULT_TARGET_REPS;
         if (data.rest_timer_seconds) pde.restTimerSeconds = data.rest_timer_seconds;
         if (data.notes) pde.notes = data.notes;
       });

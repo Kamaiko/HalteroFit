@@ -14,14 +14,19 @@ import { Colors } from '@/constants';
 import { useExerciseSearch } from '@/hooks/exercises';
 import type { Exercise } from '@/services/database/operations';
 import { addExerciseToPlanDay, getExerciseCountByDay } from '@/services/database/operations/plans';
+import { useExercisePickerStore, type PickedExercise } from '@/stores/exercisePickerStore';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ExercisePickerScreen() {
-  const params = useLocalSearchParams<{ dayId?: string; dayName?: string }>();
-  const { dayId, dayName } = params;
+  const params = useLocalSearchParams<{
+    dayId?: string;
+    dayName?: string;
+    mode?: 'add' | 'pick';
+  }>();
+  const { dayId, dayName, mode = 'add' } = params;
   const insets = useSafeAreaInsets();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -56,7 +61,25 @@ export default function ExercisePickerScreen() {
 
     setIsAdding(true);
     try {
-      // Get current exercise count to determine order_index
+      if (mode === 'pick') {
+        // Return selected exercises to calling screen via store
+        const picked: PickedExercise[] = exercises
+          .filter((e) => selectedIds.has(e.id))
+          .map((e) => ({
+            id: e.id,
+            name: e.name,
+            body_parts: e.body_parts,
+            target_muscles: e.target_muscles,
+            equipments: e.equipments,
+            gif_url: e.gif_url,
+          }));
+
+        useExercisePickerStore.getState().setResult(picked);
+        router.back();
+        return;
+      }
+
+      // Default mode: save directly to DB
       const currentCount = await getExerciseCountByDay(targetDayId);
       const selectedExerciseIds = Array.from(selectedIds);
 
@@ -77,7 +100,7 @@ export default function ExercisePickerScreen() {
     } finally {
       setIsAdding(false);
     }
-  }, [selectedIds, dayId, isAdding]);
+  }, [selectedIds, dayId, isAdding, mode, exercises]);
 
   const renderItem = useCallback(
     ({ item }: { item: Exercise }) => (

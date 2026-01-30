@@ -139,8 +139,8 @@ export const schema = appSchema({
         { name: 'plan_day_id', type: 'string', isIndexed: true },
         { name: 'exercise_id', type: 'string', isIndexed: true },
         { name: 'order_index', type: 'number' },
-        { name: 'target_sets', type: 'number' }, // Default: 3
-        { name: 'target_reps', type: 'number' }, // Default: 10
+        { name: 'target_sets', type: 'number' }, // See DEFAULT_TARGET_SETS
+        { name: 'target_reps', type: 'number' }, // See DEFAULT_TARGET_REPS
         { name: 'rest_timer_seconds', type: 'number', isOptional: true }, // Exercise-specific timer
         { name: 'notes', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },

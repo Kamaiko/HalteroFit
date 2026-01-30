@@ -8,3 +8,4 @@
  */
 
 export * from './Colors';
+export * from './workout';

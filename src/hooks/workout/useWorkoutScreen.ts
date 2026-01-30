@@ -7,6 +7,7 @@
 
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutAnimation, Platform, UIManager } from 'react-native';
+import { router } from 'expo-router';
 
 import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
@@ -187,8 +188,8 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
 
         // Auto-select first day if none selected
         const firstDay = planWithDays.days[0];
-        if (firstDay && !selectedDay) {
-          setSelectedDay(firstDay);
+        if (firstDay) {
+          setSelectedDay((prev) => prev ?? firstDay);
         }
 
         // Fetch actual exercise counts
@@ -240,8 +241,8 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
   // Menu actions
   const handleEditDay = useCallback(() => {
     menuSheetRef.current?.close();
-    // TODO: Navigate to edit day screen (Task 2.1.4)
-    console.log('Edit day:', menuDay?.id);
+    if (!menuDay) return;
+    router.push({ pathname: '/edit-day', params: { dayId: menuDay.id } });
   }, [menuDay]);
 
   const handleDeleteDayPress = useCallback(() => {

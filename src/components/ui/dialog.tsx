@@ -8,7 +8,7 @@
  * (ConfirmDialog, InputDialog, etc.) rather than directly in screens.
  */
 
-import * as React from 'react';
+import React, { useId } from 'react';
 import { Modal, type ModalProps, Pressable, View } from 'react-native';
 import { Portal } from '@rn-primitives/portal';
 
@@ -19,15 +19,18 @@ export interface DialogProps {
   onClose: () => void;
   /** Dialog content (title, form fields, buttons, etc.) */
   children: React.ReactNode;
-  /** Unique portal name for stacking context */
+  /** Portal name override (auto-generated with useId if not provided) */
   portalName?: string;
   /** Called when the modal finishes showing (useful for auto-focus) */
   onShow?: ModalProps['onShow'];
 }
 
-export function Dialog({ open, onClose, children, portalName = 'dialog', onShow }: DialogProps) {
+export function Dialog({ open, onClose, children, portalName, onShow }: DialogProps) {
+  const autoId = useId();
+  const name = portalName ?? `dialog-${autoId}`;
+
   return (
-    <Portal name={portalName}>
+    <Portal name={name}>
       <Modal
         visible={open}
         transparent

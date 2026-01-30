@@ -2,7 +2,6 @@
  * BottomSheet Component
  *
  * Wrapper around @gorhom/bottom-sheet for modal-style content.
- * Uses glassmorphism (semi-transparent overlay + subtle borders) for a modern look.
  *
  * NOTE: Uses React.forwardRef instead of React 19 ref-as-prop because
  * @gorhom/bottom-sheet internally inspects the component type.
@@ -15,7 +14,6 @@ import GorhomBottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
   type BottomSheetBackdropProps,
-  type BottomSheetBackgroundProps,
 } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -39,17 +37,8 @@ export interface BottomSheetRef {
   snapToIndex: (index: number) => void;
 }
 
-/** Glassmorphism background for the bottom sheet */
-function GlassBackground({ style }: BottomSheetBackgroundProps) {
-  return (
-    <View style={[style, styles.backgroundContainer]}>
-      <View style={[StyleSheet.absoluteFill, styles.backgroundOverlay]} />
-    </View>
-  );
-}
-
 /**
- * BottomSheet - Modal-style bottom sheet with glassmorphism
+ * BottomSheet - Modal-style bottom sheet
  *
  * @example
  * ```tsx
@@ -101,7 +90,7 @@ export const BottomSheet = React.forwardRef<BottomSheetRef, BottomSheetProps>(
         snapPoints={snapPoints}
         enablePanDownToClose={enablePanDownToClose}
         backdropComponent={renderBackdrop}
-        backgroundComponent={GlassBackground}
+        backgroundStyle={styles.background}
         onChange={handleSheetChanges}
         handleIndicatorStyle={styles.handleIndicator}
       >
@@ -124,13 +113,8 @@ export const BottomSheet = React.forwardRef<BottomSheetRef, BottomSheetProps>(
 BottomSheet.displayName = 'BottomSheet';
 
 const styles = StyleSheet.create({
-  backgroundContainer: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    overflow: 'hidden',
-  },
-  backgroundOverlay: {
-    backgroundColor: 'rgba(26, 26, 26, 0.7)',
+  background: {
+    backgroundColor: '#1A1A1A',
   },
   handleIndicator: {
     backgroundColor: 'rgba(255, 255, 255, 0.3)',

@@ -7,6 +7,7 @@
  * @module factories
  */
 
+import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS } from '@/constants';
 import { Database } from '@nozbe/watermelondb';
 import User from '@/services/database/local/models/User';
 import Workout from '@/services/database/local/models/Workout';
@@ -604,8 +605,8 @@ export function createTestPlanDayExerciseData(
     plan_day_id: overrides.plan_day_id || generateTestId('plan-day'),
     exercise_id: overrides.exercise_id || generateTestId('exercise'),
     order_index: overrides.order_index !== undefined ? overrides.order_index : 0,
-    target_sets: overrides.target_sets !== undefined ? overrides.target_sets : 3,
-    target_reps: overrides.target_reps !== undefined ? overrides.target_reps : 10,
+    target_sets: overrides.target_sets !== undefined ? overrides.target_sets : DEFAULT_TARGET_SETS,
+    target_reps: overrides.target_reps !== undefined ? overrides.target_reps : DEFAULT_TARGET_REPS,
     rest_timer_seconds:
       overrides.rest_timer_seconds !== undefined ? overrides.rest_timer_seconds : null,
     notes: overrides.notes !== undefined ? overrides.notes : null,

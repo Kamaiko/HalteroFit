@@ -18,10 +18,10 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 | TODO (Top 5)                              | DOING                                    | DONE (Last 5)                        |
 | ----------------------------------------- | ---------------------------------------- | ------------------------------------ |
-| **2.1.3** AllPlansScreen `[M]` 🔴         | **UX** Popup/BottomSheet visual rework   | **2.1.6** AddDayDialog               |
-| **2.1.4** EditDayScreen `[M]`             |                                          | **2.1.2** DayDetailsScreen           |
-| **2.1.5** CreateEditPlanScreen `[S]`      |                                          | **1.2.3** ExerciseCard component     |
-| **2.3.3** PlanCard component `[S]`        |                                          | **1.2.2** useExerciseSearch hook     |
+| **2.1.3** AllPlansScreen `[M]` 🔴         | **UX** Popup/BottomSheet visual rework   | **2.1.4** EditDayScreen              |
+| **2.1.5** CreateEditPlanScreen `[S]`      |                                          | **2.1.6** AddDayDialog               |
+| **2.3.3** PlanCard component `[S]`        |                                          | **2.1.2** DayDetailsScreen           |
+|                                           |                                          | **1.2.3** ExerciseCard component     |
 |                                           |                                          | **2.1.1** WorkoutOverviewScreen      |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
@@ -112,10 +112,11 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       "Create Plan" button, plan selection
       **Status:** Placeholder created
 
-- [ ] **2.1.4** EditDayScreen (M - 3h) `[src/app/plans/[id]/day/[dayId]/edit.tsx]`
-      Edit day name, reorder exercises
-      Configure sets/reps per exercise
-      "Delete this day" button
+- [x] **2.1.4** EditDayScreen (M - 3h) `[src/app/edit-day.tsx]`
+      Edit day name, reorder exercises (drag-and-drop), add/remove exercises
+      "Delete this day" button, unsaved changes guard (discard dialog)
+      **Deferred to Phase 3:** Per-set editing (+/- sets, weight/reps/rest per row) — see 3.3.7
+      Files: src/app/edit-day.tsx, src/hooks/workout/useEditDay.ts, src/components/workout/EditDayExerciseCard.tsx
 
 - [ ] **2.1.5** CreateEditPlanScreen (S - 2h)
       Plan name, description, cover image
@@ -269,6 +270,13 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Test: add/delete set, log set state transition, auto-fill values, set numbering.
       Files: __tests__/hooks/useSetLogging.test.ts
       Deps: 3.3.3
+
+- [ ] **3.3.7** Add per-set editing to EditDayScreen `[M]`
+      Replace "X sets × Y reps" summary with expandable set rows (+/- buttons).
+      Each row: set #, weight, reps, rest. Reuse SetsTable/SetRow from 3.3.1-3.3.2.
+      See TODO in: src/components/workout/EditDayExerciseCard.tsx
+      Files: src/components/workout/EditDayExerciseCard.tsx, src/hooks/workout/useEditDay.ts
+      Deps: 3.3.1, 3.3.2
 
 ### 3.4: Rest Timer System
 

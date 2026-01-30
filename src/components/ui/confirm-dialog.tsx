@@ -45,8 +45,8 @@ export function ConfirmDialog({
   }, [onConfirm, onOpenChange]);
 
   return (
-    <Dialog open={open} onClose={handleCancel} portalName="confirm-dialog">
-      <Text className="text-center text-lg font-semibold text-foreground">{title}</Text>
+    <Dialog open={open} onClose={handleCancel}>
+      <Text className="text-center text-base font-semibold text-foreground">{title}</Text>
 
       <View className="mt-8 flex-row justify-end gap-6">
         <Pressable onPress={handleCancel} disabled={loading}>

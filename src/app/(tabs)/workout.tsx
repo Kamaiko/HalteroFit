@@ -191,7 +191,7 @@ export default function WorkoutScreen() {
       )}
 
       <BottomSheet ref={menuSheetRef} title={menuDay?.name ?? 'Options'}>
-        <View className="pb-6">
+        <View className="gap-2 pb-6">
           <Pressable
             onPress={handleEditDay}
             className="flex-row items-center px-4 py-3 active:opacity-60"
