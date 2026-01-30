@@ -32,24 +32,28 @@ export type DayExercise = PlanDayWithExercises['exercises'][number];
 
 export interface DayExerciseCardProps {
   exercise: DayExercise;
-  onPress: (exercise: DayExercise) => void;
+  onImagePress: (exercise: DayExercise) => void;
   onEdit?: (exercise: DayExercise) => void;
   onDelete?: (exercise: DayExercise) => void;
   drag?: () => void;
   isActive?: boolean;
   isDeleting?: boolean;
   onDeleteAnimationComplete?: () => void;
+  openSwipeableId?: string | null;
+  onSwipeableOpen?: (id: string | null) => void;
 }
 
 export const DayExerciseCard = memo(function DayExerciseCard({
   exercise,
-  onPress,
+  onImagePress,
   onEdit,
   onDelete,
   drag,
   isActive,
   isDeleting,
   onDeleteAnimationComplete,
+  openSwipeableId,
+  onSwipeableOpen,
 }: DayExerciseCardProps) {
   const swipeableRef = useRef<React.ComponentRef<typeof ReanimatedSwipeable>>(null);
 
@@ -102,9 +106,16 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     };
   });
 
-  const handlePress = useCallback(() => {
-    onPress(exercise);
-  }, [exercise, onPress]);
+  const handleImagePress = useCallback(() => {
+    onImagePress(exercise);
+  }, [exercise, onImagePress]);
+
+  // Auto-close this swipeable when another card opens
+  useEffect(() => {
+    if (openSwipeableId && openSwipeableId !== exercise.id) {
+      swipeableRef.current?.close();
+    }
+  }, [openSwipeableId, exercise.id]);
 
   const handleEdit = useCallback(() => {
     swipeableRef.current?.close();
@@ -149,15 +160,15 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         renderRightActions={renderRightActions}
         overshootRight={false}
         friction={2}
+        onSwipeableWillOpen={() => onSwipeableOpen?.(exercise.id)}
       >
-        <Pressable
+        <View
           className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
-          onPress={handlePress}
           style={isActive ? CARD_ACTIVE_STYLE : undefined}
         >
           {drag && <DragHandle onDrag={drag} />}
 
-          <ExerciseThumbnail imageUrl={exercise.exercise.gif_url} />
+          <ExerciseThumbnail imageUrl={exercise.exercise.gif_url} onPress={handleImagePress} />
 
           {/* Info */}
           <View className="flex-1">
@@ -171,7 +182,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
               {exercise.target_sets} sets × {exercise.target_reps} reps
             </Text>
           </View>
-        </Pressable>
+        </View>
       </ReanimatedSwipeable>
     </Animated.View>
   );

@@ -166,8 +166,8 @@ export const CARD_ACTIVE_STYLE = { transform: [{ scale: 1.02 }], opacity: 0.9 } 
 
 | ID | Issue | Location | Impact |
 |----|-------|----------|--------|
-| TD-03 | `refetchTrigger` manual workaround | `useWorkoutScreen.ts:114-117` | State can get out of sync, manual refetch needed |
-| TD-04 | Manual state update after delete | `useWorkoutScreen.ts:273-275` | Risks inconsistency vs. database |
+| TD-03 | ~~`refetchTrigger` manual workaround~~ | `useWorkoutScreen.ts` | **Resolved** — replaced with WatermelonDB observables |
+| TD-04 | ~~Manual state update after delete~~ | `useWorkoutScreen.ts` | **Resolved** — observables auto-sync UI after DB mutations |
 | TD-05 | ~~Dead code: ExampleLineChart.tsx~~ | `src/components/charts/` | **Resolved** — file deleted in Phase 2 audit |
 
 ### P2 — Type safety workarounds (fix when dependency updates)
@@ -195,7 +195,7 @@ export const CARD_ACTIVE_STYLE = { transform: [{ scale: 1.02 }], opacity: 0.9 } 
 |----------|-------|----------|
 | TypeScript discipline | **A+** | `strict: true`, `noUncheckedIndexedAccess`, 0 errors |
 | Component architecture | **A** | Clean separation, CVA patterns, proper memoization |
-| Hook extraction | **A** | `useWorkoutScreen` (465 lines of clean logic) |
+| Hook extraction | **A+** | `useWorkoutScreen` compositor + 3 extracted sub-hooks |
 | Error handling | **A** | Centralized `useErrorHandler`, Sentry integration |
 | State management | **A** | Zustand with MMKV persistence, clean interfaces |
 | Database layer | **A** | WatermelonDB with versioned schema (v8), batch operations |
@@ -208,7 +208,7 @@ export const CARD_ACTIVE_STYLE = { transform: [{ scale: 1.02 }], opacity: 0.9 } 
 
 | Category | Grade | Issue |
 |----------|-------|-------|
-| Reactive data flow | **B** | Manual refetch instead of WatermelonDB observables |
+| Reactive data flow | **A** | WatermelonDB observables for all workout data (planDays, exerciseCounts, dayExercises) |
 | Animation patterns | **B+** | One layout animation conflict (TD-02) |
 | Dead code cleanup | **A** | Resolved (TD-05 deleted) |
 
@@ -271,7 +271,7 @@ src/
 │   ├── charts/              # Victory Native chart components
 │   └── lists/               # Virtualized list components
 ├── hooks/
-│   ├── workout/             # useWorkoutScreen, useEditDay
+│   ├── workout/             # useWorkoutScreen (compositor), useDayMenu, useAddDayDialog, useExerciseActions, useEditDay
 │   ├── exercises/           # useExerciseSearch
 │   └── ui/                  # useErrorHandler
 ├── services/
@@ -292,17 +292,25 @@ src/
 
 ### Architectural Concerns
 
-1. **Manual data fetching vs. Observables** (TD-03, TD-04)
-   - Currently: `useState` + `useEffect` + manual refetch trigger
-   - Better: WatermelonDB `observe()` for reactive updates
-   - Impact: Data changes from other screens (EditDay → Workout) require manual `refetchDays()`
-   - Migration path: Replace `getPlanWithDays()` calls with `observePlanDays()` subscriptions
-   - **Priority:** P1 — Should be addressed before Phase 3 (active workout adds more data mutation paths)
+1. ~~**Manual data fetching vs. Observables**~~ (TD-03, TD-04) — **RESOLVED**
+   - Migrated to WatermelonDB `observe()` subscriptions (`observePlanDays`, `observeExerciseCountsByDays`, `observePlanDayWithExercises`)
+   - `useFocusEffect` refetch removed from `workout.tsx`
+   - All data auto-syncs after DB mutations from any screen
 
-2. **Large return interface on useWorkoutScreen** (28 properties)
-   - The hook returns 28 values covering overview, day details, menus, dialogs, and animations
-   - Not a problem yet, but as Phase 3 adds active workout state, this could grow unwieldy
-   - **Consideration:** Split into `useWorkoutOverview` + `useWorkoutDayDetails` + `useWorkoutMenus` if it exceeds ~35 properties
+2. ~~**Large return interface on useWorkoutScreen**~~ (28 properties) — **RESOLVED**
+   - Extracted 3 sub-hooks: `useDayMenu`, `useAddDayDialog`, `useExerciseActions`
+   - Main hook is now a compositor (~300 lines vs 465) composing sub-hooks via spread
+   - Each sub-hook has single responsibility with clear interface
+
+3. **No global Error Boundary** (remaining red flag)
+   - No `ErrorBoundary` component wrapping the app or individual screens
+   - Unhandled render errors will crash the app with no recovery path
+   - **Priority:** P1 — Should add before Phase 3 (active workout must not lose data on crash)
+
+4. **MuscleCard not memoized** (remaining red flag)
+   - `MuscleCard` in exercises tab renders without `React.memo`
+   - With 1,300+ exercises, list scrolling could benefit from memoization
+   - **Priority:** P2 — Performance optimization, not a correctness issue
 
 ---
 
@@ -314,7 +322,7 @@ src/
 |----------|----------|-------|-------|
 | **P0** | Fix active warnings | TD-01 (SafeAreaView), TD-02 (Reanimated) | Now |
 | **P1** | ~~Remove dead code~~ | ~~TD-05 (ExampleLineChart)~~ | **Done** |
-| **P1** | Observable migration | TD-03, TD-04 (refetchTrigger → observables) | Before Phase 3 |
+| **P1** | ~~Observable migration~~ | ~~TD-03, TD-04 (refetchTrigger → observables)~~ | **Done** |
 | **P2** | Type workarounds | TD-06 (FlashList types) | When dependency updates |
 | **P3** | Production prep | TD-08 (dev mode), TD-10 (sync storage) | Phase 4-5 |
 
@@ -359,39 +367,33 @@ Modify `EditDayExerciseCard.tsx`:
 
 **Risk:** Low — separates animation concerns cleanly. The visual result is identical.
 
-### P1: Observable Migration (Before Phase 3)
+### P1: Observable Migration — COMPLETED
 
-Replace manual data fetching with WatermelonDB observables in `useWorkoutScreen.ts`:
+Replaced manual data fetching with WatermelonDB observables. Added 3 observable functions to `plans.ts`:
+- `observePlanDays(planId)` — reactive plan days list
+- `observeExerciseCountsByDays(dayIds)` — reactive exercise counts per day
+- `observePlanDayWithExercises(dayId)` — hybrid observable (2 subscriptions + cached lookups for static Exercise data)
 
-**Current pattern:**
-```typescript
-// Manual fetch + refetch trigger
-const [planDays, setPlanDays] = useState<PlanDay[]>([]);
-const [refetchTrigger, setRefetchTrigger] = useState(0);
+Extracted 3 sub-hooks from the god hook:
+- `useDayMenu.ts` — bottom sheet menu for edit/delete day
+- `useAddDayDialog.ts` — add day dialog state and actions
+- `useExerciseActions.ts` — delete and reorder exercise actions
 
-useEffect(() => {
-  fetchDays();
-}, [activePlan?.id, refetchTrigger]);
-```
+Result: `useWorkoutScreen.ts` went from 465 lines (17 states, manual refetch) to ~300 lines (compositor pattern, reactive observables). TD-03 and TD-04 eliminated.
 
-**Target pattern:**
-```typescript
-// Reactive observable
-useEffect(() => {
-  const subscription = observePlanDays(activePlan.id).subscribe({
-    next: (days) => setPlanDays(days),
-  });
-  return () => subscription.unsubscribe();
-}, [activePlan?.id]);
-```
+### P1: Remaining Red Flags
 
-**Benefits:**
-- Automatic updates when data changes from any screen
-- No manual refetch needed after create/delete operations
-- Removes TD-03 and TD-04 entirely
-- Reduces code in handleConfirmDelete, handleAddDayPress, etc.
+#### Error Boundary (No global error boundary)
 
-**Scope:** Create `observePlanDays()` and `observeExerciseCounts()` in database operations layer.
+No `ErrorBoundary` component exists in the app. Unhandled render errors crash the app with no recovery. Before Phase 3 (active workout), this is critical — a crash during a workout session could lose in-progress data.
+
+**Recommendation:** Add a global `ErrorBoundary` wrapping the root layout, with a fallback screen offering "Restart" or "Report Issue" actions. Optionally add per-screen boundaries for critical flows (active workout).
+
+#### MuscleCard Memoization
+
+`MuscleCard` renders without `React.memo`. With the exercise library containing 1,300+ exercises, list scrolling performance could degrade on lower-end devices.
+
+**Recommendation:** Wrap with `React.memo` and ensure stable callback references.
 
 ---
 
@@ -406,11 +408,11 @@ Based on TASKS.md, Phase 3 introduces:
 
 ### Architecture Implications
 
-1. **Observable migration (P1) should happen first** — Active workout will mutate exercise data frequently. Manual refetch would be fragile.
+1. ~~**Observable migration (P1) should happen first**~~ — **DONE.** All workout data uses WatermelonDB observables.
 
 2. **Workout store expansion** — `workoutStore.ts` currently handles session persistence. Phase 3 will add active set tracking, timer state, and completion flow. Consider whether this should remain one store or split.
 
-3. **Navigation flow** — Three TODO placeholders in `workout.tsx` (lines 81, 85, 191) will need routes to the active workout screen.
+3. **Navigation flow** — One remaining TODO placeholder in `workout.tsx` (Start Workout button) needs route to active workout screen. Exercise detail and Edit Day navigation are now implemented.
 
 4. **Database schema** — Will need new tables for workout logs, sets, and history. Schema version bump from v8 required.
 
@@ -424,7 +426,10 @@ Based on TASKS.md, Phase 3 introduces:
 |------|-------|---------|
 | `src/components/workout/DayExerciseCard.tsx` | 179 | Day Details exercise card with swipe + delete animation |
 | `src/components/workout/EditDayExerciseCard.tsx` | 71 | Edit Day exercise card with drag & X button |
-| `src/hooks/workout/useWorkoutScreen.ts` | 465 | All workout screen business logic |
+| `src/hooks/workout/useWorkoutScreen.ts` | ~300 | Workout screen compositor (was 465 lines) |
+| `src/hooks/workout/useDayMenu.ts` | ~85 | Day context menu state and actions |
+| `src/hooks/workout/useAddDayDialog.ts` | ~95 | Add day dialog state and actions |
+| `src/hooks/workout/useExerciseActions.ts` | ~80 | Exercise delete and reorder actions |
 | `src/components/ui/tabs.tsx` | ~200 | Extracted SimpleTabs component |
 | `src/components/workout/DragHandle.tsx` | ~30 | Shared drag handle component |
 | `src/components/workout/ExerciseThumbnail.tsx` | ~40 | Shared exercise thumbnail component |

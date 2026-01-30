@@ -1,30 +1,35 @@
 /**
- * useWorkoutScreen - Custom hook for WorkoutScreen logic
+ * useWorkoutScreen - Compositor hook for WorkoutScreen
  *
- * Extracts all state management and business logic from the WorkoutScreen
- * component for better testability and separation of concerns.
+ * Composes observable data subscriptions with extracted sub-hooks:
+ * - Plan observation (existing observable)
+ * - Plan days + exercise counts (new observables)
+ * - Selected day exercises (new observable - hybrid)
+ * - Day menu actions (useDayMenu)
+ * - Add day dialog (useAddDayDialog)
+ * - Exercise delete/reorder (useExerciseActions)
  */
 
-import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { router } from 'expo-router';
+import { type RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import {
   createPlan,
   createPlanDay,
-  deletePlanDay,
-  getExerciseCountsByDays,
-  getPlanDayWithExercises,
-  getPlanWithDays,
   observeActivePlan,
-  removeExerciseFromPlanDay,
-  reorderPlanDayExercises,
+  observeExerciseCountsByDays,
+  observePlanDayWithExercises,
+  observePlanDays,
   type PlanDay,
   type PlanDayWithExercises,
   type WorkoutPlan,
 } from '@/services/database/operations/plans';
 import { useAuthStore } from '@/stores/auth/authStore';
+
+import { useAddDayDialog } from './useAddDayDialog';
+import { useDayMenu } from './useDayMenu';
+import { useExerciseActions } from './useExerciseActions';
 
 export interface UseWorkoutScreenReturn {
   // State
@@ -60,9 +65,8 @@ export interface UseWorkoutScreenReturn {
   isAddingDay: boolean;
   handleConfirmAddDay: () => Promise<void>;
   handleCancelAddDay: () => void;
-  refetchDays: () => void;
   deletingExerciseId: string | null;
-  deleteExerciseOptimistic: (exerciseId: string) => Promise<void>;
+  deleteExerciseOptimistic: (exerciseId: string) => void;
   handleDeleteAnimationComplete: () => void;
   reorderExercisesOptimistic: (
     reorderedExercises: PlanDayWithExercises['exercises']
@@ -76,52 +80,12 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
   const user = useAuthStore((state) => state.user);
   const { handleError } = useErrorHandler();
 
-  // State
+  // ── Plan observation ────────────────────────────────────────────────
   const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(null);
-  const [planDays, setPlanDays] = useState<PlanDay[]>([]);
-  const [selectedDay, setSelectedDay] = useState<PlanDay | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingDays, setLoadingDays] = useState(true);
   const [creatingDefaultPlan, setCreatingDefaultPlan] = useState(false);
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
 
-  // Menu state
-  const [menuDay, setMenuDay] = useState<PlanDay | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const menuSheetRef = useRef<BottomSheetRef>(null);
-
-  // Add day dialog state
-  const [showAddDayDialog, setShowAddDayDialog] = useState(false);
-  const [addDayName, setAddDayName] = useState('');
-  const [isAddingDay, setIsAddingDay] = useState(false);
-
-  // Exercise counts per day (fetched from database)
-  const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
-
-  // Selected day exercises
-  const [selectedDayExercises, setSelectedDayExercises] = useState<PlanDayWithExercises | null>(
-    null
-  );
-  const [loadingExercises, setLoadingExercises] = useState(false);
-
-  // Delete animation: exercise stays in array while animating, removed after completion
-  const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
-
-  // Track which day's exercises are currently loaded (for stale-while-revalidate)
-  const loadedDayIdRef = useRef<string | null>(null);
-
-  // FIXME: refetchTrigger is a workaround because we don't use observables for days/counts.
-  // Ideally, we'd use observePlanDays() + observeExerciseCounts() for automatic updates
-  // when data changes from other screens. Current approach requires manual refetch.
-  const [refetchTrigger, setRefetchTrigger] = useState(0);
-
-  // Force refetch of plan days and exercise counts
-  const refetchDays = useCallback(() => {
-    setRefetchTrigger((prev) => prev + 1);
-  }, []);
-
-  // Create default "New Workout" plan
+  // Create default plan if none exists
   const createDefaultPlanFn = useCallback(async () => {
     if (!user?.id || creatingDefaultPlan) return;
 
@@ -133,15 +97,12 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
         is_active: true,
       });
 
-      // Create default first day
       await createPlanDay({
         plan_id: newPlan.id,
         name: 'Workout Day #1',
         day_of_week: 'MON',
         order_index: 0,
       });
-
-      // Plan will be picked up by the observer
     } catch (error) {
       handleError(error, 'createDefaultPlan');
     } finally {
@@ -150,7 +111,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     }
   }, [user?.id, creatingDefaultPlan, handleError]);
 
-  // Subscribe to active plan changes
+  // Subscribe to active plan
   useEffect(() => {
     if (!user?.id) {
       setLoading(false);
@@ -161,7 +122,6 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
       next: (plan) => {
         setActivePlan(plan);
         if (!plan && !creatingDefaultPlan) {
-          // No active plan, create default
           createDefaultPlanFn();
         } else {
           setLoading(false);
@@ -176,241 +136,127 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     return () => subscription.unsubscribe();
   }, [user?.id, creatingDefaultPlan, handleError, createDefaultPlanFn]);
 
-  // Fetch plan days when active plan changes or refetch is triggered
+  // ── Plan days observation (reactive) ────────────────────────────────
+  const [planDays, setPlanDays] = useState<PlanDay[]>([]);
+
   useEffect(() => {
     if (!activePlan?.id) {
       setPlanDays([]);
-      setSelectedDay(null);
       return;
     }
 
-    const fetchDays = async () => {
-      try {
-        const planWithDays = await getPlanWithDays(activePlan.id);
-        setPlanDays(planWithDays.days);
+    const subscription = observePlanDays(activePlan.id).subscribe({
+      next: (days) => {
+        setPlanDays(days);
+      },
+      error: (error) => {
+        handleError(error, 'observePlanDays');
+      },
+    });
 
-        // Auto-select first day if none selected
-        const firstDay = planWithDays.days[0];
-        if (firstDay) {
-          setSelectedDay((prev) => prev ?? firstDay);
-        }
+    return () => subscription.unsubscribe();
+  }, [activePlan?.id, handleError]);
 
-        // Fetch actual exercise counts
-        const dayIds = planWithDays.days.map((d) => d.id);
-        const counts = await getExerciseCountsByDays(dayIds);
+  // ── Exercise counts observation (reactive) ──────────────────────────
+  const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const dayIds = planDays.map((d) => d.id);
+    if (dayIds.length === 0) {
+      setExerciseCounts({});
+      return;
+    }
+
+    const subscription = observeExerciseCountsByDays(dayIds).subscribe({
+      next: (counts) => {
         setExerciseCounts(counts);
-      } catch (error) {
-        handleError(error, 'fetchPlanDays');
-      } finally {
-        setLoadingDays(false);
-      }
-    };
+      },
+      error: (error) => {
+        handleError(error, 'observeExerciseCountsByDays');
+      },
+    });
 
-    fetchDays();
-  }, [activePlan?.id, refetchTrigger, handleError]);
+    return () => subscription.unsubscribe();
+  }, [planDays, handleError]);
 
-  // Load exercises when selected day changes (stale-while-revalidate)
-  // Spinner only on first load (no previous data). Day switches keep old
-  // data visible while fetching — swap is near-instant from local DB.
+  // ── Day selection ───────────────────────────────────────────────────
+  const [selectedDay, setSelectedDay] = useState<PlanDay | null>(null);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+
+  // Auto-select first day when planDays load (if nothing selected)
+  useEffect(() => {
+    if (planDays.length > 0 && !selectedDay) {
+      setSelectedDay(planDays[0] ?? null);
+    }
+  }, [planDays, selectedDay]);
+
+  const handleDayPress = useCallback((day: PlanDay) => {
+    setSelectedDay(day);
+    setActiveTabIndex(1);
+  }, []);
+
+  // ── Selected day exercises observation (reactive - hybrid) ──────────
+  const [selectedDayExercises, setSelectedDayExercises] = useState<PlanDayWithExercises | null>(
+    null
+  );
+  const [loadingExercises, setLoadingExercises] = useState(false);
+
   useEffect(() => {
     if (!selectedDay?.id) {
       setSelectedDayExercises(null);
-      loadedDayIdRef.current = null;
       return;
     }
 
-    const fetchExercises = async () => {
-      const isFirstLoad = loadedDayIdRef.current === null;
-      if (isFirstLoad) {
-        setLoadingExercises(true);
-      }
+    let isFirstEmission = true;
+    setLoadingExercises(true);
 
-      try {
-        const dayWithExercises = await getPlanDayWithExercises(selectedDay.id);
+    const subscription = observePlanDayWithExercises(selectedDay.id).subscribe({
+      next: (dayWithExercises) => {
         setSelectedDayExercises(dayWithExercises);
-        loadedDayIdRef.current = selectedDay.id;
-      } catch (error) {
-        handleError(error, 'fetchDayExercises');
-      } finally {
+        if (isFirstEmission) {
+          setLoadingExercises(false);
+          isFirstEmission = false;
+        }
+      },
+      error: (error) => {
+        handleError(error, 'observePlanDayWithExercises');
         setLoadingExercises(false);
-      }
-    };
-
-    fetchExercises();
-  }, [selectedDay?.id, refetchTrigger, handleError]);
-
-  // Handle day selection
-  const handleDayPress = useCallback((day: PlanDay) => {
-    setSelectedDay(day);
-    setActiveTabIndex(1); // Switch to Day Details tab
-  }, []);
-
-  // Handle day menu press
-  const handleDayMenuPress = useCallback((day: PlanDay) => {
-    setMenuDay(day);
-    menuSheetRef.current?.open();
-  }, []);
-
-  // Menu actions
-  const handleEditDay = useCallback(() => {
-    menuSheetRef.current?.close();
-    if (!menuDay) return;
-    router.push({ pathname: '/edit-day', params: { dayId: menuDay.id } });
-  }, [menuDay]);
-
-  const handleDeleteDayPress = useCallback(() => {
-    menuSheetRef.current?.close();
-    setShowDeleteConfirm(true);
-  }, []);
-
-  const handleConfirmDelete = useCallback(async () => {
-    if (!menuDay) return;
-
-    setIsDeleting(true);
-    try {
-      await deletePlanDay(menuDay.id);
-
-      // FIXME: Manual state update after delete. If we used observables for planDays,
-      // this would be automatic. Current approach risks state getting out of sync.
-      setPlanDays((days) => days.filter((d) => d.id !== menuDay.id));
-
-      // Clear selection if deleted day was selected
-      if (selectedDay?.id === menuDay.id) {
-        setSelectedDay(null);
-        setActiveTabIndex(0); // Go back to Overview
-      }
-
-      setShowDeleteConfirm(false);
-      setMenuDay(null);
-    } catch (error) {
-      handleError(error, 'deletePlanDay');
-    } finally {
-      setIsDeleting(false);
-    }
-  }, [menuDay, selectedDay, handleError]);
-
-  // Handle Add Day press
-  const handleAddDayPress = useCallback(async () => {
-    if (!activePlan?.id) return;
-
-    // Empty state: auto-create first day without dialog
-    if (planDays.length === 0) {
-      setIsAddingDay(true);
-      try {
-        const newDay = await createPlanDay({
-          plan_id: activePlan.id,
-          name: 'Workout Day #1',
-          order_index: 0,
-        });
-        setPlanDays([newDay]);
-        setSelectedDay(newDay);
-        setExerciseCounts((prev) => ({ ...prev, [newDay.id]: 0 }));
-      } catch (error) {
-        handleError(error, 'createFirstDay');
-      } finally {
-        setIsAddingDay(false);
-      }
-      return;
-    }
-
-    // Normal: show dialog
-    setAddDayName('');
-    setShowAddDayDialog(true);
-  }, [activePlan?.id, planDays.length, handleError]);
-
-  const handleConfirmAddDay = useCallback(async () => {
-    if (!activePlan?.id || isAddingDay) return;
-
-    const name = addDayName.trim() || 'New day';
-    setIsAddingDay(true);
-    try {
-      const newDay = await createPlanDay({
-        plan_id: activePlan.id,
-        name,
-        order_index: planDays.length,
-      });
-      setPlanDays((prev) => [...prev, newDay]);
-      setExerciseCounts((prev) => ({ ...prev, [newDay.id]: 0 }));
-      setShowAddDayDialog(false);
-      setAddDayName('');
-    } catch (error) {
-      handleError(error, 'createPlanDay');
-    } finally {
-      setIsAddingDay(false);
-    }
-  }, [activePlan?.id, addDayName, planDays.length, isAddingDay, handleError]);
-
-  const handleCancelAddDay = useCallback(() => {
-    setShowAddDayDialog(false);
-    setAddDayName('');
-  }, []);
-
-  // Phase 1: Mark exercise as deleting (triggers slide + collapse animation in card)
-  const deleteExerciseOptimistic = useCallback(
-    async (exerciseId: string) => {
-      if (!selectedDayExercises || deletingExerciseId) return;
-
-      setDeletingExerciseId(exerciseId);
-
-      // Update exercise count immediately
-      if (selectedDay) {
-        setExerciseCounts((prev) => ({
-          ...prev,
-          [selectedDay.id]: Math.max(0, (prev[selectedDay.id] ?? 0) - 1),
-        }));
-      }
-
-      // Delete from database in background
-      try {
-        await removeExerciseFromPlanDay(exerciseId);
-      } catch (error) {
-        handleError(error, 'deleteExercise');
-        refetchDays();
-      }
-    },
-    [selectedDayExercises, deletingExerciseId, selectedDay, handleError, refetchDays]
-  );
-
-  // Phase 2: Called by card after animation completes — remove from data array
-  const handleDeleteAnimationComplete = useCallback(() => {
-    setSelectedDayExercises((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        exercises: prev.exercises.filter((e) => e.id !== deletingExerciseId),
-      };
+      },
     });
-    setDeletingExerciseId(null);
-  }, [deletingExerciseId]);
 
-  // Reorder exercises with optimistic update
-  const reorderExercisesOptimistic = useCallback(
-    async (reorderedExercises: PlanDayWithExercises['exercises']) => {
-      if (!selectedDayExercises) return;
+    return () => subscription.unsubscribe();
+  }, [selectedDay?.id, handleError]);
 
-      // Optimistic update: update local state immediately
-      setSelectedDayExercises((prev) => {
-        if (!prev) return prev;
-        return { ...prev, exercises: reorderedExercises };
-      });
-
-      // Persist to database in background
-      try {
-        const updates = reorderedExercises.map((exercise, index) => ({
-          id: exercise.id,
-          order_index: index,
-        }));
-        await reorderPlanDayExercises(updates);
-      } catch (error) {
-        // Revert on error by refetching
-        handleError(error, 'reorderExercises');
-        refetchDays();
+  // ── Extracted sub-hooks ─────────────────────────────────────────────
+  const handleDayDeleted = useCallback(
+    (dayId: string) => {
+      if (selectedDay?.id === dayId) {
+        setSelectedDay(null);
+        setActiveTabIndex(0);
       }
     },
-    [selectedDayExercises, handleError, refetchDays]
+    [selectedDay?.id]
   );
 
-  // Check if Start Workout should be visible
+  const handleDayAdded = useCallback((day: PlanDay) => {
+    setSelectedDay(day);
+  }, []);
+
+  const dayMenu = useDayMenu({
+    onDayDeleted: handleDayDeleted,
+  });
+
+  const addDay = useAddDayDialog({
+    activePlanId: activePlan?.id,
+    planDaysCount: planDays.length,
+    onDayAdded: handleDayAdded,
+  });
+
+  const exerciseActions = useExerciseActions({
+    selectedDayId: selectedDay?.id,
+  });
+
+  // ── Derived state ───────────────────────────────────────────────────
   const canStartWorkout = useMemo(() => {
     if (!selectedDay) return false;
     const count = exerciseCounts[selectedDay.id] ?? 0;
@@ -419,45 +265,33 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
 
   const keyExtractor = useCallback((item: PlanDay) => item.id, []);
 
+  // ── Return composed state ───────────────────────────────────────────
   return {
-    // State
     user,
     activePlan,
     planDays,
     selectedDay,
     selectedDayExercises,
     loadingExercises,
-    loading: loading || loadingDays,
+    loading,
     activeTabIndex,
     exerciseCounts,
     canStartWorkout,
 
-    // Menu state
-    menuDay,
-    showDeleteConfirm,
-    isDeleting,
-    menuSheetRef,
+    // Day menu
+    ...dayMenu,
 
-    // Handlers
+    // Tab control
     setActiveTabIndex,
-    setShowDeleteConfirm,
+
+    // Day selection
     handleDayPress,
-    handleDayMenuPress,
-    handleEditDay,
-    handleDeleteDayPress,
-    handleConfirmDelete,
-    handleAddDayPress,
-    showAddDayDialog,
-    addDayName,
-    setAddDayName,
-    isAddingDay,
-    handleConfirmAddDay,
-    handleCancelAddDay,
-    refetchDays,
-    deletingExerciseId,
-    deleteExerciseOptimistic,
-    handleDeleteAnimationComplete,
-    reorderExercisesOptimistic,
+
+    // Add day dialog
+    ...addDay,
+
+    // Exercise actions
+    ...exerciseActions,
 
     // Render helpers
     keyExtractor,

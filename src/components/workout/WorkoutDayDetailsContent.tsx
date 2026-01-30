@@ -9,7 +9,7 @@ import DraggableFlatList, {
   type RenderItemParams,
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { Ionicons } from '@/components/ui/icon';
@@ -24,7 +24,7 @@ export interface WorkoutDayDetailsContentProps {
   exercises: DayExercise[];
   loading: boolean;
   onAddExercisePress: () => void;
-  onExercisePress: (exercise: DayExercise) => void;
+  onImagePress: (exercise: DayExercise) => void;
   onEditExercise?: (exercise: DayExercise) => void;
   onDeleteExercise?: (exercise: DayExercise) => void;
   onReorder?: (exercises: DayExercise[]) => void;
@@ -37,35 +37,41 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   exercises,
   loading,
   onAddExercisePress,
-  onExercisePress,
+  onImagePress,
   onEditExercise,
   onDeleteExercise,
   onReorder,
   deletingExerciseId,
   onDeleteAnimationComplete,
 }: WorkoutDayDetailsContentProps) {
+  // Track which swipeable card is open (only one at a time)
+  const [openSwipeableId, setOpenSwipeableId] = useState<string | null>(null);
+
   // Render item for draggable list
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<DayExercise>) => (
       <ScaleDecorator>
         <DayExerciseCard
           exercise={item}
-          onPress={() => onExercisePress(item)}
+          onImagePress={onImagePress}
           onEdit={onEditExercise}
           onDelete={onDeleteExercise}
           drag={drag}
           isActive={isActive}
           isDeleting={item.id === deletingExerciseId}
           onDeleteAnimationComplete={onDeleteAnimationComplete}
+          openSwipeableId={openSwipeableId}
+          onSwipeableOpen={setOpenSwipeableId}
         />
       </ScaleDecorator>
     ),
     [
-      onExercisePress,
+      onImagePress,
       onEditExercise,
       onDeleteExercise,
       deletingExerciseId,
       onDeleteAnimationComplete,
+      openSwipeableId,
     ]
   );
 

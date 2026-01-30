@@ -10,8 +10,8 @@
 
 import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS } from '@/constants';
 import { Q } from '@nozbe/watermelondb';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, combineLatest, of, from } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { database } from '../local';
 import WorkoutPlanModel from '../local/models/WorkoutPlan';
 import PlanDayModel from '../local/models/PlanDay';
@@ -437,6 +437,91 @@ export function observeActivePlan(userId: string): Observable<WorkoutPlan | null
     .query(Q.where('user_id', userId), Q.where('is_active', true), Q.take(1))
     .observe()
     .pipe(map((plans) => (plans.length > 0 && plans[0] ? planToPlain(plans[0]) : null)));
+}
+
+/**
+ * Observe plan days for a given plan (Observable)
+ * Emits whenever days are added, removed, or reordered.
+ */
+export function observePlanDays(planId: string): Observable<PlanDay[]> {
+  return database
+    .get<PlanDayModel>('plan_days')
+    .query(Q.where('plan_id', planId), Q.sortBy('order_index', Q.asc))
+    .observe()
+    .pipe(map((days) => days.map(planDayToPlain)));
+}
+
+/**
+ * Observe exercise counts for multiple plan days (Observable)
+ * Emits whenever exercises are added or removed from any of the given days.
+ */
+export function observeExerciseCountsByDays(
+  planDayIds: string[]
+): Observable<Record<string, number>> {
+  if (planDayIds.length === 0) return of({});
+
+  return database
+    .get<PlanDayExerciseModel>('plan_day_exercises')
+    .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
+    .observe()
+    .pipe(
+      map((exercises) => {
+        const counts: Record<string, number> = {};
+        for (const id of planDayIds) counts[id] = 0;
+        for (const e of exercises) counts[e.planDayId] = (counts[e.planDayId] ?? 0) + 1;
+        return counts;
+      })
+    );
+}
+
+/**
+ * Observe plan day with its exercises (Observable - hybrid)
+ *
+ * Subscribes to planDay + plan_day_exercises tables (2 subscriptions).
+ * Exercise reference data (name, muscles, gif) is looked up via cached find()
+ * since it's static seed data that doesn't change during normal use.
+ */
+export function observePlanDayWithExercises(planDayId: string): Observable<PlanDayWithExercises> {
+  return combineLatest([
+    database.get<PlanDayModel>('plan_days').findAndObserve(planDayId),
+    database
+      .get<PlanDayExerciseModel>('plan_day_exercises')
+      .query(Q.where('plan_day_id', planDayId), Q.sortBy('order_index', Q.asc))
+      .observe(),
+  ]).pipe(
+    switchMap(([planDay, planDayExercises]) => {
+      if (planDayExercises.length === 0) {
+        return of<PlanDayWithExercises>({
+          ...planDayToPlain(planDay),
+          exercises: [],
+        });
+      }
+
+      return from(
+        Promise.all(
+          planDayExercises.map(async (pde) => {
+            const exercise = await database.get<ExerciseModel>('exercises').find(pde.exerciseId);
+            return {
+              ...planDayExerciseToPlain(pde),
+              exercise: {
+                id: exercise.id,
+                name: exercise.name,
+                body_parts: exercise.bodyParts,
+                target_muscles: exercise.targetMuscles,
+                equipments: exercise.equipments,
+                gif_url: exercise.gifUrl ?? undefined,
+              },
+            };
+          })
+        )
+      ).pipe(
+        map((exercises) => ({
+          ...planDayToPlain(planDay),
+          exercises,
+        }))
+      );
+    })
+  );
 }
 
 /**

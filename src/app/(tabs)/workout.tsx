@@ -4,7 +4,7 @@
  * @see docs/reference/jefit/screenshots/03-plans/
  */
 
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
@@ -55,19 +55,11 @@ export default function WorkoutScreen() {
     isAddingDay,
     handleConfirmAddDay,
     handleCancelAddDay,
-    refetchDays,
     deletingExerciseId,
     deleteExerciseOptimistic,
     handleDeleteAnimationComplete,
     reorderExercisesOptimistic,
   } = useWorkoutScreen();
-
-  // Refresh data when screen gains focus (e.g., after adding exercises)
-  useFocusEffect(
-    useCallback(() => {
-      refetchDays();
-    }, [refetchDays])
-  );
 
   const handleAddExercisePress = useCallback(() => {
     if (!selectedDay) return;
@@ -77,13 +69,20 @@ export default function WorkoutScreen() {
     });
   }, [selectedDay]);
 
-  const handleExercisePress = useCallback((_exercise: DayExercise) => {
-    // TODO: Navigate to edit exercise screen
+  const handleExercisePress = useCallback((exercise: DayExercise) => {
+    router.push({
+      pathname: '/exercise/[id]',
+      params: { id: exercise.exercise.id },
+    });
   }, []);
 
-  const handleEditExercise = useCallback((_exercise: DayExercise) => {
-    // TODO: Navigate to edit exercise sets/reps screen (Task 2.1.4)
-  }, []);
+  const handleEditExercise = useCallback(
+    (_exercise: DayExercise) => {
+      if (!selectedDay) return;
+      router.push({ pathname: '/edit-day', params: { dayId: selectedDay.id } });
+    },
+    [selectedDay]
+  );
 
   const handleDeleteExercise = useCallback(
     (exercise: DayExercise) => {
@@ -117,7 +116,7 @@ export default function WorkoutScreen() {
             exercises={dayExercises}
             loading={loadingExercises}
             onAddExercisePress={handleAddExercisePress}
-            onExercisePress={handleExercisePress}
+            onImagePress={handleExercisePress}
             onEditExercise={handleEditExercise}
             onDeleteExercise={handleDeleteExercise}
             onReorder={reorderExercisesOptimistic}
