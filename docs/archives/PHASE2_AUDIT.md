@@ -168,7 +168,7 @@ export const CARD_ACTIVE_STYLE = { transform: [{ scale: 1.02 }], opacity: 0.9 } 
 |----|-------|----------|--------|
 | TD-03 | `refetchTrigger` manual workaround | `useWorkoutScreen.ts:114-117` | State can get out of sync, manual refetch needed |
 | TD-04 | Manual state update after delete | `useWorkoutScreen.ts:273-275` | Risks inconsistency vs. database |
-| TD-05 | Dead code: ExampleLineChart.tsx | `src/components/charts/` | Unused file in codebase |
+| TD-05 | ~~Dead code: ExampleLineChart.tsx~~ | `src/components/charts/` | **Resolved** — file deleted in Phase 2 audit |
 
 ### P2 — Type safety workarounds (fix when dependency updates)
 
@@ -210,7 +210,7 @@ export const CARD_ACTIVE_STYLE = { transform: [{ scale: 1.02 }], opacity: 0.9 } 
 |----------|-------|-------|
 | Reactive data flow | **B** | Manual refetch instead of WatermelonDB observables |
 | Animation patterns | **B+** | One layout animation conflict (TD-02) |
-| Dead code cleanup | **B+** | One unused file (TD-05) |
+| Dead code cleanup | **A** | Resolved (TD-05 deleted) |
 
 ---
 
@@ -313,7 +313,7 @@ src/
 | Priority | Category | Items | Phase |
 |----------|----------|-------|-------|
 | **P0** | Fix active warnings | TD-01 (SafeAreaView), TD-02 (Reanimated) | Now |
-| **P1** | Remove dead code | TD-05 (ExampleLineChart) | Now |
+| **P1** | ~~Remove dead code~~ | ~~TD-05 (ExampleLineChart)~~ | **Done** |
 | **P1** | Observable migration | TD-03, TD-04 (refetchTrigger → observables) | Before Phase 3 |
 | **P2** | Type workarounds | TD-06 (FlashList types) | When dependency updates |
 | **P3** | Production prep | TD-08 (dev mode), TD-10 (sync storage) | Phase 4-5 |
