@@ -9,8 +9,9 @@ import DraggableFlatList, {
   type RenderItemParams,
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -44,6 +45,21 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   deletingExerciseId,
   onDeleteAnimationComplete,
 }: WorkoutDayDetailsContentProps) {
+  // Crossfade animation when switching between days
+  const listOpacity = useSharedValue(1);
+
+  useEffect(() => {
+    if (!selectedDay?.id) return;
+    // Quick fade out then back in on day change
+    listOpacity.value = withTiming(0, { duration: 100 }, () => {
+      listOpacity.value = withTiming(1, { duration: 150 });
+    });
+  }, [selectedDay?.id, listOpacity]);
+
+  const fadeStyle = useAnimatedStyle(() => ({
+    opacity: listOpacity.value,
+  }));
+
   // Render item for draggable list
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<DayExercise>) => (
@@ -91,7 +107,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   }
 
   return (
-    <View className="flex-1">
+    <Animated.View style={[{ flex: 1 }, fadeStyle]}>
       {/* Day header */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-background-elevated">
         <View>
@@ -130,6 +146,6 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
         }
         ListEmptyComponent={null}
       />
-    </View>
+    </Animated.View>
   );
 });

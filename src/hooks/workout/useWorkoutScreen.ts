@@ -210,8 +210,9 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
   }, [activePlan?.id, refetchTrigger, handleError]);
 
   // Load exercises when selected day changes (stale-while-revalidate)
-  // Only shows spinner on day change or first load. Background refetches
-  // (from useFocusEffect) keep existing data visible while fetching.
+  // Spinner only on first load (no previous data). Day switches keep old
+  // data visible while fetching — crossfade in WorkoutDayDetailsContent
+  // handles the visual transition.
   useEffect(() => {
     if (!selectedDay?.id) {
       setSelectedDayExercises(null);
@@ -220,8 +221,8 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     }
 
     const fetchExercises = async () => {
-      const isDayChange = loadedDayIdRef.current !== selectedDay.id;
-      if (isDayChange) {
+      const isFirstLoad = loadedDayIdRef.current === null;
+      if (isFirstLoad) {
         setLoadingExercises(true);
       }
 
