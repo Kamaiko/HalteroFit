@@ -22,7 +22,7 @@ import {
   WorkoutDayDetailsContent,
   type DayExercise,
 } from '@/components/workout';
-import { Colors } from '@/constants';
+import { Colors, START_BUTTON_HEIGHT } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
 
 export default function WorkoutScreen() {
@@ -186,7 +186,7 @@ export default function WorkoutScreen() {
         <View className="absolute bottom-6 left-4 right-4">
           <Button
             className="rounded-xl shadow-lg items-center justify-center"
-            style={{ backgroundColor: Colors.primary.DEFAULT, height: 56 }}
+            style={{ backgroundColor: Colors.primary.DEFAULT, height: START_BUTTON_HEIGHT }}
             onPress={() => {
               // TODO: Navigate to active workout session
             }}

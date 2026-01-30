@@ -14,7 +14,7 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors } from '@/constants';
+import { Colors, EXERCISE_LIST_CONTENT_PADDING } from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DayExerciseCard, type DayExercise } from './DayExerciseCard';
@@ -108,7 +108,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         onDragEnd={({ data }) => onReorder?.(data)}
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 160 }}
+        contentContainerStyle={EXERCISE_LIST_CONTENT_PADDING}
         ListFooterComponent={
           <Pressable
             onPress={onAddExercisePress}

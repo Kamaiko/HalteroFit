@@ -81,6 +81,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
   const [planDays, setPlanDays] = useState<PlanDay[]>([]);
   const [selectedDay, setSelectedDay] = useState<PlanDay | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingDays, setLoadingDays] = useState(true);
   const [creatingDefaultPlan, setCreatingDefaultPlan] = useState(false);
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
@@ -200,6 +201,8 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
         setExerciseCounts(counts);
       } catch (error) {
         handleError(error, 'fetchPlanDays');
+      } finally {
+        setLoadingDays(false);
       }
     };
 
@@ -424,7 +427,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     selectedDay,
     selectedDayExercises,
     loadingExercises,
-    loading,
+    loading: loading || loadingDays,
     activeTabIndex,
     exerciseCounts,
     canStartWorkout,

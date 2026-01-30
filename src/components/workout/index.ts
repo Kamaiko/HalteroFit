@@ -4,6 +4,8 @@
 
 export { PlanHeader } from './PlanHeader';
 export { DayCard } from './DayCard';
+export { DragHandle } from './DragHandle';
+export { ExerciseThumbnail } from './ExerciseThumbnail';
 export { DayExerciseCard } from './DayExerciseCard';
 export type { DayExercise, DayExerciseCardProps } from './DayExerciseCard';
 export { EditDayExerciseCard } from './EditDayExerciseCard';

@@ -9,12 +9,11 @@
  * Sequence: slide left (200ms) → height collapse (200ms @ 150ms delay).
  */
 
-import { Colors } from '@/constants';
+import { Colors, CARD_ACTIVE_STYLE } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { PlanDayWithExercises } from '@/services/database/operations/plans';
 import { capitalizeWords } from '@/utils';
-import { Image } from 'expo-image';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { type LayoutChangeEvent, Pressable, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
@@ -26,6 +25,9 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
+
+import { DragHandle } from './DragHandle';
+import { ExerciseThumbnail } from './ExerciseThumbnail';
 
 export type DayExercise = PlanDayWithExercises['exercises'][number];
 
@@ -50,7 +52,6 @@ export const DayExerciseCard = memo(function DayExerciseCard({
   isDeleting,
   onDeleteAnimationComplete,
 }: DayExerciseCardProps) {
-  const [imageError, setImageError] = useState(false);
   const swipeableRef = useRef<React.ComponentRef<typeof ReanimatedSwipeable>>(null);
 
   // Measured card height for collapse animation
@@ -106,10 +107,6 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     onPress(exercise);
   }, [exercise, onPress]);
 
-  const handleImageError = useCallback(() => {
-    setImageError(true);
-  }, []);
-
   const handleEdit = useCallback(() => {
     swipeableRef.current?.close();
     onEdit?.(exercise);
@@ -143,7 +140,6 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     );
   }, [handleEdit, handleDelete]);
 
-  const showPlaceholder = !exercise.exercise.gif_url || imageError;
   const muscleText =
     exercise.exercise.target_muscles.map(capitalizeWords).join(', ') || 'No muscle info';
 
@@ -158,72 +154,11 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         <Pressable
           className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
           onPress={handlePress}
-          style={isActive ? { transform: [{ scale: 1.02 }], opacity: 0.9 } : undefined}
+          style={isActive ? CARD_ACTIVE_STYLE : undefined}
         >
-          {/* Drag Handle */}
-          {drag && (
-            <Pressable
-              onLongPress={drag}
-              delayLongPress={100}
-              style={{ marginLeft: -8, marginRight: 4, paddingVertical: 8, paddingHorizontal: 4 }}
-            >
-              <View className="items-center justify-center" style={{ width: 10, height: 16 }}>
-                {/* 6-dot grid: 2 columns x 3 rows */}
-                <View className="flex-row" style={{ gap: 2 }}>
-                  <View
-                    className="rounded-full"
-                    style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
-                  />
-                  <View
-                    className="rounded-full"
-                    style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
-                  />
-                </View>
-                <View className="flex-row" style={{ gap: 2, marginTop: 2 }}>
-                  <View
-                    className="rounded-full"
-                    style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
-                  />
-                  <View
-                    className="rounded-full"
-                    style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
-                  />
-                </View>
-                <View className="flex-row" style={{ gap: 2, marginTop: 2 }}>
-                  <View
-                    className="rounded-full"
-                    style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
-                  />
-                  <View
-                    className="rounded-full"
-                    style={{ width: 3, height: 3, backgroundColor: Colors.background.elevated }}
-                  />
-                </View>
-              </View>
-            </Pressable>
-          )}
+          {drag && <DragHandle onDrag={drag} />}
 
-          {/* Thumbnail */}
-          <View
-            className="mr-3 h-14 w-14 items-center justify-center overflow-hidden rounded-lg"
-            style={{ backgroundColor: Colors.surface.white }}
-          >
-            {showPlaceholder ? (
-              <View className="h-14 w-14 items-center justify-center bg-white">
-                <Ionicons name="barbell-outline" size={24} color={Colors.foreground.secondary} />
-              </View>
-            ) : (
-              <Image
-                source={{ uri: exercise.exercise.gif_url }}
-                style={{ width: 56, height: 56 }}
-                contentFit="cover"
-                autoplay={false}
-                cachePolicy="memory-disk"
-                transition={200}
-                onError={handleImageError}
-              />
-            )}
-          </View>
+          <ExerciseThumbnail imageUrl={exercise.exercise.gif_url} />
 
           {/* Info */}
           <View className="flex-1">
