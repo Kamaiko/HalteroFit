@@ -6,6 +6,8 @@ module.exports = function (api) {
     plugins: [
       // WatermelonDB decorators support
       ['@babel/plugin-proposal-decorators', { legacy: true }],
+      // Reanimated plugin (must be last)
+      'react-native-reanimated/plugin',
     ],
   };
 };

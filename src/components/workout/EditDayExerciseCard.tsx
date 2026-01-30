@@ -13,6 +13,7 @@ import { capitalizeWords } from '@/utils';
 import { Image } from 'expo-image';
 import { memo, useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 export interface EditDayExerciseCardProps {
   exercise: DayExercise;
@@ -46,7 +47,10 @@ export const EditDayExerciseCard = memo(function EditDayExerciseCard({
   const showPlaceholder = !exercise.exercise.gif_url || imageError;
 
   return (
-    <View
+    <Animated.View
+      entering={FadeIn.duration(200)}
+      exiting={FadeOut.duration(200)}
+      layout={LinearTransition.duration(200)}
       className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
       style={isActive ? { transform: [{ scale: 1.02 }], opacity: 0.9 } : undefined}
     >
@@ -132,6 +136,6 @@ export const EditDayExerciseCard = memo(function EditDayExerciseCard({
       <Pressable onPress={handleRemove} hitSlop={8} className="ml-2 active:opacity-60">
         <Ionicons name="close-circle-outline" size={24} color={Colors.foreground.secondary} />
       </Pressable>
-    </View>
+    </Animated.View>
   );
 });

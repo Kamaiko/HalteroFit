@@ -56,7 +56,9 @@ export default function WorkoutScreen() {
     handleConfirmAddDay,
     handleCancelAddDay,
     refetchDays,
+    deletingExerciseId,
     deleteExerciseOptimistic,
+    handleDeleteAnimationComplete,
     reorderExercisesOptimistic,
   } = useWorkoutScreen();
 
@@ -119,6 +121,8 @@ export default function WorkoutScreen() {
             onEditExercise={handleEditExercise}
             onDeleteExercise={handleDeleteExercise}
             onReorder={reorderExercisesOptimistic}
+            deletingExerciseId={deletingExerciseId}
+            onDeleteAnimationComplete={handleDeleteAnimationComplete}
           />
         );
       }
@@ -139,6 +143,8 @@ export default function WorkoutScreen() {
       handleEditExercise,
       handleDeleteExercise,
       reorderExercisesOptimistic,
+      deletingExerciseId,
+      handleDeleteAnimationComplete,
     ]
   );
 

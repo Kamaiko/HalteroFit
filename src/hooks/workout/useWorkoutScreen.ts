@@ -6,7 +6,6 @@
  */
 
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutAnimation, Platform, UIManager } from 'react-native';
 import { router } from 'expo-router';
 
 import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
@@ -25,11 +24,6 @@ import {
   type PlanDayWithExercises,
   type WorkoutPlan,
 } from '@/services/database/operations/plans';
-
-// Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 import { useAuthStore } from '@/stores/auth/authStore';
 
 export interface UseWorkoutScreenReturn {
@@ -67,7 +61,9 @@ export interface UseWorkoutScreenReturn {
   handleConfirmAddDay: () => Promise<void>;
   handleCancelAddDay: () => void;
   refetchDays: () => void;
+  deletingExerciseId: string | null;
   deleteExerciseOptimistic: (exerciseId: string) => Promise<void>;
+  handleDeleteAnimationComplete: () => void;
   reorderExercisesOptimistic: (
     reorderedExercises: PlanDayWithExercises['exercises']
   ) => Promise<void>;
@@ -107,6 +103,12 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     null
   );
   const [loadingExercises, setLoadingExercises] = useState(false);
+
+  // Delete animation: exercise stays in array while animating, removed after completion
+  const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
+
+  // Track which day's exercises are currently loaded (for stale-while-revalidate)
+  const loadedDayIdRef = useRef<string | null>(null);
 
   // FIXME: refetchTrigger is a workaround because we don't use observables for days/counts.
   // Ideally, we'd use observePlanDays() + observeExerciseCounts() for automatic updates
@@ -204,18 +206,26 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     fetchDays();
   }, [activePlan?.id, refetchTrigger, handleError]);
 
-  // Load exercises when selected day changes
+  // Load exercises when selected day changes (stale-while-revalidate)
+  // Only shows spinner on day change or first load. Background refetches
+  // (from useFocusEffect) keep existing data visible while fetching.
   useEffect(() => {
     if (!selectedDay?.id) {
       setSelectedDayExercises(null);
+      loadedDayIdRef.current = null;
       return;
     }
 
     const fetchExercises = async () => {
-      setLoadingExercises(true);
+      const isDayChange = loadedDayIdRef.current !== selectedDay.id;
+      if (isDayChange) {
+        setLoadingExercises(true);
+      }
+
       try {
         const dayWithExercises = await getPlanDayWithExercises(selectedDay.id);
         setSelectedDayExercises(dayWithExercises);
+        loadedDayIdRef.current = selectedDay.id;
       } catch (error) {
         handleError(error, 'fetchDayExercises');
       } finally {
@@ -332,24 +342,14 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     setAddDayName('');
   }, []);
 
-  // Delete exercise with optimistic update and animation
+  // Phase 1: Mark exercise as deleting (triggers slide + collapse animation in card)
   const deleteExerciseOptimistic = useCallback(
     async (exerciseId: string) => {
-      if (!selectedDayExercises) return;
+      if (!selectedDayExercises || deletingExerciseId) return;
 
-      // Configure layout animation for smooth transition
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setDeletingExerciseId(exerciseId);
 
-      // Optimistic update: remove from local state immediately
-      setSelectedDayExercises((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          exercises: prev.exercises.filter((e) => e.id !== exerciseId),
-        };
-      });
-
-      // Update exercise count optimistically
+      // Update exercise count immediately
       if (selectedDay) {
         setExerciseCounts((prev) => ({
           ...prev,
@@ -361,13 +361,24 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
       try {
         await removeExerciseFromPlanDay(exerciseId);
       } catch (error) {
-        // Revert on error by refetching
         handleError(error, 'deleteExercise');
         refetchDays();
       }
     },
-    [selectedDayExercises, selectedDay, handleError, refetchDays]
+    [selectedDayExercises, deletingExerciseId, selectedDay, handleError, refetchDays]
   );
+
+  // Phase 2: Called by card after animation completes — remove from data array
+  const handleDeleteAnimationComplete = useCallback(() => {
+    setSelectedDayExercises((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        exercises: prev.exercises.filter((e) => e.id !== deletingExerciseId),
+      };
+    });
+    setDeletingExerciseId(null);
+  }, [deletingExerciseId]);
 
   // Reorder exercises with optimistic update
   const reorderExercisesOptimistic = useCallback(
@@ -440,7 +451,9 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     handleConfirmAddDay,
     handleCancelAddDay,
     refetchDays,
+    deletingExerciseId,
     deleteExerciseOptimistic,
+    handleDeleteAnimationComplete,
     reorderExercisesOptimistic,
 
     // Render helpers

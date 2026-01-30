@@ -28,6 +28,8 @@ export interface WorkoutDayDetailsContentProps {
   onEditExercise?: (exercise: DayExercise) => void;
   onDeleteExercise?: (exercise: DayExercise) => void;
   onReorder?: (exercises: DayExercise[]) => void;
+  deletingExerciseId?: string | null;
+  onDeleteAnimationComplete?: () => void;
 }
 
 export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
@@ -39,6 +41,8 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   onEditExercise,
   onDeleteExercise,
   onReorder,
+  deletingExerciseId,
+  onDeleteAnimationComplete,
 }: WorkoutDayDetailsContentProps) {
   // Render item for draggable list
   const renderItem = useCallback(
@@ -51,10 +55,18 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
           onDelete={onDeleteExercise}
           drag={drag}
           isActive={isActive}
+          isDeleting={item.id === deletingExerciseId}
+          onDeleteAnimationComplete={onDeleteAnimationComplete}
         />
       </ScaleDecorator>
     ),
-    [onExercisePress, onEditExercise, onDeleteExercise]
+    [
+      onExercisePress,
+      onEditExercise,
+      onDeleteExercise,
+      deletingExerciseId,
+      onDeleteAnimationComplete,
+    ]
   );
 
   const keyExtractor = useCallback((item: DayExercise) => item.id, []);
