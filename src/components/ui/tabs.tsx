@@ -72,9 +72,6 @@ export const Tabs = memo(function Tabs({ tabs, activeIndex, onChange, renderScen
     transform: [{ translateX: indicatorX.value }],
   }));
 
-  // Get current route for rendering
-  const currentRoute = routes[activeIndex];
-
   return (
     <View style={styles.container}>
       {/* Tab Bar */}
@@ -95,8 +92,17 @@ export const Tabs = memo(function Tabs({ tabs, activeIndex, onChange, renderScen
         <Animated.View style={[styles.indicator, { width: tabWidth }, indicatorStyle]} />
       </View>
 
-      {/* Content */}
-      <View style={styles.content}>{currentRoute && renderScene({ route: currentRoute })}</View>
+      {/* Content — all scenes rendered persistently, toggled via display */}
+      <View style={styles.content}>
+        {routes.map((route, index) => (
+          <View
+            key={route.key}
+            style={[StyleSheet.absoluteFill, index !== activeIndex && styles.hidden]}
+          >
+            {renderScene({ route })}
+          </View>
+        ))}
+      </View>
     </View>
   );
 });
@@ -135,5 +141,8 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  hidden: {
+    display: 'none' as const,
   },
 });

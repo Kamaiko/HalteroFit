@@ -211,8 +211,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
 
   // Load exercises when selected day changes (stale-while-revalidate)
   // Spinner only on first load (no previous data). Day switches keep old
-  // data visible while fetching — crossfade in WorkoutDayDetailsContent
-  // handles the visual transition.
+  // data visible while fetching — swap is near-instant from local DB.
   useEffect(() => {
     if (!selectedDay?.id) {
       setSelectedDayExercises(null);
