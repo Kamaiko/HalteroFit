@@ -7,7 +7,9 @@
     "userInterfaceStyle": "dark",
     "scheme": "halterofit",
     "backgroundColor": "#0A0A0A",
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/images/splash.png",
       "backgroundColor": "#0A0A0A",
       "resizeMode": "contain"
     },
@@ -17,7 +19,13 @@
     "android": {
       "package": "com.halterofit.app",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A0A"
+      },
+      "splash": {
+        "image": "./assets/images/splash.png",
+        "backgroundColor": "#0A0A0A",
+        "resizeMode": "contain"
       }
     },
     "ios": {
@@ -26,7 +34,8 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static"
+      "output": "static",
+      "favicon": "./assets/favicon.png"
     },
     "experiments": {
       "typedRoutes": true,

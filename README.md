@@ -26,8 +26,6 @@
 
 <br/>
 
-<img src="./docs/images/home-placeholder.jpeg" alt="Home Screen Placeholder" width="300"/>
-
 </div>
 
 ## About
