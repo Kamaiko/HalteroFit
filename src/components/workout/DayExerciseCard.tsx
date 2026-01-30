@@ -18,7 +18,6 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { type LayoutChangeEvent, Pressable, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, {
-  FadeIn,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -144,7 +143,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     exercise.exercise.target_muscles.map(capitalizeWords).join(', ') || 'No muscle info';
 
   return (
-    <Animated.View entering={FadeIn.duration(200)} style={deletingStyle} onLayout={handleLayout}>
+    <Animated.View style={deletingStyle} onLayout={handleLayout}>
       <ReanimatedSwipeable
         ref={swipeableRef}
         renderRightActions={renderRightActions}
