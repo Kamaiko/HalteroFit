@@ -48,7 +48,7 @@
  * // />
  *
  * @see docs/TECHNICAL.md - ADR-010: Performance Libraries
- * @see components/ui/README.md - Complete usage guide
+ * @see docs/ARCHITECTURE.md - Component organization principles
  */
 
 import { Image, ImageSource, ImageErrorEventData } from 'expo-image';

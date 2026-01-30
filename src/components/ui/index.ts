@@ -7,12 +7,11 @@
  * Usage:
  *   import { CachedImage, Tabs, BottomSheet } from '@/components/ui';
  *
- * @see components/ui/README.md - Complete usage guide
  * @see docs/ARCHITECTURE.md - Component organization principles
  */
 
-export { CachedImage, CachedImageStyles } from './CachedImage';
-export type { CachedImageProps } from './CachedImage';
+export { CachedImage, CachedImageStyles } from './cached-image';
+export type { CachedImageProps } from './cached-image';
 
 export { Tabs } from './tabs';
 export type { TabsProps, Route as TabRoute } from './tabs';

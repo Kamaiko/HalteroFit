@@ -7,5 +7,5 @@
  * import { Colors } from '@/constants';
  */
 
-export * from './Colors';
+export * from './colors';
 export * from './workout';
