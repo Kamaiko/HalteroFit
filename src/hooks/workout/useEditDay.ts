@@ -6,21 +6,25 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import type { DayExercise } from '@/components/workout/DayExerciseCard';
 import type { PickedExercise } from '@/stores/exercisePickerStore';
 import { useExercisePickerStore } from '@/stores/exercisePickerStore';
-import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS } from '@/constants';
+import {
+  DEFAULT_TARGET_SETS,
+  DEFAULT_TARGET_REPS,
+  MAX_EXERCISES_PER_DAY,
+  MAX_DAY_NAME_LENGTH,
+} from '@/constants';
+import { ValidationError } from '@/utils/errors';
 
 /** Prefix for temporary exercise IDs (not yet persisted to DB) */
 const TEMP_EXERCISE_ID_PREFIX = 'temp_';
 
 import {
   getPlanDayWithExercises,
-  updatePlanDay,
-  removeExerciseFromPlanDay,
-  addExerciseToPlanDay,
-  reorderPlanDayExercises,
+  savePlanDayEdits,
   deletePlanDay,
 } from '@/services/database/operations/plans';
 
@@ -154,8 +158,41 @@ export function useEditDay(dayId: string): UseEditDayReturn {
     const result = useExercisePickerStore.getState().result;
     if (!result || result.length === 0) return;
 
+    // Filter out duplicates (exercises already in this day)
+    const existingExerciseIds = new Set(exercises.map((e) => e.exercise_id));
+    const duplicates: string[] = [];
+    const uniqueExercises = result.filter((picked) => {
+      if (existingExerciseIds.has(picked.id)) {
+        duplicates.push(picked.name);
+        return false;
+      }
+      return true;
+    });
+
+    if (duplicates.length > 0) {
+      Alert.alert('Duplicates Skipped', `Already in this day: ${duplicates.join(', ')}`);
+    }
+
+    // Check total count after adding
+    if (exercises.length + uniqueExercises.length > MAX_EXERCISES_PER_DAY) {
+      const available = MAX_EXERCISES_PER_DAY - exercises.length;
+      Alert.alert(
+        'Exercise Limit',
+        available <= 0
+          ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum).`
+          : `Can only add ${available} more exercise${available !== 1 ? 's' : ''}. ${uniqueExercises.length} were selected.`
+      );
+      useExercisePickerStore.getState().clearResult();
+      return;
+    }
+
+    if (uniqueExercises.length === 0) {
+      useExercisePickerStore.getState().clearResult();
+      return;
+    }
+
     // Convert picked exercises to DayExercise format with temp IDs
-    const newExercises: DayExercise[] = result.map((picked, index) => {
+    const newExercises: DayExercise[] = uniqueExercises.map((picked, index) => {
       const tempId = `${TEMP_EXERCISE_ID_PREFIX}${Date.now()}_${index}`;
 
       // Track pending add
@@ -185,7 +222,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
 
     setExercises((prev) => [...prev, ...newExercises]);
     useExercisePickerStore.getState().clearResult();
-  }, [dayId, exercises.length]);
+  }, [dayId, exercises]);
 
   // ── Navigate to exercise detail ────────────────────────────────────────
   const navigateToExerciseDetail = useCallback((exercise: DayExercise) => {
@@ -205,51 +242,57 @@ export function useEditDay(dayId: string): UseEditDayReturn {
       setDayName(initialNameRef.current);
     }
 
+    const nameToSave = trimmedName || initialNameRef.current;
+
+    // Validate name length before saving
+    if (nameToSave.length > MAX_DAY_NAME_LENGTH) {
+      Alert.alert(
+        'Name Too Long',
+        `Day name cannot exceed ${MAX_DAY_NAME_LENGTH} characters (currently ${nameToSave.length}).`
+      );
+      return;
+    }
+
     setIsSaving(true);
 
     try {
-      const nameToSave = trimmedName || initialNameRef.current;
+      // Build added exercises list from pending adds
+      const addedExercises = pendingAddsRef.current
+        .map((pending) => {
+          const currentIndex = exercises.findIndex((e) => e.id === pending.tempId);
+          if (currentIndex === -1) return null; // Was removed after adding
+          return {
+            exercise_id: pending.exercise.id,
+            order_index: currentIndex,
+          };
+        })
+        .filter((e): e is NonNullable<typeof e> => e !== null);
 
-      // 1. Update day name if changed
-      if (nameToSave !== initialNameRef.current) {
-        await updatePlanDay(dayId, { name: nameToSave });
-      }
-
-      // 2. Remove deleted exercises
-      for (const id of removedIdsRef.current) {
-        await removeExerciseFromPlanDay(id);
-      }
-
-      // 3. Add newly picked exercises
-      for (const pending of pendingAddsRef.current) {
-        // Find current position in exercises array
-        const currentIndex = exercises.findIndex((e) => e.id === pending.tempId);
-        if (currentIndex === -1) continue; // Was removed after adding
-
-        await addExerciseToPlanDay({
-          plan_day_id: dayId,
-          exercise_id: pending.exercise.id,
-          order_index: currentIndex,
-          target_sets: DEFAULT_TARGET_SETS,
-          target_reps: DEFAULT_TARGET_REPS,
-        });
-      }
-
-      // 4. Reorder existing (non-temp) exercises
-      const existingExercises = exercises
+      // Build reorder list from existing (non-temp) exercises
+      const reorderedExercises = exercises
         .filter((e) => !e.id.startsWith(TEMP_EXERCISE_ID_PREFIX))
         .map((e) => ({
           id: e.id,
           order_index: exercises.indexOf(e),
         }));
 
-      if (existingExercises.length > 0) {
-        await reorderPlanDayExercises(existingExercises);
-      }
+      // Save all changes in a single transaction
+      await savePlanDayEdits({
+        dayId,
+        name: nameToSave !== initialNameRef.current ? nameToSave : undefined,
+        removedExerciseIds: Array.from(removedIdsRef.current),
+        addedExercises,
+        reorderedExercises,
+      });
 
       router.back();
     } catch (error) {
-      console.error('Failed to save day changes:', error);
+      if (error instanceof ValidationError) {
+        Alert.alert('Error', error.userMessage);
+      } else {
+        console.error('Failed to save day changes:', error);
+        Alert.alert('Error', 'Failed to save changes. Please try again.');
+      }
     } finally {
       setIsSaving(false);
     }

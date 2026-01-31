@@ -14,9 +14,11 @@ import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { PlanDayWithExercises } from '@/services/database/operations/plans';
 import { capitalizeWords } from '@/utils';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { type LayoutChangeEvent, Pressable, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+
+import { SwipeableContext } from './WorkoutDayDetailsContent';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -39,9 +41,6 @@ export interface DayExerciseCardProps {
   isActive?: boolean;
   isDeleting?: boolean;
   onDeleteAnimationComplete?: () => void;
-  openSwipeableId?: string | null;
-  onSwipeableOpen?: (id: string | null) => void;
-  onSwipeableClose?: (id: string) => void;
 }
 
 export const DayExerciseCard = memo(function DayExerciseCard({
@@ -53,10 +52,8 @@ export const DayExerciseCard = memo(function DayExerciseCard({
   isActive,
   isDeleting,
   onDeleteAnimationComplete,
-  openSwipeableId,
-  onSwipeableOpen,
-  onSwipeableClose,
 }: DayExerciseCardProps) {
+  const { openId: openSwipeableId, setOpenId: setOpenSwipeableId } = useContext(SwipeableContext);
   const swipeableRef = useRef<React.ComponentRef<typeof ReanimatedSwipeable>>(null);
   const isOpen = useRef(false);
 
@@ -169,19 +166,20 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         overshootFriction={8}
         onSwipeableWillOpen={() => {
           isOpen.current = true;
-          onSwipeableOpen?.(exercise.id);
+          setOpenSwipeableId(exercise.id);
         }}
         onSwipeableWillClose={() => {
           if (isOpen.current) {
             isOpen.current = false;
-            onSwipeableClose?.(exercise.id);
+            // Only reset if this card is still the tracked open card
+            setOpenSwipeableId((prev) => (prev === exercise.id ? null : prev));
           }
         }}
       >
         <Pressable
           onPress={() => {
             if (openSwipeableId) {
-              onSwipeableOpen?.(null);
+              setOpenSwipeableId(null);
             }
           }}
           className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"

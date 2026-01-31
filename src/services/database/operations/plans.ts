@@ -8,8 +8,15 @@
  * All operations are LOCAL FIRST (instant), sync happens separately
  */
 
-import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS } from '@/constants';
-import { Q } from '@nozbe/watermelondb';
+import {
+  DEFAULT_TARGET_SETS,
+  DEFAULT_TARGET_REPS,
+  MAX_EXERCISES_PER_DAY,
+  MAX_DAYS_PER_PLAN,
+  MAX_DAY_NAME_LENGTH,
+  MAX_PLAN_NAME_LENGTH,
+} from '@/constants';
+import { type Model, Q } from '@nozbe/watermelondb';
 import { Observable, combineLatest, of, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { database } from '../local';
@@ -18,7 +25,7 @@ import PlanDayModel from '../local/models/PlanDay';
 import PlanDayExerciseModel from '../local/models/PlanDayExercise';
 import ExerciseModel from '../local/models/Exercise';
 import { useAuthStore } from '@/stores/auth/authStore';
-import { DatabaseError, AuthError } from '@/utils/errors';
+import { DatabaseError, AuthError, ValidationError } from '@/utils/errors';
 
 // ============================================================================
 // Types
@@ -181,6 +188,8 @@ export async function createPlan(data: CreatePlan): Promise<WorkoutPlan> {
     }
 
     const plan = await database.write(async () => {
+      const allOperations: Model[] = [];
+
       // If setting as active, deactivate other plans first
       if (data.is_active) {
         const activePlans = await database
@@ -188,19 +197,25 @@ export async function createPlan(data: CreatePlan): Promise<WorkoutPlan> {
           .query(Q.where('user_id', data.user_id), Q.where('is_active', true))
           .fetch();
 
-        for (const activePlan of activePlans) {
-          await activePlan.update((p) => {
-            p.isActive = false;
-          });
-        }
+        allOperations.push(
+          ...activePlans.map((p) =>
+            p.prepareUpdate((rec) => {
+              rec.isActive = false;
+            })
+          )
+        );
       }
 
-      return await database.get<WorkoutPlanModel>('workout_plans').create((plan) => {
-        plan.userId = data.user_id;
-        plan.name = data.name;
-        plan.isActive = data.is_active ?? false;
-        if (data.cover_image_url) plan.coverImageUrl = data.cover_image_url;
+      const newPlan = database.get<WorkoutPlanModel>('workout_plans').prepareCreate((p) => {
+        p.userId = data.user_id;
+        p.name = data.name;
+        p.isActive = data.is_active ?? false;
+        if (data.cover_image_url) p.coverImageUrl = data.cover_image_url;
       });
+      allOperations.push(newPlan);
+
+      await database.batch(...allOperations);
+      return newPlan;
     });
 
     return planToPlain(plan);
@@ -242,6 +257,19 @@ export async function createPlanDay(data: CreatePlanDay): Promise<PlanDay> {
         );
       }
 
+      // Check max days limit
+      const existingDays = await database
+        .get<PlanDayModel>('plan_days')
+        .query(Q.where('plan_id', data.plan_id))
+        .fetchCount();
+
+      if (existingDays >= MAX_DAYS_PER_PLAN) {
+        throw new ValidationError(
+          `Cannot add more than ${MAX_DAYS_PER_PLAN} days to a workout plan`,
+          `Plan ${data.plan_id} already has ${existingDays} days (max: ${MAX_DAYS_PER_PLAN})`
+        );
+      }
+
       return await database.get<PlanDayModel>('plan_days').create((day) => {
         day.planId = data.plan_id;
         day.name = data.name;
@@ -252,7 +280,11 @@ export async function createPlanDay(data: CreatePlanDay): Promise<PlanDay> {
 
     return planDayToPlain(planDay);
   } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
+    if (
+      error instanceof AuthError ||
+      error instanceof DatabaseError ||
+      error instanceof ValidationError
+    ) {
       throw error;
     }
 
@@ -291,6 +323,32 @@ export async function addExerciseToPlanDay(data: AddExerciseToPlanDay): Promise<
         );
       }
 
+      // Check max exercises limit
+      const exerciseCount = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', data.plan_day_id))
+        .fetchCount();
+
+      if (exerciseCount >= MAX_EXERCISES_PER_DAY) {
+        throw new ValidationError(
+          `Cannot add more than ${MAX_EXERCISES_PER_DAY} exercises to a workout day`,
+          `Day ${data.plan_day_id} already has ${exerciseCount} exercises (max: ${MAX_EXERCISES_PER_DAY})`
+        );
+      }
+
+      // Check for duplicate exercise in same day
+      const duplicate = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', data.plan_day_id), Q.where('exercise_id', data.exercise_id))
+        .fetchCount();
+
+      if (duplicate > 0) {
+        throw new ValidationError(
+          'This exercise is already in this workout day',
+          `Exercise ${data.exercise_id} already exists in day ${data.plan_day_id}`
+        );
+      }
+
       return await database.get<PlanDayExerciseModel>('plan_day_exercises').create((pde) => {
         pde.planDayId = data.plan_day_id;
         pde.exerciseId = data.exercise_id;
@@ -304,13 +362,293 @@ export async function addExerciseToPlanDay(data: AddExerciseToPlanDay): Promise<
 
     return planDayExerciseToPlain(planDayExercise);
   } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
+    if (
+      error instanceof AuthError ||
+      error instanceof DatabaseError ||
+      error instanceof ValidationError
+    ) {
       throw error;
     }
 
     throw new DatabaseError(
       'Unable to add exercise. Please try again.',
       `Failed to add exercise to plan day: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+// ============================================================================
+// BATCH Operations (Single Transaction)
+// ============================================================================
+
+/**
+ * Add multiple exercises to a plan day in a single transaction.
+ *
+ * Validates max exercise limit and duplicate exercises before creating.
+ * All exercises are created within one database.write() for performance.
+ *
+ * @throws {AuthError} If user is not authenticated
+ * @throws {ValidationError} If limit exceeded or duplicates found
+ * @throws {DatabaseError} If database operation fails
+ */
+export async function addExercisesToPlanDay(
+  planDayId: string,
+  exercises: Array<{
+    exercise_id: string;
+    order_index: number;
+    target_sets?: number;
+    target_reps?: number;
+    rest_timer_seconds?: number;
+    notes?: string;
+  }>
+): Promise<PlanDayExercise[]> {
+  if (exercises.length === 0) return [];
+
+  try {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser?.id) {
+      throw new AuthError(
+        'Please sign in to add exercises',
+        'User not authenticated - no user.id in authStore'
+      );
+    }
+
+    const results = await database.write(async () => {
+      // Verify user owns the plan that contains this day
+      const planDay = await database.get<PlanDayModel>('plan_days').find(planDayId);
+      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+
+      if (plan.userId !== currentUser.id) {
+        throw new AuthError(
+          'You do not have permission to modify this plan',
+          `User ${currentUser.id} attempted to modify plan owned by ${plan.userId}`
+        );
+      }
+
+      // Check max exercises limit
+      const currentCount = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', planDayId))
+        .fetchCount();
+
+      if (currentCount + exercises.length > MAX_EXERCISES_PER_DAY) {
+        const available = MAX_EXERCISES_PER_DAY - currentCount;
+        throw new ValidationError(
+          available <= 0
+            ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
+            : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
+          `Day ${planDayId} has ${currentCount} exercises, tried to add ${exercises.length} (max: ${MAX_EXERCISES_PER_DAY})`
+        );
+      }
+
+      // Check for duplicates against existing exercises
+      const existingExercises = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', planDayId))
+        .fetch();
+      const existingExerciseIds = new Set(existingExercises.map((e) => e.exerciseId));
+
+      // Also check for duplicates within the batch itself
+      const batchIds = new Set<string>();
+      const duplicateNames: string[] = [];
+
+      for (const ex of exercises) {
+        if (existingExerciseIds.has(ex.exercise_id) || batchIds.has(ex.exercise_id)) {
+          duplicateNames.push(ex.exercise_id);
+        }
+        batchIds.add(ex.exercise_id);
+      }
+
+      if (duplicateNames.length > 0) {
+        throw new ValidationError(
+          `${duplicateNames.length} exercise${duplicateNames.length !== 1 ? 's are' : ' is'} already in this workout day`,
+          `Duplicate exercise IDs in day ${planDayId}: ${duplicateNames.join(', ')}`
+        );
+      }
+
+      // Prepare all creates, then execute in a single batch (1 adapter op, 1 emission)
+      const created = exercises.map((ex) =>
+        database.get<PlanDayExerciseModel>('plan_day_exercises').prepareCreate((rec) => {
+          rec.planDayId = planDayId;
+          rec.exerciseId = ex.exercise_id;
+          rec.orderIndex = ex.order_index;
+          rec.targetSets = ex.target_sets ?? DEFAULT_TARGET_SETS;
+          rec.targetReps = ex.target_reps ?? DEFAULT_TARGET_REPS;
+          if (ex.rest_timer_seconds) rec.restTimerSeconds = ex.rest_timer_seconds;
+          if (ex.notes) rec.notes = ex.notes;
+        })
+      );
+
+      await database.batch(...created);
+      return created;
+    });
+
+    return results.map(planDayExerciseToPlain);
+  } catch (error) {
+    if (
+      error instanceof AuthError ||
+      error instanceof DatabaseError ||
+      error instanceof ValidationError
+    ) {
+      throw error;
+    }
+
+    throw new DatabaseError(
+      'Unable to add exercises. Please try again.',
+      `Failed to batch add exercises to plan day: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
+ * Save all edit-day changes in a single transaction.
+ *
+ * Performs name update, removals, additions, and reorders atomically.
+ * Much faster than calling individual operations sequentially.
+ *
+ * @throws {AuthError} If user is not authenticated
+ * @throws {ValidationError} If name too long or exercise limit exceeded
+ * @throws {DatabaseError} If database operation fails
+ */
+export async function savePlanDayEdits(data: {
+  dayId: string;
+  name?: string;
+  removedExerciseIds: string[];
+  addedExercises: Array<{ exercise_id: string; order_index: number }>;
+  reorderedExercises: Array<{ id: string; order_index: number }>;
+}): Promise<void> {
+  try {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser?.id) {
+      throw new AuthError(
+        'Please sign in to save changes',
+        'User not authenticated - no user.id in authStore'
+      );
+    }
+
+    await database.write(async () => {
+      // Verify user owns the plan that contains this day
+      const planDay = await database.get<PlanDayModel>('plan_days').find(data.dayId);
+      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+
+      if (plan.userId !== currentUser.id) {
+        throw new AuthError(
+          'You do not have permission to modify this plan',
+          `User ${currentUser.id} attempted to modify plan owned by ${plan.userId}`
+        );
+      }
+
+      // Collect all operations, then execute in a single database.batch()
+      // This triggers only 1 adapter operation and 1 observable emission
+      const allOperations: Model[] = [];
+
+      // 1. Update day name if provided
+      if (data.name !== undefined) {
+        const trimmedName = data.name.trim();
+        if (trimmedName.length === 0) {
+          throw new ValidationError(
+            'Day name cannot be empty',
+            `Attempted to save day ${data.dayId} with empty name`
+          );
+        }
+        if (trimmedName.length > MAX_DAY_NAME_LENGTH) {
+          throw new ValidationError(
+            `Day name cannot exceed ${MAX_DAY_NAME_LENGTH} characters`,
+            `Attempted to save day ${data.dayId} with name length ${trimmedName.length}`
+          );
+        }
+        allOperations.push(
+          planDay.prepareUpdate((d) => {
+            d.name = trimmedName;
+          })
+        );
+      }
+
+      // 2. Prepare deletions
+      const preparedDeletions = await Promise.all(
+        data.removedExerciseIds.map(async (removeId) => {
+          const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(removeId);
+          return pde.prepareMarkAsDeleted();
+        })
+      );
+      allOperations.push(...preparedDeletions);
+
+      // 3. Prepare additions (with duplicate + limit check)
+      if (data.addedExercises.length > 0) {
+        // Get current exercises (accounting for prepared deletions)
+        const currentExercises = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', data.dayId))
+          .fetch();
+
+        // Subtract the ones we're about to delete
+        const deletedIds = new Set(data.removedExerciseIds);
+        const remainingExercises = currentExercises.filter((e) => !deletedIds.has(e.id));
+        const currentCount = remainingExercises.length;
+        const existingExerciseIds = new Set(remainingExercises.map((e) => e.exerciseId));
+
+        // Check limit
+        if (currentCount + data.addedExercises.length > MAX_EXERCISES_PER_DAY) {
+          const available = MAX_EXERCISES_PER_DAY - currentCount;
+          throw new ValidationError(
+            available <= 0
+              ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
+              : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
+            `Day ${data.dayId} has ${currentCount} exercises after removals, tried to add ${data.addedExercises.length}`
+          );
+        }
+
+        // Check duplicates
+        for (const ex of data.addedExercises) {
+          if (existingExerciseIds.has(ex.exercise_id)) {
+            throw new ValidationError(
+              'One or more exercises are already in this workout day',
+              `Duplicate exercise ${ex.exercise_id} in day ${data.dayId}`
+            );
+          }
+        }
+
+        // Prepare creates
+        const preparedCreates = data.addedExercises.map((ex) =>
+          database.get<PlanDayExerciseModel>('plan_day_exercises').prepareCreate((pde) => {
+            pde.planDayId = data.dayId;
+            pde.exerciseId = ex.exercise_id;
+            pde.orderIndex = ex.order_index;
+            pde.targetSets = DEFAULT_TARGET_SETS;
+            pde.targetReps = DEFAULT_TARGET_REPS;
+          })
+        );
+        allOperations.push(...preparedCreates);
+      }
+
+      // 4. Prepare reorders
+      const preparedReorders = await Promise.all(
+        data.reorderedExercises.map(async ({ id, order_index }) => {
+          const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
+          return pde.prepareUpdate((e) => {
+            e.orderIndex = order_index;
+          });
+        })
+      );
+      allOperations.push(...preparedReorders);
+
+      // Execute ALL operations in a single batch
+      if (allOperations.length > 0) {
+        await database.batch(...allOperations);
+      }
+    });
+  } catch (error) {
+    if (
+      error instanceof AuthError ||
+      error instanceof DatabaseError ||
+      error instanceof ValidationError
+    ) {
+      throw error;
+    }
+
+    throw new DatabaseError(
+      'Unable to save changes. Please try again.',
+      `Failed to save plan day edits for ${data.dayId}: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 }
@@ -670,7 +1008,25 @@ export async function updatePlan(id: string, updates: UpdatePlan): Promise<Worko
         );
       }
 
+      // Validate name length if being updated
+      if (updates.name !== undefined) {
+        const trimmedName = updates.name.trim();
+        if (trimmedName.length === 0) {
+          throw new ValidationError(
+            'Plan name cannot be empty',
+            `Attempted to update plan ${id} with empty name`
+          );
+        }
+        if (trimmedName.length > MAX_PLAN_NAME_LENGTH) {
+          throw new ValidationError(
+            `Plan name cannot exceed ${MAX_PLAN_NAME_LENGTH} characters`,
+            `Attempted to update plan ${id} with name length ${trimmedName.length}`
+          );
+        }
+      }
+
       // If setting as active, deactivate other plans first
+      let deactivations: Model[] = [];
       if (updates.is_active) {
         const activePlans = await database
           .get<WorkoutPlanModel>('workout_plans')
@@ -681,25 +1037,30 @@ export async function updatePlan(id: string, updates: UpdatePlan): Promise<Worko
           )
           .fetch();
 
-        for (const activePlan of activePlans) {
-          await activePlan.update((p) => {
-            p.isActive = false;
-          });
-        }
+        deactivations = activePlans.map((p) =>
+          p.prepareUpdate((rec) => {
+            rec.isActive = false;
+          })
+        );
       }
 
-      await plan.update((p) => {
+      const mainUpdate = plan.prepareUpdate((p) => {
         if (updates.name !== undefined) p.name = updates.name;
         if (updates.is_active !== undefined) p.isActive = updates.is_active;
         if (updates.cover_image_url !== undefined) p.coverImageUrl = updates.cover_image_url;
       });
 
+      await database.batch(...deactivations, mainUpdate);
       return plan;
     });
 
     return planToPlain(plan);
   } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
+    if (
+      error instanceof AuthError ||
+      error instanceof DatabaseError ||
+      error instanceof ValidationError
+    ) {
       throw error;
     }
 
@@ -734,6 +1095,23 @@ export async function updatePlanDay(id: string, updates: UpdatePlanDay): Promise
         );
       }
 
+      // Validate name length if being updated
+      if (updates.name !== undefined) {
+        const trimmedName = updates.name.trim();
+        if (trimmedName.length === 0) {
+          throw new ValidationError(
+            'Day name cannot be empty',
+            `Attempted to update plan day ${id} with empty name`
+          );
+        }
+        if (trimmedName.length > MAX_DAY_NAME_LENGTH) {
+          throw new ValidationError(
+            `Day name cannot exceed ${MAX_DAY_NAME_LENGTH} characters`,
+            `Attempted to update plan day ${id} with name length ${trimmedName.length}`
+          );
+        }
+      }
+
       await planDay.update((d) => {
         if (updates.name !== undefined) d.name = updates.name;
         if (updates.day_of_week !== undefined) d.dayOfWeek = updates.day_of_week;
@@ -745,7 +1123,11 @@ export async function updatePlanDay(id: string, updates: UpdatePlanDay): Promise
 
     return planDayToPlain(planDay);
   } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
+    if (
+      error instanceof AuthError ||
+      error instanceof DatabaseError ||
+      error instanceof ValidationError
+    ) {
       throw error;
     }
 
@@ -849,13 +1231,16 @@ export async function reorderPlanDayExercises(
         );
       }
 
-      // Batch update all exercises
-      for (const { id, order_index } of exercises) {
-        const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
-        await pde.update((e) => {
-          e.orderIndex = order_index;
-        });
-      }
+      // Prepare all updates, then execute in a single batch (1 adapter op, 1 emission)
+      const preparedUpdates = await Promise.all(
+        exercises.map(async ({ id, order_index }) => {
+          const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
+          return pde.prepareUpdate((e) => {
+            e.orderIndex = order_index;
+          });
+        })
+      );
+      await database.batch(...preparedUpdates);
     });
   } catch (error) {
     if (error instanceof AuthError || error instanceof DatabaseError) {
@@ -899,13 +1284,16 @@ export async function reorderPlanDays(
         );
       }
 
-      // Batch update all days
-      for (const { id, order_index } of days) {
-        const day = await database.get<PlanDayModel>('plan_days').find(id);
-        await day.update((d) => {
-          d.orderIndex = order_index;
-        });
-      }
+      // Prepare all updates, then execute in a single batch (1 adapter op, 1 emission)
+      const preparedUpdates = await Promise.all(
+        days.map(async ({ id, order_index }) => {
+          const day = await database.get<PlanDayModel>('plan_days').find(id);
+          return day.prepareUpdate((d) => {
+            d.orderIndex = order_index;
+          });
+        })
+      );
+      await database.batch(...preparedUpdates);
     });
   } catch (error) {
     if (error instanceof AuthError || error instanceof DatabaseError) {
@@ -946,7 +1334,9 @@ export async function deletePlan(id: string): Promise<void> {
         );
       }
 
-      // Delete all plan days and their exercises first
+      // Collect all deletions (exercises + days + plan) into a single batch
+      const allDeletions: Model[] = [];
+
       const days = await database
         .get<PlanDayModel>('plan_days')
         .query(Q.where('plan_id', id))
@@ -958,13 +1348,12 @@ export async function deletePlan(id: string): Promise<void> {
           .query(Q.where('plan_day_id', day.id))
           .fetch();
 
-        for (const exercise of exercises) {
-          await exercise.markAsDeleted();
-        }
-        await day.markAsDeleted();
+        allDeletions.push(...exercises.map((e) => e.prepareMarkAsDeleted()));
+        allDeletions.push(day.prepareMarkAsDeleted());
       }
 
-      await plan.markAsDeleted();
+      allDeletions.push(plan.prepareMarkAsDeleted());
+      await database.batch(...allDeletions);
     });
   } catch (error) {
     if (error instanceof AuthError || error instanceof DatabaseError) {
@@ -1002,17 +1391,16 @@ export async function deletePlanDay(id: string): Promise<void> {
         );
       }
 
-      // Delete all exercises in this day first
+      // Collect all deletions (exercises + day) into a single batch
       const exercises = await database
         .get<PlanDayExerciseModel>('plan_day_exercises')
         .query(Q.where('plan_day_id', id))
         .fetch();
 
-      for (const exercise of exercises) {
-        await exercise.markAsDeleted();
-      }
-
-      await planDay.markAsDeleted();
+      await database.batch(
+        ...exercises.map((e) => e.prepareMarkAsDeleted()),
+        planDay.prepareMarkAsDeleted()
+      );
     });
   } catch (error) {
     if (error instanceof AuthError || error instanceof DatabaseError) {

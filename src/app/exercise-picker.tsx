@@ -10,14 +10,18 @@
 import { ExerciseCard, ExerciseListView } from '@/components/exercises';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { Colors } from '@/constants';
+import { Colors, MAX_EXERCISES_PER_DAY } from '@/constants';
 import { useExerciseSearch } from '@/hooks/exercises';
 import type { Exercise } from '@/services/database/operations';
-import { addExerciseToPlanDay, getExerciseCountByDay } from '@/services/database/operations/plans';
+import { addExercisesToPlanDay } from '@/services/database/operations/plans';
+import { ValidationError } from '@/utils/errors';
 import { useExercisePickerStore, type PickedExercise } from '@/stores/exercisePickerStore';
+import { database } from '@/services/database/local';
+import PlanDayExerciseModel from '@/services/database/local/models/PlanDayExercise';
+import { Q } from '@nozbe/watermelondb';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ExercisePickerScreen() {
@@ -79,24 +83,61 @@ export default function ExercisePickerScreen() {
         return;
       }
 
-      // Default mode: save directly to DB
-      const currentCount = await getExerciseCountByDay(targetDayId);
-      const selectedExerciseIds = Array.from(selectedIds);
+      // Default mode: save directly to DB in a single batch transaction
+      // Pre-flight: check for duplicates before calling batch operation
+      const existingExercises = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', targetDayId))
+        .fetch();
+      const existingExerciseIds = new Set(existingExercises.map((e) => e.exerciseId));
 
-      // Add each exercise sequentially
-      for (const [i, exerciseId] of selectedExerciseIds.entries()) {
-        await addExerciseToPlanDay({
-          plan_day_id: targetDayId,
+      const selectedExerciseIds = Array.from(selectedIds);
+      const duplicates = selectedExerciseIds.filter((id) => existingExerciseIds.has(id));
+
+      if (duplicates.length > 0) {
+        const duplicateNames = exercises
+          .filter((e) => duplicates.includes(e.id))
+          .map((e) => e.name);
+        Alert.alert('Duplicate Exercises', `Already in this day: ${duplicateNames.join(', ')}`);
+        // Deselect duplicates
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          for (const id of duplicates) next.delete(id);
+          return next;
+        });
+        return;
+      }
+
+      // Check limit
+      const currentCount = existingExercises.length;
+      if (currentCount + selectedExerciseIds.length > MAX_EXERCISES_PER_DAY) {
+        const available = MAX_EXERCISES_PER_DAY - currentCount;
+        Alert.alert(
+          'Exercise Limit',
+          available <= 0
+            ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum).`
+            : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY}).`
+        );
+        return;
+      }
+
+      // Batch add all exercises in a single transaction
+      await addExercisesToPlanDay(
+        targetDayId,
+        selectedExerciseIds.map((exerciseId, i) => ({
           exercise_id: exerciseId,
           order_index: currentCount + i,
-          target_sets: 3,
-          target_reps: 10,
-        });
-      }
+        }))
+      );
 
       router.back();
     } catch (error) {
-      console.error('Failed to add exercises:', error);
+      if (error instanceof ValidationError) {
+        Alert.alert('Error', error.userMessage);
+      } else {
+        console.error('Failed to add exercises:', error);
+        Alert.alert('Error', 'Failed to add exercises. Please try again.');
+      }
     } finally {
       setIsAdding(false);
     }
@@ -116,7 +157,11 @@ export default function ExercisePickerScreen() {
   );
 
   const selectedCount = selectedIds.size;
-  const isButtonDisabled = selectedCount === 0 || isAdding;
+  const hasSelection = selectedCount > 0;
+  const isButtonDisabled = !hasSelection || isAdding;
+  const buttonText = isAdding
+    ? 'Adding...'
+    : `Add ${selectedCount} exercise${selectedCount !== 1 ? 's' : ''}`;
 
   // Floating Add Button - memoized to avoid recreation on every render
   const floatingContent = useMemo(
@@ -132,24 +177,24 @@ export default function ExercisePickerScreen() {
         <Button
           className="w-full items-center justify-center"
           style={{
-            backgroundColor: isButtonDisabled ? Colors.background.surface : Colors.primary.DEFAULT,
+            backgroundColor: !hasSelection ? Colors.background.surface : Colors.primary.DEFAULT,
             minHeight: 56,
             borderRadius: 12,
-            opacity: isButtonDisabled ? 0.85 : 1,
+            opacity: !hasSelection ? 0.85 : 1,
           }}
           onPress={handleAddExercises}
           disabled={isButtonDisabled}
         >
           <Text
             className="font-semibold text-base"
-            style={{ color: isButtonDisabled ? Colors.foreground.tertiary : 'white' }}
+            style={{ color: !hasSelection ? Colors.foreground.tertiary : 'white' }}
           >
-            Add {selectedCount} exercise{selectedCount !== 1 ? 's' : ''}
+            {buttonText}
           </Text>
         </Button>
       </View>
     ),
-    [insets.bottom, isButtonDisabled, handleAddExercises, selectedCount]
+    [insets.bottom, isButtonDisabled, hasSelection, handleAddExercises, selectedCount, buttonText]
   );
 
   return (

@@ -3,13 +3,16 @@
  *
  * Displays exercises for the selected day with add exercise functionality.
  * Supports drag-to-reorder via react-native-draggable-flatlist.
+ *
+ * Performance: openSwipeableId is managed via React Context to avoid
+ * re-rendering all cards when any single swipeable opens/closes.
  */
 
 import DraggableFlatList, {
   type RenderItemParams,
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
-import { memo, useCallback, useState } from 'react';
+import { createContext, memo, useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { Ionicons } from '@/components/ui/icon';
@@ -18,6 +21,21 @@ import { Colors, EXERCISE_LIST_CONTENT_PADDING } from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DayExerciseCard, type DayExercise } from './DayExerciseCard';
+
+// Context for tracking which swipeable card is open (avoids re-render cascade)
+export type SetOpenSwipeableId = import('react').Dispatch<
+  import('react').SetStateAction<string | null>
+>;
+
+export interface SwipeableContextValue {
+  openId: string | null;
+  setOpenId: SetOpenSwipeableId;
+}
+
+export const SwipeableContext = createContext<SwipeableContextValue>({
+  openId: null,
+  setOpenId: () => {},
+});
 
 export interface WorkoutDayDetailsContentProps {
   selectedDay: PlanDay | null;
@@ -47,11 +65,11 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   // Track which swipeable card is open (only one at a time)
   const [openSwipeableId, setOpenSwipeableId] = useState<string | null>(null);
 
-  // Conditional close: only reset if the closing card is still the tracked open card.
-  // Uses functional setState to avoid stale closures when card A closes because card B opened.
-  const handleSwipeableClose = useCallback((closedId: string) => {
-    setOpenSwipeableId((prev) => (prev === closedId ? null : prev));
-  }, []);
+  // Stable context value — only changes when openSwipeableId changes
+  const swipeableContextValue = useMemo<SwipeableContextValue>(
+    () => ({ openId: openSwipeableId, setOpenId: setOpenSwipeableId }),
+    [openSwipeableId]
+  );
 
   // Close open swipeable before navigating to add exercise
   const handleAddExercisePress = useCallback(() => {
@@ -59,7 +77,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
     onAddExercisePress();
   }, [onAddExercisePress]);
 
-  // Render item for draggable list
+  // Render item for draggable list — NO dependency on openSwipeableId
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<DayExercise>) => (
       <ScaleDecorator>
@@ -72,21 +90,10 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
           isActive={isActive}
           isDeleting={item.id === deletingExerciseId}
           onDeleteAnimationComplete={onDeleteAnimationComplete}
-          openSwipeableId={openSwipeableId}
-          onSwipeableOpen={setOpenSwipeableId}
-          onSwipeableClose={handleSwipeableClose}
         />
       </ScaleDecorator>
     ),
-    [
-      onImagePress,
-      onEditExercise,
-      onDeleteExercise,
-      deletingExerciseId,
-      onDeleteAnimationComplete,
-      openSwipeableId,
-      handleSwipeableClose,
-    ]
+    [onImagePress, onEditExercise, onDeleteExercise, deletingExerciseId, onDeleteAnimationComplete]
   );
 
   const keyExtractor = useCallback((item: DayExercise) => item.id, []);
@@ -111,41 +118,43 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   }
 
   return (
-    <View className="flex-1">
-      {/* Day header */}
-      <View className="flex-row items-center justify-between px-4 py-3 border-b border-background-elevated">
-        <View>
-          <Text className="text-lg font-semibold text-foreground">{selectedDay.name}</Text>
-          <Text className="text-sm text-foreground-secondary">
-            {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
-          </Text>
+    <SwipeableContext.Provider value={swipeableContextValue}>
+      <View className="flex-1">
+        {/* Day header */}
+        <View className="flex-row items-center justify-between px-4 py-3 border-b border-background-elevated">
+          <View>
+            <Text className="text-lg font-semibold text-foreground">{selectedDay.name}</Text>
+            <Text className="text-sm text-foreground-secondary">
+              {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      {/* Exercise list with drag-to-reorder */}
-      <DraggableFlatList
-        data={exercises}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        onDragEnd={({ data }) => onReorder?.(data)}
-        contentContainerStyle={EXERCISE_LIST_CONTENT_PADDING}
-        ListFooterComponent={
-          <Pressable
-            onPress={handleAddExercisePress}
-            className="mx-4 mb-2 flex-row items-center rounded-xl px-4 py-2"
-          >
-            <View style={{ width: 20 }} />
-            <View
-              className="mr-3 h-10 w-10 items-center justify-center rounded-full"
-              style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
+        {/* Exercise list with drag-to-reorder */}
+        <DraggableFlatList
+          data={exercises}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          onDragEnd={({ data }) => onReorder?.(data)}
+          contentContainerStyle={EXERCISE_LIST_CONTENT_PADDING}
+          ListFooterComponent={
+            <Pressable
+              onPress={handleAddExercisePress}
+              className="mx-4 mb-2 flex-row items-center rounded-xl px-4 py-2"
             >
-              <Ionicons name="add" size={22} color={Colors.primary.DEFAULT} />
-            </View>
-            <Text className="text-base font-medium text-foreground">Add Exercise</Text>
-          </Pressable>
-        }
-        ListEmptyComponent={null}
-      />
-    </View>
+              <View style={{ width: 20 }} />
+              <View
+                className="mr-3 h-10 w-10 items-center justify-center rounded-full"
+                style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
+              >
+                <Ionicons name="add" size={22} color={Colors.primary.DEFAULT} />
+              </View>
+              <Text className="text-base font-medium text-foreground">Add Exercise</Text>
+            </Pressable>
+          }
+          ListEmptyComponent={null}
+        />
+      </View>
+    </SwipeableContext.Provider>
   );
 });

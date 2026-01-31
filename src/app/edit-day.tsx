@@ -24,7 +24,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { EditDayExerciseCard } from '@/components/workout/EditDayExerciseCard';
-import { Colors } from '@/constants';
+import { Colors, MAX_DAY_NAME_LENGTH } from '@/constants';
 import { useEditDay } from '@/hooks/workout/useEditDay';
 import type { DayExercise } from '@/components/workout/DayExerciseCard';
 
@@ -129,18 +129,34 @@ export default function EditDayScreen() {
       </View>
 
       {/* Day name input */}
-      <View className="mx-4 my-3 flex-row items-center rounded-lg border border-border px-3 py-3">
-        <TextInput
-          value={dayName}
-          onChangeText={setDayName}
-          placeholder="Day name"
-          placeholderTextColor={Colors.foreground.tertiary}
-          className="flex-1 text-base text-foreground"
-          style={{ padding: 0 }}
-          autoCapitalize="sentences"
-          selectTextOnFocus
-        />
-        <Ionicons name="pencil-outline" size={16} color={Colors.foreground.tertiary} />
+      <View className="mx-4 my-3">
+        <View className="flex-row items-center rounded-lg border border-border px-3 py-3">
+          <TextInput
+            value={dayName}
+            onChangeText={setDayName}
+            placeholder="Day name"
+            placeholderTextColor={Colors.foreground.tertiary}
+            className="flex-1 text-base text-foreground"
+            style={{ padding: 0 }}
+            autoCapitalize="sentences"
+            selectTextOnFocus
+            maxLength={MAX_DAY_NAME_LENGTH}
+          />
+          <Ionicons name="pencil-outline" size={16} color={Colors.foreground.tertiary} />
+        </View>
+        {dayName.length > MAX_DAY_NAME_LENGTH * 0.8 && (
+          <Text
+            className="text-xs mt-1 ml-1"
+            style={{
+              color:
+                dayName.length >= MAX_DAY_NAME_LENGTH
+                  ? Colors.destructive
+                  : Colors.foreground.tertiary,
+            }}
+          >
+            {dayName.length}/{MAX_DAY_NAME_LENGTH}
+          </Text>
+        )}
       </View>
 
       {/* Exercise list with drag-to-reorder */}

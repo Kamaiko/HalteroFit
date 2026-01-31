@@ -6,7 +6,9 @@
  */
 
 import { useCallback, useState } from 'react';
+import { Alert } from 'react-native';
 
+import { MAX_DAYS_PER_PLAN } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { createPlanDay, type PlanDay } from '@/services/database/operations/plans';
 
@@ -35,6 +37,15 @@ export function useAddDayDialog(params: {
   const handleAddDayPress = useCallback(async () => {
     if (!activePlanId) return;
 
+    // Check max days limit
+    if (planDaysCount >= MAX_DAYS_PER_PLAN) {
+      Alert.alert(
+        'Day Limit Reached',
+        `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`
+      );
+      return;
+    }
+
     // Empty state: auto-create first day without dialog
     if (planDaysCount === 0) {
       setIsAddingDay(true);
@@ -61,6 +72,16 @@ export function useAddDayDialog(params: {
 
   const handleConfirmAddDay = useCallback(async () => {
     if (!activePlanId || isAddingDay) return;
+
+    // Defense in depth: check limit even if dialog is already open
+    if (planDaysCount >= MAX_DAYS_PER_PLAN) {
+      Alert.alert(
+        'Day Limit Reached',
+        `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`
+      );
+      setShowAddDayDialog(false);
+      return;
+    }
 
     const name = addDayName.trim() || 'New day';
     setIsAddingDay(true);
