@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/icon.png" alt="Halterofit" width="120" />
+<img src="assets/logo.svg" alt="Halterofit" width="120" />
 
 # Halterofit
 
