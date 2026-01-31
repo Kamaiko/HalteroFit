@@ -609,7 +609,11 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 - [ ] **5.2.3** Create EAS production build profiles `[M]`
       Android AAB + iOS Archive. Test on physical devices.
       Validate offline-first, DB persistence.
-      Files: eas.json
+      **Prerequisite:** Configure EAS Secrets for env vars (`EXPO_PUBLIC_SUPABASE_URL`,
+      `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_SENTRY_DSN`) — `.env` is gitignored
+      and not available during EAS cloud builds. Make Supabase client handle missing
+      credentials gracefully (warn instead of throw).
+      Files: eas.json, src/services/supabase/client.ts
 
 - [ ] **5.2.4** Setup TestFlight & Play Store internal testing `[M]`
       Submit builds, add testers, configure metadata.
