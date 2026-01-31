@@ -11,9 +11,6 @@ import { database } from '../local';
 import ExerciseModel from '../local/models/Exercise';
 import { mmkvStorage } from '@/services/storage';
 
-// Bundled exercise data
-import exercisesData from '@/../assets/data/exercises.json';
-
 // Storage key for tracking seed version
 const EXERCISE_SEED_VERSION_KEY = 'exercise_seed_version';
 
@@ -69,7 +66,8 @@ export async function seedExercises(): Promise<{ success: boolean; count: number
       });
     }
 
-    const exercises = exercisesData as ExerciseData[];
+    const exercisesModule = await import('@/../assets/data/exercises.json');
+    const exercises = exercisesModule.default as ExerciseData[];
     const now = Date.now();
 
     // Batch insert in chunks for better performance

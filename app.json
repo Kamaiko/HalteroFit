@@ -8,24 +8,26 @@
     "scheme": "halterofit",
     "backgroundColor": "#0A0A0A",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "backgroundColor": "#0A0A0A",
-      "resizeMode": "contain"
-    },
     "newArchEnabled": true,
-    "plugins": ["expo-router", "@sentry/react-native", "expo-asset"],
+    "plugins": [
+      "expo-router",
+      "@sentry/react-native",
+      "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0A0A",
+          "image": "./assets/images/splash.png",
+          "imageWidth": 150
+        }
+      ]
+    ],
     "assetBundlePatterns": ["**/*"],
     "android": {
       "package": "com.halterofit.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A0A"
-      },
-      "splash": {
-        "image": "./assets/images/splash.png",
-        "backgroundColor": "#0A0A0A",
-        "resizeMode": "contain"
       }
     },
     "ios": {
