@@ -14,7 +14,7 @@ import { Pressable, View } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors } from '@/constants';
+import { Colors, OVERVIEW_LIST_CONTENT_PADDING } from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DayCard } from './DayCard';
@@ -79,9 +79,9 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         onDragEnd={({ data }) => onReorder(data)}
-        ListHeaderComponent={<View className="h-3" />}
+        contentContainerStyle={OVERVIEW_LIST_CONTENT_PADDING}
         ListFooterComponent={
-          <Pressable onPress={onAddDayPress} className="flex-row items-center mx-4 py-3">
+          <Pressable onPress={onAddDayPress} className="flex-row items-center mx-4 ml-16 py-3">
             <View
               className="w-8 h-8 rounded-full items-center justify-center mr-3"
               style={{ backgroundColor: Colors.primary.DEFAULT }}

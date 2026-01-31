@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/icon.png" alt="Halterofit" width="120" />
+
 # Halterofit
 
 **Workout Tracking App with Training Analytics**

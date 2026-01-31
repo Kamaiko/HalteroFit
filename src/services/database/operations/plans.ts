@@ -441,13 +441,13 @@ export function observeActivePlan(userId: string): Observable<WorkoutPlan | null
 
 /**
  * Observe plan days for a given plan (Observable)
- * Emits whenever days are added, removed, or reordered.
+ * Emits whenever days are added, removed, reordered, or renamed.
  */
 export function observePlanDays(planId: string): Observable<PlanDay[]> {
   return database
     .get<PlanDayModel>('plan_days')
     .query(Q.where('plan_id', planId), Q.sortBy('order_index', Q.asc))
-    .observe()
+    .observeWithColumns(['name', 'order_index'])
     .pipe(map((days) => days.map(planDayToPlain)));
 }
 

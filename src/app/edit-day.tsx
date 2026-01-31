@@ -155,14 +155,14 @@ export default function EditDayScreen() {
             {/* Add exercise row */}
             <Pressable
               onPress={navigateToExercisePicker}
-              className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
+              className="mx-4 mb-2 flex-row items-center rounded-xl px-4 py-2"
             >
-              <View className="w-4" />
+              <View style={{ width: 20 }} />
               <View
-                className="mr-3 h-12 w-12 items-center justify-center rounded-full"
+                className="mr-3 h-10 w-10 items-center justify-center rounded-full"
                 style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
               >
-                <Ionicons name="add" size={24} color={Colors.primary.DEFAULT} />
+                <Ionicons name="add" size={22} color={Colors.primary.DEFAULT} />
               </View>
               <Text className="text-base font-medium text-foreground">Add exercise</Text>
             </Pressable>
