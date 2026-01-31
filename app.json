@@ -11,7 +11,7 @@
     "newArchEnabled": true,
     "plugins": [
       "expo-router",
-      "@sentry/react-native",
+      ["@sentry/react-native/expo", { "organization": "halterofit", "project": "halterofit" }],
       "expo-asset",
       [
         "expo-splash-screen",
