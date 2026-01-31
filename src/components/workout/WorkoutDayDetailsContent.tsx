@@ -47,6 +47,18 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   // Track which swipeable card is open (only one at a time)
   const [openSwipeableId, setOpenSwipeableId] = useState<string | null>(null);
 
+  // Conditional close: only reset if the closing card is still the tracked open card.
+  // Uses functional setState to avoid stale closures when card A closes because card B opened.
+  const handleSwipeableClose = useCallback((closedId: string) => {
+    setOpenSwipeableId((prev) => (prev === closedId ? null : prev));
+  }, []);
+
+  // Close open swipeable before navigating to add exercise
+  const handleAddExercisePress = useCallback(() => {
+    setOpenSwipeableId(null);
+    onAddExercisePress();
+  }, [onAddExercisePress]);
+
   // Render item for draggable list
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<DayExercise>) => (
@@ -62,6 +74,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
           onDeleteAnimationComplete={onDeleteAnimationComplete}
           openSwipeableId={openSwipeableId}
           onSwipeableOpen={setOpenSwipeableId}
+          onSwipeableClose={handleSwipeableClose}
         />
       </ScaleDecorator>
     ),
@@ -72,6 +85,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
       deletingExerciseId,
       onDeleteAnimationComplete,
       openSwipeableId,
+      handleSwipeableClose,
     ]
   );
 
@@ -117,7 +131,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
         contentContainerStyle={EXERCISE_LIST_CONTENT_PADDING}
         ListFooterComponent={
           <Pressable
-            onPress={onAddExercisePress}
+            onPress={handleAddExercisePress}
             className="mx-4 mb-2 flex-row items-center rounded-xl px-4 py-2"
           >
             <View style={{ width: 20 }} />

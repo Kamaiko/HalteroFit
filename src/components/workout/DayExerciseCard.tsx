@@ -41,6 +41,7 @@ export interface DayExerciseCardProps {
   onDeleteAnimationComplete?: () => void;
   openSwipeableId?: string | null;
   onSwipeableOpen?: (id: string | null) => void;
+  onSwipeableClose?: (id: string) => void;
 }
 
 export const DayExerciseCard = memo(function DayExerciseCard({
@@ -54,8 +55,10 @@ export const DayExerciseCard = memo(function DayExerciseCard({
   onDeleteAnimationComplete,
   openSwipeableId,
   onSwipeableOpen,
+  onSwipeableClose,
 }: DayExerciseCardProps) {
   const swipeableRef = useRef<React.ComponentRef<typeof ReanimatedSwipeable>>(null);
+  const isOpen = useRef(false);
 
   // Measured card height for collapse animation
   const [cardHeight, setCardHeight] = useState(0);
@@ -110,9 +113,9 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     onImagePress(exercise);
   }, [exercise, onImagePress]);
 
-  // Auto-close this swipeable when another card opens
+  // Auto-close this swipeable when another card opens or dismiss is triggered
   useEffect(() => {
-    if (openSwipeableId && openSwipeableId !== exercise.id) {
+    if (openSwipeableId !== exercise.id) {
       swipeableRef.current?.close();
     }
   }, [openSwipeableId, exercise.id]);
@@ -159,10 +162,28 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         ref={swipeableRef}
         renderRightActions={renderRightActions}
         overshootRight={false}
-        friction={2}
-        onSwipeableWillOpen={() => onSwipeableOpen?.(exercise.id)}
+        friction={1.5}
+        rightThreshold={30}
+        dragOffsetFromLeftEdge={5}
+        dragOffsetFromRightEdge={5}
+        overshootFriction={8}
+        onSwipeableWillOpen={() => {
+          isOpen.current = true;
+          onSwipeableOpen?.(exercise.id);
+        }}
+        onSwipeableWillClose={() => {
+          if (isOpen.current) {
+            isOpen.current = false;
+            onSwipeableClose?.(exercise.id);
+          }
+        }}
       >
-        <View
+        <Pressable
+          onPress={() => {
+            if (openSwipeableId) {
+              onSwipeableOpen?.(null);
+            }
+          }}
           className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
           style={isActive ? CARD_ACTIVE_STYLE : undefined}
         >
@@ -186,7 +207,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
               {exercise.target_sets} sets × {exercise.target_reps} reps
             </Text>
           </View>
-        </View>
+        </Pressable>
       </ReanimatedSwipeable>
     </Animated.View>
   );
