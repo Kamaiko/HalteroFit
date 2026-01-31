@@ -27,7 +27,7 @@ export default function TabsLayout() {
         name="workout"
         options={{
           title: 'Workout',
-          lazy: false, // Mount immediately to prefetch data while user is on Home
+          lazy: false, // Primary feature tab — mount during splash to eliminate loading flash on first navigation
           tabBarIcon: ({ color }) => <Ionicons name="checkmark-circle" size={24} color={color} />,
         }}
       />

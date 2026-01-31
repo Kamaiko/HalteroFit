@@ -7,7 +7,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PortalHost } from '@rn-primitives/portal';
 import * as SplashScreen from 'expo-splash-screen';
 import { Colors } from '@/constants';
-import { initSentry, setSentryUser } from '@/utils/sentry';
+import { initSentry, setSentryUser, Sentry } from '@/utils/sentry';
+import { ErrorFallbackScreen } from '@/components/layout';
 import { useAuthStore, enableDevMode } from '@/stores/auth/authStore';
 import { initializeExercises } from '@/services/database/seed';
 import '../../global.css';
@@ -74,30 +75,34 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
-      <SafeAreaProvider>
-        <StatusBar style="light" backgroundColor={Colors.background.DEFAULT} />
-        {/* ⚠️ DEV MODE BANNER - Remove enableDevMode() call above to hide */}
-        {__DEV__ && (
-          <View style={{ backgroundColor: '#ff6b35', paddingVertical: 4, paddingHorizontal: 12 }}>
-            <Text style={{ color: 'white', fontSize: 11, textAlign: 'center', fontWeight: '600' }}>
-              🔧 DEV MODE - Mock User Active
-            </Text>
-          </View>
-        )}
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: Colors.background.DEFAULT },
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="edit-day" options={{ headerShown: false, gestureEnabled: false }} />
-          <Stack.Screen name="exercise-picker" options={{ headerShown: false }} />
-          <Stack.Screen name="exercise-browser" options={{ headerShown: false }} />
-          <Stack.Screen name="exercise/[id]" options={{ headerShown: false }} />
-        </Stack>
-        <PortalHost />
-      </SafeAreaProvider>
+      <Sentry.ErrorBoundary fallback={ErrorFallbackScreen}>
+        <SafeAreaProvider>
+          <StatusBar style="light" backgroundColor={Colors.background.DEFAULT} />
+          {/* ⚠️ DEV MODE BANNER - Remove enableDevMode() call above to hide */}
+          {__DEV__ && (
+            <View style={{ backgroundColor: '#ff6b35', paddingVertical: 4, paddingHorizontal: 12 }}>
+              <Text
+                style={{ color: 'white', fontSize: 11, textAlign: 'center', fontWeight: '600' }}
+              >
+                🔧 DEV MODE - Mock User Active
+              </Text>
+            </View>
+          )}
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: Colors.background.DEFAULT },
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="edit-day" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="exercise-picker" options={{ headerShown: false }} />
+            <Stack.Screen name="exercise-browser" options={{ headerShown: false }} />
+            <Stack.Screen name="exercise/[id]" options={{ headerShown: false }} />
+          </Stack>
+          <PortalHost />
+        </SafeAreaProvider>
+      </Sentry.ErrorBoundary>
     </GestureHandlerRootView>
   );
 }

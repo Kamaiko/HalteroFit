@@ -5,3 +5,4 @@
  */
 
 export { ScreenContainer } from './ScreenContainer';
+export { ErrorFallbackScreen } from './ErrorFallbackScreen';
