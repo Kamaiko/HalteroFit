@@ -1,6 +1,10 @@
 <div align="center">
 
-<img src="assets/logo.svg" alt="Halterofit" width="200" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.svg" />
+  <img src="assets/logo.svg" alt="Halterofit" width="200" />
+</picture>
 
 # Halterofit
 
