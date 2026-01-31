@@ -8,6 +8,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/layout';
 import { MaterialIcons } from '@/components/ui/icon';
+import { Colors } from '@/constants';
 
 // Skeleton chart heights (deterministic for consistent skeleton)
 const SKELETON_HEIGHTS = [45, 72, 58, 83, 51, 69, 62];
@@ -48,7 +49,7 @@ export default function HomeScreen() {
       <View className="px-6 mt-4 mb-8">
         <TouchableOpacity activeOpacity={0.9}>
           <LinearGradient
-            colors={['#8A2BE2', '#00FFFF']}
+            colors={[Colors.primary.dark, Colors.primary.DEFAULT]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{
@@ -86,9 +87,9 @@ function StatCard({ icon, value, label }: StatCardProps) {
     <View className="flex-1 bg-background-surface rounded-2xl p-4 items-center border border-background-elevated shadow-sm">
       <View
         className="w-16 h-16 rounded-full items-center justify-center mb-3"
-        style={{ backgroundColor: '#000000' }}
+        style={{ backgroundColor: Colors.background.elevated }}
       >
-        <MaterialIcons name={icon as any} size={32} color="#60a5fa" />
+        <MaterialIcons name={icon as any} size={32} color={Colors.primary.DEFAULT} />
       </View>
       <Text className="text-2xl font-bold text-foreground mb-1">{value}</Text>
       <Text className="text-xs text-foreground-secondary uppercase tracking-wide">{label}</Text>

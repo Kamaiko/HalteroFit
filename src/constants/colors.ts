@@ -24,17 +24,17 @@ export const Colors = {
 
   // Brand colors
   primary: {
-    DEFAULT: '#4299e1', // bg-primary
-    dark: '#2b6cb0', // bg-primary-dark
-    light: '#63b3ed', // bg-primary-light
-    foreground: '#FFFFFF', // text-primary-foreground
+    DEFAULT: '#84BAA8', // bg-primary (custom desaturated teal)
+    dark: '#669E8C', // bg-primary-dark (pressed states)
+    light: '#A4D4C2', // bg-primary-light (highlights)
+    foreground: '#0A0A0A', // text-primary-foreground (dark text on light teal)
   },
 
   // Semantic colors
   success: '#38a169', // text-success
   warning: '#d69e2e', // text-warning
   destructive: '#e53e3e', // text-destructive
-  info: '#3182ce', // text-info
+  info: '#0D9488', // text-info (teal-600)
 
   // Text colors
   foreground: {
@@ -69,7 +69,7 @@ export const Colors = {
     DEFAULT: '#27272A', // bg-muted
     foreground: '#94A3B8', // text-muted-foreground
   },
-  ring: '#4299e1', // ring-ring
+  ring: '#84BAA8', // ring-ring (match primary)
 
   // Surface colors (for image backgrounds, overlays)
   surface: {
