@@ -668,7 +668,7 @@ adb shell dumpsys meminfo com.halterofit.app
 
 ## Development Workflow
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for complete workflow (commit conventions, branches, review process).
+See [DEVOPS_PIPELINE.md](./DEVOPS_PIPELINE.md) for CI/CD pipeline, git hooks, and commit conventions.
 
 ---
 

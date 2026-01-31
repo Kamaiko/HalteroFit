@@ -50,8 +50,6 @@ eas build --profile development --platform android
 - App icon should show Halterofit branding (NOT Expo Go)
 - App name should be "Halterofit (dev)"
 
-**Reference:** [CONTRIBUTING.md § Setup](CONTRIBUTING.md#setup-first-time-15-20-minutes)
-
 ### When to Rebuild Development Build
 
 You need to rebuild when:
@@ -233,7 +231,7 @@ await database.write(async () => {
 
 **⚠️ WARNING:** `unsafeResetDatabase()` deletes ALL local data. Development only.
 
-**Reference:** [DATABASE.md § Migrations](DATABASE.md), [CONTRIBUTING.md § Database Schema Changes](CONTRIBUTING.md#database-schema-changes)
+**Reference:** [DATABASE.md § Migrations](DATABASE.md)
 
 ### Empty Queries / Data Not Loading
 
@@ -486,8 +484,6 @@ console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
 // Should print full URL (not undefined)
 ```
 
-**Reference:** [CONTRIBUTING.md § Setup](CONTRIBUTING.md#setup-first-time-15-20-minutes)
-
 ### User Session Not Persisting
 
 **Solution:**
@@ -647,7 +643,6 @@ If your issue isn't listed here:
    git log --grep="fix" --oneline
    ```
 3. **Consult related documentation:**
-   - [CONTRIBUTING.md](CONTRIBUTING.md) - Setup and workflow
    - [DATABASE.md](DATABASE.md) - Database operations
    - [TECHNICAL.md](TECHNICAL.md) - Technical decisions
    - [ARCHITECTURE.md](ARCHITECTURE.md) - Code structure

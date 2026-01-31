@@ -2,7 +2,7 @@
 
 ## ✅ Checklist
 
-- [ ] I have followed the steps in the [Contributing guide](../docs/CONTRIBUTING.md).
+- [ ] I have followed the project coding standards ([TECHNICAL.md](../docs/TECHNICAL.md)).
 - [ ] I have tested this code locally with `npm test`.
 
 ## 🚀 Release Impact

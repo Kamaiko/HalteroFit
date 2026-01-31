@@ -60,5 +60,5 @@ npm start
 
 ## 📚 Documentation
 
-Start with [CONTRIBUTING.md](docs/CONTRIBUTING.md). Full documentation in [`/docs`](docs/).
+Full documentation in [`/docs`](docs/).
 
