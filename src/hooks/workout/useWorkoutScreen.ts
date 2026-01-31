@@ -21,6 +21,7 @@ import {
   observeExerciseCountsByDays,
   observePlanDayWithExercises,
   observePlanDays,
+  reorderPlanDays,
   type PlanDay,
   type PlanDayWithExercises,
   type WorkoutPlan,
@@ -71,6 +72,7 @@ export interface UseWorkoutScreenReturn {
   reorderExercisesOptimistic: (
     reorderedExercises: PlanDayWithExercises['exercises']
   ) => Promise<void>;
+  reorderDaysOptimistic: (reorderedDays: PlanDay[]) => Promise<void>;
 
   // Render helpers
   keyExtractor: (item: PlanDay) => string;
@@ -256,6 +258,22 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     selectedDayId: selectedDay?.id,
   });
 
+  // ── Day reorder ────────────────────────────────────────────────────
+  const reorderDaysOptimistic = useCallback(
+    async (reorderedDays: PlanDay[]) => {
+      try {
+        const updates = reorderedDays.map((day, index) => ({
+          id: day.id,
+          order_index: index,
+        }));
+        await reorderPlanDays(updates);
+      } catch (error) {
+        handleError(error, 'reorderDays');
+      }
+    },
+    [handleError]
+  );
+
   // ── Derived state ───────────────────────────────────────────────────
   const canStartWorkout = useMemo(() => {
     if (!selectedDay) return false;
@@ -292,6 +310,9 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
 
     // Exercise actions
     ...exerciseActions,
+
+    // Day reorder
+    reorderDaysOptimistic,
 
     // Render helpers
     keyExtractor,

@@ -869,6 +869,56 @@ export async function reorderPlanDayExercises(
   }
 }
 
+/**
+ * Reorder plan days by updating order_index for each day.
+ * Follows same pattern as reorderPlanDayExercises.
+ */
+export async function reorderPlanDays(
+  days: Array<{ id: string; order_index: number }>
+): Promise<void> {
+  if (days.length === 0) return;
+
+  try {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser?.id) {
+      throw new AuthError(
+        'Please sign in to reorder days',
+        'User not authenticated - no user.id in authStore'
+      );
+    }
+
+    await database.write(async () => {
+      // Verify ownership: day → plan → user
+      const planDay = await database.get<PlanDayModel>('plan_days').find(days[0]!.id);
+      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+
+      if (plan.userId !== currentUser.id) {
+        throw new AuthError(
+          'You do not have permission to reorder these days',
+          `User ${currentUser.id} attempted to reorder days in plan owned by ${plan.userId}`
+        );
+      }
+
+      // Batch update all days
+      for (const { id, order_index } of days) {
+        const day = await database.get<PlanDayModel>('plan_days').find(id);
+        await day.update((d) => {
+          d.orderIndex = order_index;
+        });
+      }
+    });
+  } catch (error) {
+    if (error instanceof AuthError || error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError(
+      'Unable to reorder days. Please try again.',
+      `Failed to reorder days: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
 // ============================================================================
 // DELETE Operations
 // ============================================================================

@@ -1,11 +1,14 @@
 /**
  * WorkoutOverviewContent - Overview tab content for workout screen
  *
- * Displays list of workout days with add day functionality.
+ * Displays list of workout days with drag-to-reorder and add day functionality.
  */
 
-import { FlashList } from '@shopify/flash-list';
-import { memo } from 'react';
+import DraggableFlatList, {
+  type RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
+import { memo, useCallback } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
@@ -23,6 +26,7 @@ export interface WorkoutOverviewContentProps {
   onDayPress: (day: PlanDay) => void;
   onDayMenuPress: (day: PlanDay) => void;
   onAddDayPress: () => void;
+  onReorder: (reorderedDays: PlanDay[]) => void;
 }
 
 export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
@@ -32,7 +36,27 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
   onDayPress,
   onDayMenuPress,
   onAddDayPress,
+  onReorder,
 }: WorkoutOverviewContentProps) {
+  const renderItem = useCallback(
+    ({ item, drag, isActive }: RenderItemParams<PlanDay>) => (
+      <ScaleDecorator>
+        <DayCard
+          day={item}
+          exerciseCount={exerciseCounts[item.id] ?? 0}
+          isSelected={selectedDayId === item.id}
+          onPress={onDayPress}
+          onMenuPress={onDayMenuPress}
+          drag={drag}
+          isActive={isActive}
+        />
+      </ScaleDecorator>
+    ),
+    [exerciseCounts, selectedDayId, onDayPress, onDayMenuPress]
+  );
+
+  const keyExtractor = useCallback((item: PlanDay) => item.id, []);
+
   if (planDays.length === 0) {
     return (
       <View className="flex-1 items-center justify-center p-8">
@@ -50,22 +74,11 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
 
   return (
     <View className="flex-1">
-      <FlashList
+      <DraggableFlatList
         data={planDays}
-        renderItem={({ item }) => (
-          <DayCard
-            day={item}
-            exerciseCount={exerciseCounts[item.id] ?? 0}
-            isSelected={selectedDayId === item.id}
-            onPress={onDayPress}
-            onMenuPress={onDayMenuPress}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        // FIXME: Remove @ts-expect-error when @shopify/flash-list types include estimatedItemSize
-        // See: https://shopify.github.io/flash-list/docs/usage#estimateditemsize
-        // @ts-expect-error FlashList v2.0.2 supports this prop but types are incomplete
-        estimatedItemSize={80}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        onDragEnd={({ data }) => onReorder(data)}
         ListHeaderComponent={<View className="h-3" />}
         ListFooterComponent={
           <Pressable onPress={onAddDayPress} className="flex-row items-center mx-4 py-3">

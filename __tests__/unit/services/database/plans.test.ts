@@ -408,4 +408,100 @@ describe('Plan Operations', () => {
       expect(activePlans).toHaveLength(0);
     });
   });
+
+  // ==========================================================================
+  // Plan Day Reordering
+  // ==========================================================================
+
+  describe('Plan day reordering', () => {
+    /**
+     * Verifies that updating order_index persists correctly.
+     *
+     * Why this matters:
+     * - Drag-to-reorder must persist new order to DB
+     * - Observable re-emits days in correct sequence
+     */
+    test('reordering days updates order_index correctly', async () => {
+      const user = await createTestUser(database);
+      const plan = await createTestWorkoutPlan(database, { user_id: user.id });
+
+      const dayA = await createTestPlanDay(database, {
+        plan_id: plan.id,
+        name: 'Chest',
+        order_index: 0,
+      });
+      const dayB = await createTestPlanDay(database, {
+        plan_id: plan.id,
+        name: 'Back',
+        order_index: 1,
+      });
+      const dayC = await createTestPlanDay(database, {
+        plan_id: plan.id,
+        name: 'Legs',
+        order_index: 2,
+      });
+
+      // Simulate drag: move Legs (index 2) to first position
+      await database.write(async () => {
+        await dayC.update((d: any) => {
+          d.orderIndex = 0;
+        });
+        await dayA.update((d: any) => {
+          d.orderIndex = 1;
+        });
+        await dayB.update((d: any) => {
+          d.orderIndex = 2;
+        });
+      });
+
+      // Verify new order
+      const days = await database
+        .get('plan_days')
+        .query(Q.where('plan_id', plan.id), Q.sortBy('order_index', Q.asc))
+        .fetch();
+
+      expect(days.map((d: any) => d.name)).toEqual(['Legs', 'Chest', 'Back']);
+    });
+
+    /**
+     * Verifies order_index values after reorder match array indices.
+     *
+     * Why this matters:
+     * - reorderPlanDays() maps array index → order_index
+     * - Must be 0-based contiguous integers
+     */
+    test('order_index values are contiguous after reorder', async () => {
+      const user = await createTestUser(database);
+      const plan = await createTestWorkoutPlan(database, { user_id: user.id });
+
+      await createTestPlanDay(database, { plan_id: plan.id, name: 'A', order_index: 0 });
+      await createTestPlanDay(database, { plan_id: plan.id, name: 'B', order_index: 1 });
+      await createTestPlanDay(database, { plan_id: plan.id, name: 'C', order_index: 2 });
+
+      // Swap B and C
+      const days = await database
+        .get('plan_days')
+        .query(Q.where('plan_id', plan.id), Q.sortBy('order_index', Q.asc))
+        .fetch();
+
+      await database.write(async () => {
+        await days[1]!.update((d: any) => {
+          d.orderIndex = 2;
+        });
+        await days[2]!.update((d: any) => {
+          d.orderIndex = 1;
+        });
+      });
+
+      const reordered = await database
+        .get('plan_days')
+        .query(Q.where('plan_id', plan.id), Q.sortBy('order_index', Q.asc))
+        .fetch();
+
+      // Verify contiguous 0-based indices
+      const indices = reordered.map((d: any) => d.orderIndex);
+      expect(indices).toEqual([0, 1, 2]);
+      expect(reordered.map((d: any) => d.name)).toEqual(['A', 'C', 'B']);
+    });
+  });
 });

@@ -59,6 +59,7 @@ export default function WorkoutScreen() {
     deleteExerciseOptimistic,
     handleDeleteAnimationComplete,
     reorderExercisesOptimistic,
+    reorderDaysOptimistic,
   } = useWorkoutScreen();
 
   const handleAddExercisePress = useCallback(() => {
@@ -105,6 +106,7 @@ export default function WorkoutScreen() {
             onDayPress={handleDayPress}
             onDayMenuPress={handleDayMenuPress}
             onAddDayPress={handleAddDayPress}
+            onReorder={reorderDaysOptimistic}
           />
         );
       }
@@ -142,6 +144,7 @@ export default function WorkoutScreen() {
       handleEditExercise,
       handleDeleteExercise,
       reorderExercisesOptimistic,
+      reorderDaysOptimistic,
       deletingExerciseId,
       handleDeleteAnimationComplete,
     ]

@@ -166,7 +166,11 @@ export const DayExerciseCard = memo(function DayExerciseCard({
           className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
           style={isActive ? CARD_ACTIVE_STYLE : undefined}
         >
-          {drag && <DragHandle onDrag={drag} />}
+          {drag && (
+            <View style={{ marginLeft: -8, marginRight: 4 }}>
+              <DragHandle onDrag={drag} />
+            </View>
+          )}
 
           <ExerciseThumbnail imageUrl={exercise.exercise.gif_url} onPress={handleImagePress} />
 

@@ -151,6 +151,13 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 - [ ] **2.3.3** PlanCard component (S - 1.5h) `[src/components/plans/PlanCard.tsx]`
       For AllPlansScreen grid
 
+- [ ] **2.3.4** Day tags on DayCard (S - 1h) `[src/components/workout/DayCard.tsx]`
+      Add "Day 1", "Day 2" badges to DayCard (Jefit v2 style)
+
+- [x] **2.3.5** Drag-to-reorder workout days ✅ `[src/components/workout/WorkoutOverviewContent.tsx]`
+      DraggableFlatList integration, reorderPlanDays() DB operation, DragHandle cleanup.
+      **Tests:** 2 unit tests in plans.test.ts (reorder + contiguous indices)
+
 ---
 
 ## Phase 3: Active Workout Tracking
