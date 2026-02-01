@@ -94,9 +94,12 @@ export async function getExercises(options?: ExerciseFilterOptions): Promise<Exe
 
     const queries: Q.Clause[] = [];
 
-    // Search by name (case-insensitive via SQLite LIKE)
+    // Search by name (case-insensitive, word-order independent)
     if (search && search.trim().length > 0) {
-      queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(search)}%`)));
+      const words = search.trim().split(/\s+/);
+      for (const word of words) {
+        queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(word)}%`)));
+      }
     }
 
     // Filter by body part (stored as JSON array, search within string)
@@ -166,7 +169,10 @@ export async function getExerciseCount(options?: {
     const queries: Q.Clause[] = [];
 
     if (search && search.trim().length > 0) {
-      queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(search)}%`)));
+      const words = search.trim().split(/\s+/);
+      for (const word of words) {
+        queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(word)}%`)));
+      }
     }
 
     if (bodyPart && bodyPart.trim().length > 0) {
