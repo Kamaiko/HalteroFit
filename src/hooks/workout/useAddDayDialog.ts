@@ -6,7 +6,6 @@
  */
 
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
 
 import { MAX_DAYS_PER_PLAN } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
@@ -20,6 +19,8 @@ export interface UseAddDayDialogReturn {
   handleAddDayPress: () => Promise<void>;
   handleConfirmAddDay: () => Promise<void>;
   handleCancelAddDay: () => void;
+  alert: { title: string; description?: string } | null;
+  clearAlert: () => void;
 }
 
 export function useAddDayDialog(params: {
@@ -33,16 +34,18 @@ export function useAddDayDialog(params: {
   const [showAddDayDialog, setShowAddDayDialog] = useState(false);
   const [addDayName, setAddDayName] = useState('');
   const [isAddingDay, setIsAddingDay] = useState(false);
+  const [alert, setAlert] = useState<{ title: string; description?: string } | null>(null);
+  const clearAlert = useCallback(() => setAlert(null), []);
 
   const handleAddDayPress = useCallback(async () => {
     if (!activePlanId) return;
 
     // Check max days limit
     if (planDaysCount >= MAX_DAYS_PER_PLAN) {
-      Alert.alert(
-        'Day Limit Reached',
-        `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`
-      );
+      setAlert({
+        title: 'Day Limit Reached',
+        description: `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`,
+      });
       return;
     }
 
@@ -75,10 +78,10 @@ export function useAddDayDialog(params: {
 
     // Defense in depth: check limit even if dialog is already open
     if (planDaysCount >= MAX_DAYS_PER_PLAN) {
-      Alert.alert(
-        'Day Limit Reached',
-        `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`
-      );
+      setAlert({
+        title: 'Day Limit Reached',
+        description: `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`,
+      });
       setShowAddDayDialog(false);
       return;
     }
@@ -115,5 +118,7 @@ export function useAddDayDialog(params: {
     handleAddDayPress,
     handleConfirmAddDay,
     handleCancelAddDay,
+    alert,
+    clearAlert,
   };
 }

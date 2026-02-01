@@ -41,12 +41,11 @@ export function ConfirmDialog({
 
   const handleConfirm = React.useCallback(() => {
     onConfirm();
-    onOpenChange(false);
-  }, [onConfirm, onOpenChange]);
+  }, [onConfirm]);
 
   return (
     <Dialog open={open} onClose={handleCancel}>
-      <Text className="text-center text-base font-semibold text-foreground">{title}</Text>
+      <Text className="text-base font-semibold text-foreground">{title}</Text>
 
       <View className="mt-8 flex-row justify-end gap-6">
         <Pressable onPress={handleCancel} disabled={loading}>

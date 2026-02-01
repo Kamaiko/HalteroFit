@@ -21,20 +21,23 @@ import PlanDayExerciseModel from '@/services/database/local/models/PlanDayExerci
 import { Q } from '@nozbe/watermelondb';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AlertDialog } from '@/components/ui/alert-dialog';
 
 export default function ExercisePickerScreen() {
   const params = useLocalSearchParams<{
     dayId?: string;
     dayName?: string;
     mode?: 'add' | 'pick';
+    existingExerciseIds?: string;
   }>();
-  const { dayId, dayName, mode = 'add' } = params;
+  const { dayId, dayName, mode = 'add', existingExerciseIds: existingExerciseIdsParam } = params;
   const insets = useSafeAreaInsets();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAdding, setIsAdding] = useState(false);
+  const [alert, setAlert] = useState<{ title: string; description?: string } | null>(null);
 
   const { exercises, search, setSearch, loading, loadingMore, totalCount, loadMore } =
     useExerciseSearch();
@@ -65,8 +68,61 @@ export default function ExercisePickerScreen() {
 
     setIsAdding(true);
     try {
+      // ── Resolve existing exercises (DB query for mode='add', route params for mode='pick')
+      let existingExerciseIds: Set<string>;
+      let currentCount: number;
+
       if (mode === 'pick') {
-        // Return selected exercises to calling screen via store
+        // Parse existing exercise IDs passed from Edit Day's draft state
+        const ids = existingExerciseIdsParam
+          ? existingExerciseIdsParam.split(',').filter(Boolean)
+          : [];
+        existingExerciseIds = new Set(ids);
+        currentCount = ids.length;
+      } else {
+        // Query DB for current state
+        const existingExercises = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', targetDayId))
+          .fetch();
+        existingExerciseIds = new Set(existingExercises.map((e) => e.exerciseId));
+        currentCount = existingExercises.length;
+      }
+
+      const selectedExerciseIds = Array.from(selectedIds);
+
+      // ── Check duplicates
+      const duplicates = selectedExerciseIds.filter((id) => existingExerciseIds.has(id));
+      if (duplicates.length > 0) {
+        setAlert({
+          title: 'Already Added',
+          description: `${duplicates.length} exercise${duplicates.length !== 1 ? 's' : ''} deselected.`,
+        });
+        // Deselect duplicates
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          for (const id of duplicates) next.delete(id);
+          return next;
+        });
+        return;
+      }
+
+      // ── Check limit
+      if (currentCount + selectedExerciseIds.length > MAX_EXERCISES_PER_DAY) {
+        const available = MAX_EXERCISES_PER_DAY - currentCount;
+        setAlert({
+          title: 'Limit Reached',
+          description:
+            available <= 0
+              ? `Day is full (${MAX_EXERCISES_PER_DAY} exercises).`
+              : `Can only add ${available} more (max ${MAX_EXERCISES_PER_DAY}).`,
+        });
+        return;
+      }
+
+      // ── Execute action based on mode
+      if (mode === 'pick') {
+        // Return validated exercises to calling screen via store
         const picked: PickedExercise[] = exercises
           .filter((e) => selectedIds.has(e.id))
           .map((e) => ({
@@ -83,45 +139,7 @@ export default function ExercisePickerScreen() {
         return;
       }
 
-      // Default mode: save directly to DB in a single batch transaction
-      // Pre-flight: check for duplicates before calling batch operation
-      const existingExercises = await database
-        .get<PlanDayExerciseModel>('plan_day_exercises')
-        .query(Q.where('plan_day_id', targetDayId))
-        .fetch();
-      const existingExerciseIds = new Set(existingExercises.map((e) => e.exerciseId));
-
-      const selectedExerciseIds = Array.from(selectedIds);
-      const duplicates = selectedExerciseIds.filter((id) => existingExerciseIds.has(id));
-
-      if (duplicates.length > 0) {
-        const duplicateNames = exercises
-          .filter((e) => duplicates.includes(e.id))
-          .map((e) => e.name);
-        Alert.alert('Duplicate Exercises', `Already in this day: ${duplicateNames.join(', ')}`);
-        // Deselect duplicates
-        setSelectedIds((prev) => {
-          const next = new Set(prev);
-          for (const id of duplicates) next.delete(id);
-          return next;
-        });
-        return;
-      }
-
-      // Check limit
-      const currentCount = existingExercises.length;
-      if (currentCount + selectedExerciseIds.length > MAX_EXERCISES_PER_DAY) {
-        const available = MAX_EXERCISES_PER_DAY - currentCount;
-        Alert.alert(
-          'Exercise Limit',
-          available <= 0
-            ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum).`
-            : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY}).`
-        );
-        return;
-      }
-
-      // Batch add all exercises in a single transaction
+      // mode='add': save directly to DB in a single batch transaction
       await addExercisesToPlanDay(
         targetDayId,
         selectedExerciseIds.map((exerciseId, i) => ({
@@ -133,15 +151,15 @@ export default function ExercisePickerScreen() {
       router.back();
     } catch (error) {
       if (error instanceof ValidationError) {
-        Alert.alert('Error', error.userMessage);
+        setAlert({ title: 'Error', description: error.userMessage });
       } else {
         console.error('Failed to add exercises:', error);
-        Alert.alert('Error', 'Failed to add exercises. Please try again.');
+        setAlert({ title: 'Error', description: 'Please try again.' });
       }
     } finally {
       setIsAdding(false);
     }
-  }, [selectedIds, dayId, isAdding, mode, exercises]);
+  }, [selectedIds, dayId, isAdding, mode, exercises, existingExerciseIdsParam]);
 
   const renderItem = useCallback(
     ({ item }: { item: Exercise }) => (
@@ -198,21 +216,30 @@ export default function ExercisePickerScreen() {
   );
 
   return (
-    <ExerciseListView
-      title="Add Exercises"
-      subtitle={dayName}
-      onBack={handleBack}
-      search={search}
-      onSearchChange={setSearch}
-      exercises={exercises}
-      totalCount={totalCount}
-      loading={loading}
-      loadingMore={loadingMore}
-      onLoadMore={loadMore}
-      renderItem={renderItem}
-      extraData={selectedIds}
-      contentPaddingBottom={100 + insets.bottom}
-      floatingContent={floatingContent}
-    />
+    <>
+      <ExerciseListView
+        title="Add Exercises"
+        subtitle={dayName}
+        onBack={handleBack}
+        search={search}
+        onSearchChange={setSearch}
+        exercises={exercises}
+        totalCount={totalCount}
+        loading={loading}
+        loadingMore={loadingMore}
+        onLoadMore={loadMore}
+        renderItem={renderItem}
+        extraData={selectedIds}
+        contentPaddingBottom={100 + insets.bottom}
+        floatingContent={floatingContent}
+      />
+
+      <AlertDialog
+        open={!!alert}
+        onOpenChange={() => setAlert(null)}
+        title={alert?.title ?? ''}
+        description={alert?.description}
+      />
+    </>
   );
 }

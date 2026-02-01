@@ -66,6 +66,8 @@ export interface UseWorkoutScreenReturn {
   isAddingDay: boolean;
   handleConfirmAddDay: () => Promise<void>;
   handleCancelAddDay: () => void;
+  addDayAlert: { title: string; description?: string } | null;
+  clearAddDayAlert: () => void;
   deletingExerciseId: string | null;
   deleteExerciseOptimistic: (exerciseId: string) => void;
   handleDeleteAnimationComplete: () => void;
@@ -307,6 +309,8 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
 
     // Add day dialog
     ...addDay,
+    addDayAlert: addDay.alert,
+    clearAddDayAlert: addDay.clearAlert,
 
     // Exercise actions
     ...exerciseActions,

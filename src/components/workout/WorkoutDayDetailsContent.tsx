@@ -12,30 +12,16 @@ import DraggableFlatList, {
   type RenderItemParams,
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
-import { createContext, memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors, EXERCISE_LIST_CONTENT_PADDING } from '@/constants';
+import { Colors } from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DayExerciseCard, type DayExercise } from './DayExerciseCard';
-
-// Context for tracking which swipeable card is open (avoids re-render cascade)
-export type SetOpenSwipeableId = import('react').Dispatch<
-  import('react').SetStateAction<string | null>
->;
-
-export interface SwipeableContextValue {
-  openId: string | null;
-  setOpenId: SetOpenSwipeableId;
-}
-
-export const SwipeableContext = createContext<SwipeableContextValue>({
-  openId: null,
-  setOpenId: () => {},
-});
+import { SwipeableContext, type SwipeableContextValue } from './SwipeableContext';
 
 export interface WorkoutDayDetailsContentProps {
   selectedDay: PlanDay | null;
@@ -136,7 +122,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           onDragEnd={({ data }) => onReorder?.(data)}
-          contentContainerStyle={EXERCISE_LIST_CONTENT_PADDING}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: 160 }}
           ListFooterComponent={
             <Pressable
               onPress={handleAddExercisePress}

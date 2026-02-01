@@ -6,7 +6,6 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import type { DayExercise } from '@/components/workout/DayExerciseCard';
 import type { PickedExercise } from '@/stores/exercisePickerStore';
@@ -72,6 +71,10 @@ export interface UseEditDayReturn {
 
   // Navigate to exercise detail
   navigateToExerciseDetail: (exercise: DayExercise) => void;
+
+  // Alert dialog state
+  alert: { title: string; description?: string } | null;
+  clearAlert: () => void;
 }
 
 export function useEditDay(dayId: string): UseEditDayReturn {
@@ -83,6 +86,8 @@ export function useEditDay(dayId: string): UseEditDayReturn {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const [alert, setAlert] = useState<{ title: string; description?: string } | null>(null);
+  const clearAlert = useCallback(() => setAlert(null), []);
 
   // Track initial state for dirty detection
   const initialNameRef = useRef('');
@@ -148,51 +153,25 @@ export function useEditDay(dayId: string): UseEditDayReturn {
 
   // ── Exercise picker integration ────────────────────────────────────────
   const navigateToExercisePicker = useCallback(() => {
+    const existingIds = exercises.map((e) => e.exercise_id).join(',');
     router.push({
       pathname: '/exercise-picker',
-      params: { dayId, mode: 'pick' },
+      params: { dayId, mode: 'pick', existingExerciseIds: existingIds },
     });
-  }, [dayId]);
+  }, [dayId, exercises]);
 
   const consumePickerResult = useCallback(() => {
     const result = useExercisePickerStore.getState().result;
     if (!result || result.length === 0) return;
 
-    // Filter out duplicates (exercises already in this day)
-    const existingExerciseIds = new Set(exercises.map((e) => e.exercise_id));
-    const duplicates: string[] = [];
-    const uniqueExercises = result.filter((picked) => {
-      if (existingExerciseIds.has(picked.id)) {
-        duplicates.push(picked.name);
-        return false;
-      }
-      return true;
-    });
-
-    if (duplicates.length > 0) {
-      Alert.alert('Duplicates Skipped', `Already in this day: ${duplicates.join(', ')}`);
-    }
-
-    // Check total count after adding
-    if (exercises.length + uniqueExercises.length > MAX_EXERCISES_PER_DAY) {
-      const available = MAX_EXERCISES_PER_DAY - exercises.length;
-      Alert.alert(
-        'Exercise Limit',
-        available <= 0
-          ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum).`
-          : `Can only add ${available} more exercise${available !== 1 ? 's' : ''}. ${uniqueExercises.length} were selected.`
-      );
-      useExercisePickerStore.getState().clearResult();
-      return;
-    }
-
-    if (uniqueExercises.length === 0) {
+    // Picker already validated (duplicates + limits). Defense-in-depth limit check.
+    if (exercises.length + result.length > MAX_EXERCISES_PER_DAY) {
       useExercisePickerStore.getState().clearResult();
       return;
     }
 
     // Convert picked exercises to DayExercise format with temp IDs
-    const newExercises: DayExercise[] = uniqueExercises.map((picked, index) => {
+    const newExercises: DayExercise[] = result.map((picked, index) => {
       const tempId = `${TEMP_EXERCISE_ID_PREFIX}${Date.now()}_${index}`;
 
       // Track pending add
@@ -246,10 +225,10 @@ export function useEditDay(dayId: string): UseEditDayReturn {
 
     // Validate name length before saving
     if (nameToSave.length > MAX_DAY_NAME_LENGTH) {
-      Alert.alert(
-        'Name Too Long',
-        `Day name cannot exceed ${MAX_DAY_NAME_LENGTH} characters (currently ${nameToSave.length}).`
-      );
+      setAlert({
+        title: 'Name Too Long',
+        description: `Day name cannot exceed ${MAX_DAY_NAME_LENGTH} characters (currently ${nameToSave.length}).`,
+      });
       return;
     }
 
@@ -288,10 +267,10 @@ export function useEditDay(dayId: string): UseEditDayReturn {
       router.back();
     } catch (error) {
       if (error instanceof ValidationError) {
-        Alert.alert('Error', error.userMessage);
+        setAlert({ title: 'Error', description: error.userMessage });
       } else {
         console.error('Failed to save day changes:', error);
-        Alert.alert('Error', 'Failed to save changes. Please try again.');
+        setAlert({ title: 'Error', description: 'Failed to save changes. Please try again.' });
       }
     } finally {
       setIsSaving(false);
@@ -350,5 +329,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
     navigateToExercisePicker,
     consumePickerResult,
     navigateToExerciseDetail,
+    alert,
+    clearAlert,
   };
 }

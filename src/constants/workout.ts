@@ -32,11 +32,5 @@ export const MAX_EXERCISE_NOTES_LENGTH = 500;
 /** Style applied to exercise cards during drag-and-drop */
 export const CARD_ACTIVE_STYLE = { transform: [{ scale: 1.02 }], opacity: 0.9 } as const;
 
-/** Content padding for the day list in Overview (less overshoot) */
-export const OVERVIEW_LIST_CONTENT_PADDING = { paddingTop: 8, paddingBottom: 100 } as const;
-
-/** Content padding for the exercise list in Day Details (more room to clear floating button) */
-export const EXERCISE_LIST_CONTENT_PADDING = { paddingTop: 8, paddingBottom: 160 } as const;
-
 /** Height of the Start Workout floating button */
 export const START_BUTTON_HEIGHT = 56;

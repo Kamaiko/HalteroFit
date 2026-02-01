@@ -12,6 +12,7 @@ import { ScreenContainer } from '@/components/layout';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Ionicons } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
+import { AlertDialog } from '@/components/ui/alert-dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { InputDialog } from '@/components/ui/input-dialog';
 import { Tabs, type TabRoute } from '@/components/ui';
@@ -55,6 +56,8 @@ export default function WorkoutScreen() {
     isAddingDay,
     handleConfirmAddDay,
     handleCancelAddDay,
+    addDayAlert,
+    clearAddDayAlert,
     deletingExerciseId,
     deleteExerciseOptimistic,
     handleDeleteAnimationComplete,
@@ -235,6 +238,13 @@ export default function WorkoutScreen() {
         onChangeText={setAddDayName}
         onConfirm={handleConfirmAddDay}
         loading={isAddingDay}
+      />
+
+      <AlertDialog
+        open={!!addDayAlert}
+        onOpenChange={clearAddDayAlert}
+        title={addDayAlert?.title ?? ''}
+        description={addDayAlert?.description}
       />
     </ScreenContainer>
   );

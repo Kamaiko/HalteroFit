@@ -20,6 +20,7 @@ import { ActivityIndicator, BackHandler, Pressable, TextInput, View } from 'reac
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AlertDialog } from '@/components/ui/alert-dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -54,6 +55,8 @@ export default function EditDayScreen() {
     consumePickerResult,
     navigateToExerciseDetail,
     handleBack,
+    alert,
+    clearAlert,
   } = useEditDay(dayId!);
 
   // ── Consume picker results on focus ────────────────────────────────────
@@ -165,7 +168,7 @@ export default function EditDayScreen() {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         onDragEnd={({ data }) => reorderExercises(data)}
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 80 + insets.bottom }}
+        contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 120 }}
         ListFooterComponent={
           <View>
             {/* Add exercise row */}
@@ -210,6 +213,14 @@ export default function EditDayScreen() {
         cancelLabel="Cancel"
         onConfirm={handleDeleteDay}
         loading={isDeleting}
+      />
+
+      {/* Alert dialog (validation messages, errors) */}
+      <AlertDialog
+        open={!!alert}
+        onOpenChange={clearAlert}
+        title={alert?.title ?? ''}
+        description={alert?.description}
       />
     </View>
   );

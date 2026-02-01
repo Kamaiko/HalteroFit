@@ -18,7 +18,7 @@ import React, { memo, useCallback, useContext, useEffect, useRef, useState } fro
 import { type LayoutChangeEvent, Pressable, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
-import { SwipeableContext } from './WorkoutDayDetailsContent';
+import { SwipeableContext } from './SwipeableContext';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
