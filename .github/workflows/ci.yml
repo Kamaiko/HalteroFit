@@ -42,7 +42,7 @@ jobs:
       # TypeScript Incremental Build Cache
       # .tsbuildinfo enables faster subsequent type-checks
       - name: Cache TypeScript build info
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: .tsbuildinfo
           key: ${{ runner.os }}-tsbuildinfo-${{ hashFiles('**/tsconfig.json', 'src/**/*.ts', 'src/**/*.tsx') }}
@@ -51,7 +51,7 @@ jobs:
 
       # ESLint Cache for faster linting
       - name: Cache ESLint
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: .eslintcache
           key: ${{ runner.os }}-eslintcache-${{ hashFiles('**/.eslintrc.json', 'src/**/*.ts', 'src/**/*.tsx') }}
@@ -111,7 +111,7 @@ jobs:
 
       # Jest Cache for faster test runs
       - name: Cache Jest
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: .jest-cache
           key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js', 'src/**/*.test.ts', 'src/**/*.test.tsx') }}
