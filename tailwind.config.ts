@@ -17,17 +17,17 @@ const config: Config = {
 
         // Brand colors
         primary: {
-          DEFAULT: '#84BAA8', // Brand teal (custom desaturated)
-          dark: '#669E8C', // Darker teal for pressed states
-          light: '#A4D4C2', // Lighter teal for highlights
-          foreground: '#0A0A0A', // Text on primary buttons (dark text on light teal)
+          DEFAULT: '#0EA5E9', // Brand sky blue (sky-500)
+          dark: '#0284C7', // Darker sky for pressed states (sky-600)
+          light: '#38BDF8', // Lighter sky for highlights (sky-400)
+          foreground: '#FFFFFF', // Text on primary buttons (white text on blue)
         },
 
         // Semantic colors
         success: '#38a169', // Progress green
         warning: '#d69e2e', // Caution amber
         destructive: '#e53e3e', // Critical red (delete, errors)
-        info: '#0D9488', // Information teal (teal-600)
+        info: '#0369A1', // Information sky (sky-700)
 
         // Text colors (using Tailwind's text-* convention)
         foreground: {
@@ -61,7 +61,7 @@ const config: Config = {
           DEFAULT: '#27272A', // Muted backgrounds (code blocks, disabled)
           foreground: '#94A3B8', // Muted text (placeholders, descriptions)
         },
-        ring: '#84BAA8', // Focus ring color (match primary)
+        ring: '#0EA5E9', // Focus ring color (match primary)
 
         // RPE Colors (Rate of Perceived Exertion)
         rpe: {
