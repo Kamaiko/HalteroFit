@@ -20,7 +20,13 @@
 
 import { View, Text, Dimensions } from 'react-native';
 import { CartesianChart, Bar } from 'victory-native';
-import { Colors } from '@/constants';
+import {
+  Colors,
+  CHART_DEFAULT_HEIGHT,
+  CHART_WIDTH_RATIO,
+  CHART_DOMAIN_PADDING,
+  DURATION_MODERATE,
+} from '@/constants';
 
 /**
  * Props are library-agnostic
@@ -40,7 +46,7 @@ interface BarChartProps {
   /** Chart width (default: 90% of screen width) */
   width?: number;
 
-  /** Chart height (default: 220px) */
+  /** Chart height (default: CHART_DEFAULT_HEIGHT) */
   height?: number;
 
   /** Bar color (default: primary color) */
@@ -55,12 +61,12 @@ export function BarChart({
   labels,
   title,
   width,
-  height = 220,
+  height = CHART_DEFAULT_HEIGHT,
   barColor = Colors.primary.DEFAULT,
   showValues = false,
 }: BarChartProps) {
   // Calculate default width as 90% of screen width
-  const defaultWidth = Dimensions.get('window').width * 0.9;
+  const defaultWidth = Dimensions.get('window').width * CHART_WIDTH_RATIO;
   const chartWidth = width || defaultWidth;
 
   // Transform data for Victory Native
@@ -78,7 +84,12 @@ export function BarChart({
         data={chartData}
         xKey="x"
         yKeys={['y']}
-        domainPadding={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        domainPadding={{
+          top: CHART_DOMAIN_PADDING,
+          bottom: CHART_DOMAIN_PADDING,
+          left: CHART_DOMAIN_PADDING,
+          right: CHART_DOMAIN_PADDING,
+        }}
       >
         {({ points, chartBounds }) => (
           <Bar
@@ -89,7 +100,7 @@ export function BarChart({
               topLeft: 4,
               topRight: 4,
             }}
-            animate={{ type: 'timing', duration: 300 }}
+            animate={{ type: 'timing', duration: DURATION_MODERATE }}
           />
         )}
       </CartesianChart>

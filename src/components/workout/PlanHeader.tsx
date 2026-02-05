@@ -17,7 +17,7 @@ import { Pressable, View } from 'react-native';
 import { CachedImage } from '@/components/ui/cached-image';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors } from '@/constants';
+import { Colors, ICON_SIZE_XL } from '@/constants';
 
 interface PlanHeaderProps {
   planName: string;
@@ -84,7 +84,7 @@ export const PlanHeader = memo(function PlanHeader({ planName, coverImageUrl }: 
           className="absolute top-1/2 left-1/2"
           style={{ transform: [{ translateX: -20 }, { translateY: -40 }] }}
         >
-          <Ionicons name="barbell-outline" size={40} color="rgba(255,255,255,0.3)" />
+          <Ionicons name="barbell-outline" size={ICON_SIZE_XL} color="rgba(255,255,255,0.3)" />
         </View>
       )}
     </View>

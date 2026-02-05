@@ -54,6 +54,13 @@
 import { Image, ImageSource, ImageErrorEventData } from 'expo-image';
 import { useState } from 'react';
 import { StyleSheet, StyleProp, ImageStyle } from 'react-native';
+import {
+  DURATION_MODERATE,
+  THUMBNAIL_SM,
+  THUMBNAIL_MD,
+  THUMBNAIL_LG,
+  THUMBNAIL_XL,
+} from '@/constants';
 
 /**
  * Props for CachedImage component
@@ -125,7 +132,7 @@ export function CachedImage({
   style,
   contentFit = 'cover',
   placeholder,
-  transition = 300,
+  transition = DURATION_MODERATE,
   onError,
   fallback,
   cachePolicy = 'memory-disk',
@@ -183,9 +190,9 @@ export function CachedImage({
 export const CachedImageStyles = StyleSheet.create({
   /** Square avatar (80x80) */
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: THUMBNAIL_MD,
+    height: THUMBNAIL_MD,
+    borderRadius: THUMBNAIL_MD / 2,
   },
 
   /** Small thumbnail (60x60) */
@@ -197,15 +204,15 @@ export const CachedImageStyles = StyleSheet.create({
 
   /** Medium thumbnail (100x100) */
   thumbnailMedium: {
-    width: 100,
-    height: 100,
+    width: THUMBNAIL_LG,
+    height: THUMBNAIL_LG,
     borderRadius: 8,
   },
 
   /** Exercise preview (120x120) */
   exercisePreview: {
-    width: 120,
-    height: 120,
+    width: THUMBNAIL_XL,
+    height: THUMBNAIL_XL,
     borderRadius: 12,
   },
 

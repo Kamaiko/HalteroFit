@@ -6,7 +6,7 @@
  * Margins are the container's responsibility — this component only defines its hit area.
  */
 
-import { Colors } from '@/constants';
+import { Colors, DURATION_INSTANT } from '@/constants';
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -36,7 +36,7 @@ export const DragHandle = memo(function DragHandle({ onDrag }: DragHandleProps) 
   return (
     <Pressable
       onLongPress={onDrag}
-      delayLongPress={100}
+      delayLongPress={DURATION_INSTANT}
       disabled={!onDrag}
       style={{ paddingVertical: 8, paddingHorizontal: 4 }}
     >

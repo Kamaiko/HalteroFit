@@ -9,7 +9,13 @@
  * Sequence: slide left (200ms) → height collapse (200ms @ 150ms delay).
  */
 
-import { Colors, CARD_ACTIVE_STYLE } from '@/constants';
+import {
+  Colors,
+  CARD_ACTIVE_STYLE,
+  DURATION_STANDARD,
+  DURATION_FAST,
+  ICON_SIZE_MD,
+} from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { PlanDayWithExercises } from '@/services/database/operations/plans';
@@ -79,14 +85,14 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     if (!isDeleting || cardHeight === 0) return;
 
     // Phase 1: Slide card off-screen to the left
-    translateX.value = withTiming(-500, { duration: 200 });
+    translateX.value = withTiming(-500, { duration: DURATION_STANDARD });
 
     // Phase 2: Collapse height + margin (delayed for sequential feel)
     animHeight.value = cardHeight;
-    animHeight.value = withDelay(150, withTiming(0, { duration: 200 }));
+    animHeight.value = withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_STANDARD }));
     animMargin.value = withDelay(
-      150,
-      withTiming(0, { duration: 200 }, (finished) => {
+      DURATION_FAST,
+      withTiming(0, { duration: DURATION_STANDARD }, (finished) => {
         if (finished && onDeleteAnimationComplete) {
           runOnJS(onDeleteAnimationComplete)();
         }
@@ -136,7 +142,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
           className="w-16 items-center justify-center"
           style={{ backgroundColor: Colors.background.elevated }}
         >
-          <Ionicons name="pencil-outline" size={24} color={Colors.foreground.DEFAULT} />
+          <Ionicons name="pencil-outline" size={ICON_SIZE_MD} color={Colors.foreground.DEFAULT} />
         </Pressable>
         {/* Delete button */}
         <Pressable
@@ -144,7 +150,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
           className="w-16 items-center justify-center"
           style={{ backgroundColor: Colors.destructive }}
         >
-          <Ionicons name="trash-outline" size={24} color="white" />
+          <Ionicons name="trash-outline" size={ICON_SIZE_MD} color="white" />
         </Pressable>
       </View>
     );

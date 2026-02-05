@@ -25,7 +25,7 @@ import Animated, {
 import { Text } from '@/components/ui/text';
 import { ExerciseGifHeader } from '@/components/exercises';
 import { Ionicons } from '@/components/ui/icon';
-import { Colors } from '@/constants';
+import { Colors, ICON_SIZE_MD, ICON_SIZE_2XL, SCROLL_THROTTLE_60FPS } from '@/constants';
 import { getExerciseById, type Exercise } from '@/services/database/operations';
 import { capitalizeWords, stripStepPrefix } from '@/utils';
 
@@ -122,7 +122,7 @@ export default function ExerciseDetailScreen() {
     return (
       <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
         <View className="flex-1 items-center justify-center px-8">
-          <Ionicons name="alert-circle-outline" size={48} color={Colors.destructive} />
+          <Ionicons name="alert-circle-outline" size={ICON_SIZE_2XL} color={Colors.destructive} />
           <Text className="mt-4 text-center text-foreground-secondary">
             {error || 'Exercise not found'}
           </Text>
@@ -149,14 +149,14 @@ export default function ExerciseDetailScreen() {
         accessibilityRole="button"
         accessibilityLabel="Go back"
       >
-        <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
+        <Ionicons name="arrow-back" size={ICON_SIZE_MD} color={Colors.foreground.DEFAULT} />
       </Pressable>
 
       <Animated.ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         onScroll={scrollHandler}
-        scrollEventThrottle={16}
+        scrollEventThrottle={SCROLL_THROTTLE_60FPS}
       >
         {/* GIF Section - edge-to-edge with overlay fade */}
         <View style={{ position: 'relative' }}>

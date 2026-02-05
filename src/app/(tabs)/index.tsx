@@ -8,7 +8,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/layout';
 import { MaterialIcons } from '@/components/ui/icon';
-import { Colors } from '@/constants';
+import { Colors, ICON_SIZE_LG } from '@/constants';
 
 // Skeleton chart heights (deterministic for consistent skeleton)
 const SKELETON_HEIGHTS = [45, 72, 58, 83, 51, 69, 62];
@@ -89,7 +89,7 @@ function StatCard({ icon, value, label }: StatCardProps) {
         className="w-16 h-16 rounded-full items-center justify-center mb-3"
         style={{ backgroundColor: Colors.background.elevated }}
       >
-        <MaterialIcons name={icon as any} size={32} color={Colors.primary.DEFAULT} />
+        <MaterialIcons name={icon as any} size={ICON_SIZE_LG} color={Colors.primary.DEFAULT} />
       </View>
       <Text className="text-2xl font-bold text-foreground mb-1">{value}</Text>
       <Text className="text-xs text-foreground-secondary uppercase tracking-wide">{label}</Text>

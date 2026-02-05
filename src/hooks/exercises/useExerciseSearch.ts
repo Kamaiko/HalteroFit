@@ -6,8 +6,9 @@
 
 import { getExercises, getExerciseCount, type Exercise } from '@/services/database/operations';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DEFAULT_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants';
 
-const BATCH_SIZE = 50;
+const BATCH_SIZE = DEFAULT_PAGE_SIZE;
 
 export interface ExerciseFilterOptions {
   bodyPart?: string;
@@ -132,7 +133,7 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
     const timer = setTimeout(() => {
       loadExercisesRef.current(true);
       loadCountRef.current();
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
   }, [search]);

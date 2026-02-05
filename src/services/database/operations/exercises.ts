@@ -11,6 +11,7 @@ import { map } from 'rxjs/operators';
 import { database } from '../local';
 import ExerciseModel from '../local/models/Exercise';
 import { DatabaseError } from '@/utils/errors';
+import { DEFAULT_PAGE_SIZE } from '@/constants';
 
 // ============================================================================
 // Types
@@ -90,7 +91,7 @@ export interface ExerciseFilterOptions {
  */
 export async function getExercises(options?: ExerciseFilterOptions): Promise<Exercise[]> {
   try {
-    const { search, bodyPart, targetMuscle, limit = 50, offset = 0 } = options ?? {};
+    const { search, bodyPart, targetMuscle, limit = DEFAULT_PAGE_SIZE, offset = 0 } = options ?? {};
 
     const queries: Q.Clause[] = [];
 
@@ -138,7 +139,7 @@ export function observeExercises(options?: {
   search?: string;
   limit?: number;
 }): Observable<Exercise[]> {
-  const { search, limit = 50 } = options ?? {};
+  const { search, limit = DEFAULT_PAGE_SIZE } = options ?? {};
 
   const queries: Q.Clause[] = [];
 

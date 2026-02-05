@@ -4,7 +4,14 @@
  * Used in: Exercise List, Exercise Picker, Day Details
  */
 
-import { Colors } from '@/constants';
+import {
+  Colors,
+  ICON_SIZE_XS,
+  ICON_SIZE_SM,
+  ICON_SIZE_MD,
+  THUMBNAIL_SM,
+  DURATION_STANDARD,
+} from '@/constants';
 import type { Exercise } from '@/services/database/operations';
 import { capitalizeWords } from '@/utils';
 import { Ionicons } from '@/components/ui/icon';
@@ -95,16 +102,20 @@ export const ExerciseCard = memo(function ExerciseCard({
       >
         {showPlaceholder ? (
           <View className="h-14 w-14 items-center justify-center bg-white">
-            <Ionicons name="barbell-outline" size={24} color={Colors.foreground.secondary} />
+            <Ionicons
+              name="barbell-outline"
+              size={ICON_SIZE_MD}
+              color={Colors.foreground.secondary}
+            />
           </View>
         ) : (
           <Image
             source={{ uri: exercise.gif_url }}
-            style={{ width: 56, height: 56 }}
+            style={{ width: THUMBNAIL_SM, height: THUMBNAIL_SM }}
             contentFit="cover"
             autoplay={false}
             cachePolicy="memory-disk"
-            transition={200}
+            transition={DURATION_STANDARD}
             recyclingKey={exercise.id}
             placeholder={{ blurhash: 'L2TSUA~qfQ~qfQfQfQfQfQfQfQfQ' }}
             onError={handleImageError}
@@ -124,10 +135,10 @@ export const ExerciseCard = memo(function ExerciseCard({
 
       {/* Action indicator */}
       {mode === 'browse' ? (
-        <Ionicons name="chevron-forward" size={20} color={Colors.foreground.secondary} />
+        <Ionicons name="chevron-forward" size={ICON_SIZE_SM} color={Colors.foreground.secondary} />
       ) : (
         <View style={checkboxStyle}>
-          {selected && <Ionicons name="checkmark" size={16} color="white" />}
+          {selected && <Ionicons name="checkmark" size={ICON_SIZE_XS} color="white" />}
         </View>
       )}
     </Pressable>

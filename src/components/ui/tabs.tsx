@@ -22,7 +22,7 @@
  * ```
  */
 
-import { Colors } from '@/constants';
+import { Colors, DURATION_STANDARD } from '@/constants';
 import { memo, useMemo, useEffect, type ReactNode } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -65,7 +65,7 @@ export const Tabs = memo(function Tabs({ tabs, activeIndex, onChange, renderScen
 
   // Animate indicator when activeIndex changes
   useEffect(() => {
-    indicatorX.value = withTiming(activeIndex * tabWidth, { duration: 200 });
+    indicatorX.value = withTiming(activeIndex * tabWidth, { duration: DURATION_STANDARD });
   }, [activeIndex, tabWidth, indicatorX]);
 
   const indicatorStyle = useAnimatedStyle(() => ({

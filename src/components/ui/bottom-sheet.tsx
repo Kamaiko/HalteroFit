@@ -9,6 +9,7 @@
  * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 7.2 (BottomSheet)
  */
 
+import { Colors } from '@/constants';
 import { cn } from '@/lib/utils';
 import GorhomBottomSheet, {
   BottomSheetBackdrop,
@@ -114,7 +115,7 @@ BottomSheet.displayName = 'BottomSheet';
 
 const styles = StyleSheet.create({
   background: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: Colors.background.surface,
   },
   handleIndicator: {
     backgroundColor: 'rgba(255, 255, 255, 0.3)',

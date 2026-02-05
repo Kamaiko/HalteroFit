@@ -1,7 +1,13 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants';
+import {
+  Colors,
+  ICON_SIZE_MD,
+  TAB_BAR_HEIGHT,
+  TAB_BAR_PADDING_BOTTOM,
+  TAB_BAR_PADDING_TOP,
+} from '@/constants';
 
 export default function TabsLayout() {
   return (
@@ -20,7 +26,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={ICON_SIZE_MD} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -28,21 +34,25 @@ export default function TabsLayout() {
         options={{
           title: 'Workout',
           lazy: false, // Primary feature tab — mount during splash to eliminate loading flash on first navigation
-          tabBarIcon: ({ color }) => <Ionicons name="checkmark-circle" size={24} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="checkmark-circle" size={ICON_SIZE_MD} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="exercises"
         options={{
           title: 'Exercises',
-          tabBarIcon: ({ color }) => <Ionicons name="barbell" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="barbell" size={ICON_SIZE_MD} color={color} />,
         }}
       />
       <Tabs.Screen
         name="stats"
         options={{
           title: 'Progress',
-          tabBarIcon: ({ color }) => <Ionicons name="stats-chart" size={24} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="stats-chart" size={ICON_SIZE_MD} color={color} />
+          ),
         }}
       />
       {/* Settings screen hidden from tabs - accessible via navigation */}
@@ -61,9 +71,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background.surface,
     borderTopWidth: 1,
     borderTopColor: Colors.background.elevated,
-    height: 85,
-    paddingBottom: 25,
-    paddingTop: 8,
+    height: TAB_BAR_HEIGHT,
+    paddingBottom: TAB_BAR_PADDING_BOTTOM,
+    paddingTop: TAB_BAR_PADDING_TOP,
   },
   tabLabel: {
     fontSize: 12,
