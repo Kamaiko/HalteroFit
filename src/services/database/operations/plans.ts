@@ -13,9 +13,8 @@ import {
   DEFAULT_TARGET_REPS,
   MAX_EXERCISES_PER_DAY,
   MAX_DAYS_PER_PLAN,
-  MAX_DAY_NAME_LENGTH,
-  MAX_PLAN_NAME_LENGTH,
 } from '@/constants';
+import { validateDayName, validatePlanName } from '@/utils/validators';
 import { type Model, Q } from '@nozbe/watermelondb';
 import { Observable, combineLatest, of, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -24,8 +23,9 @@ import WorkoutPlanModel from '../local/models/WorkoutPlan';
 import PlanDayModel from '../local/models/PlanDay';
 import PlanDayExerciseModel from '../local/models/PlanDayExercise';
 import ExerciseModel from '../local/models/Exercise';
-import { useAuthStore } from '@/stores/auth/authStore';
-import { DatabaseError, AuthError, ValidationError } from '@/utils/errors';
+import { requireAuth, validateUserIdMatch, validateOwnership } from '../utils/requireAuth';
+import { withDatabaseError } from '../utils/withDatabaseError';
+import { DatabaseError, ValidationError } from '@/utils/errors';
 
 // ============================================================================
 // Types
@@ -171,64 +171,47 @@ function planDayExerciseToPlain(pde: PlanDayExerciseModel): PlanDayExercise {
  * @throws {DatabaseError} If database operation fails
  */
 export async function createPlan(data: CreatePlan): Promise<WorkoutPlan> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to create workout plans',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('create workout plans');
+      validateUserIdMatch(data.user_id, currentUser.id);
 
-    if (data.user_id !== currentUser.id) {
-      throw new AuthError(
-        'Authentication error. Please sign out and sign in again.',
-        `User ID mismatch - Expected: ${currentUser.id}, Received: ${data.user_id}`
-      );
-    }
+      const plan = await database.write(async () => {
+        const allOperations: Model[] = [];
 
-    const plan = await database.write(async () => {
-      const allOperations: Model[] = [];
+        // If setting as active, deactivate other plans first
+        if (data.is_active) {
+          const activePlans = await database
+            .get<WorkoutPlanModel>('workout_plans')
+            .query(Q.where('user_id', data.user_id), Q.where('is_active', true))
+            .fetch();
 
-      // If setting as active, deactivate other plans first
-      if (data.is_active) {
-        const activePlans = await database
-          .get<WorkoutPlanModel>('workout_plans')
-          .query(Q.where('user_id', data.user_id), Q.where('is_active', true))
-          .fetch();
+          allOperations.push(
+            ...activePlans.map((p) =>
+              p.prepareUpdate((rec) => {
+                rec.isActive = false;
+              })
+            )
+          );
+        }
 
-        allOperations.push(
-          ...activePlans.map((p) =>
-            p.prepareUpdate((rec) => {
-              rec.isActive = false;
-            })
-          )
-        );
-      }
+        const newPlan = database.get<WorkoutPlanModel>('workout_plans').prepareCreate((p) => {
+          p.userId = data.user_id;
+          p.name = data.name;
+          p.isActive = data.is_active ?? false;
+          if (data.cover_image_url) p.coverImageUrl = data.cover_image_url;
+        });
+        allOperations.push(newPlan);
 
-      const newPlan = database.get<WorkoutPlanModel>('workout_plans').prepareCreate((p) => {
-        p.userId = data.user_id;
-        p.name = data.name;
-        p.isActive = data.is_active ?? false;
-        if (data.cover_image_url) p.coverImageUrl = data.cover_image_url;
+        await database.batch(...allOperations);
+        return newPlan;
       });
-      allOperations.push(newPlan);
 
-      await database.batch(...allOperations);
-      return newPlan;
-    });
-
-    return planToPlain(plan);
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to create workout plan. Please try again.',
-      `Failed to create plan: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return planToPlain(plan);
+    },
+    'Unable to create workout plan. Please try again.',
+    'Failed to create plan'
+  );
 }
 
 /**
@@ -238,61 +221,41 @@ export async function createPlan(data: CreatePlan): Promise<WorkoutPlan> {
  * @throws {DatabaseError} If database operation fails
  */
 export async function createPlanDay(data: CreatePlanDay): Promise<PlanDay> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to add days to plans',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('add days to plans');
 
-    const planDay = await database.write(async () => {
-      // Verify user owns this plan
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(data.plan_id);
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to modify this plan',
-          `User ${currentUser.id} attempted to modify plan owned by ${plan.userId}`
-        );
-      }
+      const planDay = await database.write(async () => {
+        // Verify user owns this plan
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(data.plan_id);
+        validateOwnership(plan.userId, currentUser.id, 'modify this plan');
 
-      // Check max days limit
-      const existingDays = await database
-        .get<PlanDayModel>('plan_days')
-        .query(Q.where('plan_id', data.plan_id))
-        .fetchCount();
+        // Check max days limit
+        const existingDays = await database
+          .get<PlanDayModel>('plan_days')
+          .query(Q.where('plan_id', data.plan_id))
+          .fetchCount();
 
-      if (existingDays >= MAX_DAYS_PER_PLAN) {
-        throw new ValidationError(
-          `Cannot add more than ${MAX_DAYS_PER_PLAN} days to a workout plan`,
-          `Plan ${data.plan_id} already has ${existingDays} days (max: ${MAX_DAYS_PER_PLAN})`
-        );
-      }
+        if (existingDays >= MAX_DAYS_PER_PLAN) {
+          throw new ValidationError(
+            `Cannot add more than ${MAX_DAYS_PER_PLAN} days to a workout plan`,
+            `Plan ${data.plan_id} already has ${existingDays} days (max: ${MAX_DAYS_PER_PLAN})`
+          );
+        }
 
-      return await database.get<PlanDayModel>('plan_days').create((day) => {
-        day.planId = data.plan_id;
-        day.name = data.name;
-        if (data.day_of_week) day.dayOfWeek = data.day_of_week;
-        day.orderIndex = data.order_index;
+        return await database.get<PlanDayModel>('plan_days').create((day) => {
+          day.planId = data.plan_id;
+          day.name = data.name;
+          if (data.day_of_week) day.dayOfWeek = data.day_of_week;
+          day.orderIndex = data.order_index;
+        });
       });
-    });
 
-    return planDayToPlain(planDay);
-  } catch (error) {
-    if (
-      error instanceof AuthError ||
-      error instanceof DatabaseError ||
-      error instanceof ValidationError
-    ) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to add day to plan. Please try again.',
-      `Failed to create plan day: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return planDayToPlain(planDay);
+    },
+    'Unable to add day to plan. Please try again.',
+    'Failed to create plan day'
+  );
 }
 
 /**
@@ -302,79 +265,59 @@ export async function createPlanDay(data: CreatePlanDay): Promise<PlanDay> {
  * @throws {DatabaseError} If database operation fails
  */
 export async function addExerciseToPlanDay(data: AddExerciseToPlanDay): Promise<PlanDayExercise> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to add exercises',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('add exercises');
 
-    const planDayExercise = await database.write(async () => {
-      // Verify user owns the plan that contains this day
-      const planDay = await database.get<PlanDayModel>('plan_days').find(data.plan_day_id);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+      const planDayExercise = await database.write(async () => {
+        // Verify user owns the plan that contains this day
+        const planDay = await database.get<PlanDayModel>('plan_days').find(data.plan_day_id);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to modify this plan',
-          `User ${currentUser.id} attempted to modify plan owned by ${plan.userId}`
-        );
-      }
+        validateOwnership(plan.userId, currentUser.id, 'modify this plan');
 
-      // Check max exercises limit
-      const exerciseCount = await database
-        .get<PlanDayExerciseModel>('plan_day_exercises')
-        .query(Q.where('plan_day_id', data.plan_day_id))
-        .fetchCount();
+        // Check max exercises limit
+        const exerciseCount = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', data.plan_day_id))
+          .fetchCount();
 
-      if (exerciseCount >= MAX_EXERCISES_PER_DAY) {
-        throw new ValidationError(
-          `Cannot add more than ${MAX_EXERCISES_PER_DAY} exercises to a workout day`,
-          `Day ${data.plan_day_id} already has ${exerciseCount} exercises (max: ${MAX_EXERCISES_PER_DAY})`
-        );
-      }
+        if (exerciseCount >= MAX_EXERCISES_PER_DAY) {
+          throw new ValidationError(
+            `Cannot add more than ${MAX_EXERCISES_PER_DAY} exercises to a workout day`,
+            `Day ${data.plan_day_id} already has ${exerciseCount} exercises (max: ${MAX_EXERCISES_PER_DAY})`
+          );
+        }
 
-      // Check for duplicate exercise in same day
-      const duplicate = await database
-        .get<PlanDayExerciseModel>('plan_day_exercises')
-        .query(Q.where('plan_day_id', data.plan_day_id), Q.where('exercise_id', data.exercise_id))
-        .fetchCount();
+        // Check for duplicate exercise in same day
+        const duplicate = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', data.plan_day_id), Q.where('exercise_id', data.exercise_id))
+          .fetchCount();
 
-      if (duplicate > 0) {
-        throw new ValidationError(
-          'This exercise is already in this workout day',
-          `Exercise ${data.exercise_id} already exists in day ${data.plan_day_id}`
-        );
-      }
+        if (duplicate > 0) {
+          throw new ValidationError(
+            'This exercise is already in this workout day',
+            `Exercise ${data.exercise_id} already exists in day ${data.plan_day_id}`
+          );
+        }
 
-      return await database.get<PlanDayExerciseModel>('plan_day_exercises').create((pde) => {
-        pde.planDayId = data.plan_day_id;
-        pde.exerciseId = data.exercise_id;
-        pde.orderIndex = data.order_index;
-        pde.targetSets = data.target_sets ?? DEFAULT_TARGET_SETS;
-        pde.targetReps = data.target_reps ?? DEFAULT_TARGET_REPS;
-        if (data.rest_timer_seconds) pde.restTimerSeconds = data.rest_timer_seconds;
-        if (data.notes) pde.notes = data.notes;
+        return await database.get<PlanDayExerciseModel>('plan_day_exercises').create((pde) => {
+          pde.planDayId = data.plan_day_id;
+          pde.exerciseId = data.exercise_id;
+          pde.orderIndex = data.order_index;
+          pde.targetSets = data.target_sets ?? DEFAULT_TARGET_SETS;
+          pde.targetReps = data.target_reps ?? DEFAULT_TARGET_REPS;
+          if (data.rest_timer_seconds) pde.restTimerSeconds = data.rest_timer_seconds;
+          if (data.notes) pde.notes = data.notes;
+        });
       });
-    });
 
-    return planDayExerciseToPlain(planDayExercise);
-  } catch (error) {
-    if (
-      error instanceof AuthError ||
-      error instanceof DatabaseError ||
-      error instanceof ValidationError
-    ) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to add exercise. Please try again.',
-      `Failed to add exercise to plan day: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return planDayExerciseToPlain(planDayExercise);
+    },
+    'Unable to add exercise. Please try again.',
+    'Failed to add exercise to plan day'
+  );
 }
 
 // ============================================================================
@@ -404,100 +347,80 @@ export async function addExercisesToPlanDay(
 ): Promise<PlanDayExercise[]> {
   if (exercises.length === 0) return [];
 
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to add exercises',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('add exercises');
 
-    const results = await database.write(async () => {
-      // Verify user owns the plan that contains this day
-      const planDay = await database.get<PlanDayModel>('plan_days').find(planDayId);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+      const results = await database.write(async () => {
+        // Verify user owns the plan that contains this day
+        const planDay = await database.get<PlanDayModel>('plan_days').find(planDayId);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to modify this plan',
-          `User ${currentUser.id} attempted to modify plan owned by ${plan.userId}`
-        );
-      }
+        validateOwnership(plan.userId, currentUser.id, 'modify this plan');
 
-      // Check max exercises limit
-      const currentCount = await database
-        .get<PlanDayExerciseModel>('plan_day_exercises')
-        .query(Q.where('plan_day_id', planDayId))
-        .fetchCount();
+        // Check max exercises limit
+        const currentCount = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', planDayId))
+          .fetchCount();
 
-      if (currentCount + exercises.length > MAX_EXERCISES_PER_DAY) {
-        const available = MAX_EXERCISES_PER_DAY - currentCount;
-        throw new ValidationError(
-          available <= 0
-            ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
-            : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
-          `Day ${planDayId} has ${currentCount} exercises, tried to add ${exercises.length} (max: ${MAX_EXERCISES_PER_DAY})`
-        );
-      }
-
-      // Check for duplicates against existing exercises
-      const existingExercises = await database
-        .get<PlanDayExerciseModel>('plan_day_exercises')
-        .query(Q.where('plan_day_id', planDayId))
-        .fetch();
-      const existingExerciseIds = new Set(existingExercises.map((e) => e.exerciseId));
-
-      // Also check for duplicates within the batch itself
-      const batchIds = new Set<string>();
-      const duplicateNames: string[] = [];
-
-      for (const ex of exercises) {
-        if (existingExerciseIds.has(ex.exercise_id) || batchIds.has(ex.exercise_id)) {
-          duplicateNames.push(ex.exercise_id);
+        if (currentCount + exercises.length > MAX_EXERCISES_PER_DAY) {
+          const available = MAX_EXERCISES_PER_DAY - currentCount;
+          throw new ValidationError(
+            available <= 0
+              ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
+              : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
+            `Day ${planDayId} has ${currentCount} exercises, tried to add ${exercises.length} (max: ${MAX_EXERCISES_PER_DAY})`
+          );
         }
-        batchIds.add(ex.exercise_id);
-      }
 
-      if (duplicateNames.length > 0) {
-        throw new ValidationError(
-          `${duplicateNames.length} exercise${duplicateNames.length !== 1 ? 's are' : ' is'} already in this workout day`,
-          `Duplicate exercise IDs in day ${planDayId}: ${duplicateNames.join(', ')}`
+        // Check for duplicates against existing exercises
+        const existingExercises = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', planDayId))
+          .fetch();
+        const existingExerciseIds = new Set(existingExercises.map((e) => e.exerciseId));
+
+        // Also check for duplicates within the batch itself
+        const batchIds = new Set<string>();
+        const duplicateNames: string[] = [];
+
+        for (const ex of exercises) {
+          if (existingExerciseIds.has(ex.exercise_id) || batchIds.has(ex.exercise_id)) {
+            duplicateNames.push(ex.exercise_id);
+          }
+          batchIds.add(ex.exercise_id);
+        }
+
+        if (duplicateNames.length > 0) {
+          throw new ValidationError(
+            `${duplicateNames.length} exercise${duplicateNames.length !== 1 ? 's are' : ' is'} already in this workout day`,
+            `Duplicate exercise IDs in day ${planDayId}: ${duplicateNames.join(', ')}`
+          );
+        }
+
+        // Prepare all creates, then execute in a single batch (1 adapter op, 1 emission)
+        const created = exercises.map((ex) =>
+          database.get<PlanDayExerciseModel>('plan_day_exercises').prepareCreate((rec) => {
+            rec.planDayId = planDayId;
+            rec.exerciseId = ex.exercise_id;
+            rec.orderIndex = ex.order_index;
+            rec.targetSets = ex.target_sets ?? DEFAULT_TARGET_SETS;
+            rec.targetReps = ex.target_reps ?? DEFAULT_TARGET_REPS;
+            if (ex.rest_timer_seconds) rec.restTimerSeconds = ex.rest_timer_seconds;
+            if (ex.notes) rec.notes = ex.notes;
+          })
         );
-      }
 
-      // Prepare all creates, then execute in a single batch (1 adapter op, 1 emission)
-      const created = exercises.map((ex) =>
-        database.get<PlanDayExerciseModel>('plan_day_exercises').prepareCreate((rec) => {
-          rec.planDayId = planDayId;
-          rec.exerciseId = ex.exercise_id;
-          rec.orderIndex = ex.order_index;
-          rec.targetSets = ex.target_sets ?? DEFAULT_TARGET_SETS;
-          rec.targetReps = ex.target_reps ?? DEFAULT_TARGET_REPS;
-          if (ex.rest_timer_seconds) rec.restTimerSeconds = ex.rest_timer_seconds;
-          if (ex.notes) rec.notes = ex.notes;
-        })
-      );
+        await database.batch(...created);
+        return created;
+      });
 
-      await database.batch(...created);
-      return created;
-    });
-
-    return results.map(planDayExerciseToPlain);
-  } catch (error) {
-    if (
-      error instanceof AuthError ||
-      error instanceof DatabaseError ||
-      error instanceof ValidationError
-    ) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to add exercises. Please try again.',
-      `Failed to batch add exercises to plan day: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return results.map(planDayExerciseToPlain);
+    },
+    'Unable to add exercises. Please try again.',
+    'Failed to batch add exercises to plan day'
+  );
 }
 
 /**
@@ -517,140 +440,111 @@ export async function savePlanDayEdits(data: {
   addedExercises: Array<{ exercise_id: string; order_index: number }>;
   reorderedExercises: Array<{ id: string; order_index: number }>;
 }): Promise<void> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to save changes',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('save changes');
 
-    await database.write(async () => {
-      // Verify user owns the plan that contains this day
-      const planDay = await database.get<PlanDayModel>('plan_days').find(data.dayId);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+      await database.write(async () => {
+        // Verify user owns the plan that contains this day
+        const planDay = await database.get<PlanDayModel>('plan_days').find(data.dayId);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to modify this plan',
-          `User ${currentUser.id} attempted to modify plan owned by ${plan.userId}`
-        );
-      }
+        validateOwnership(plan.userId, currentUser.id, 'modify this plan');
 
-      // Collect all operations, then execute in a single database.batch()
-      // This triggers only 1 adapter operation and 1 observable emission
-      const allOperations: Model[] = [];
+        // Collect all operations, then execute in a single database.batch()
+        // This triggers only 1 adapter operation and 1 observable emission
+        const allOperations: Model[] = [];
 
-      // 1. Update day name if provided
-      if (data.name !== undefined) {
-        const trimmedName = data.name.trim();
-        if (trimmedName.length === 0) {
-          throw new ValidationError(
-            'Day name cannot be empty',
-            `Attempted to save day ${data.dayId} with empty name`
+        // 1. Update day name if provided
+        if (data.name !== undefined) {
+          const trimmedName = data.name.trim();
+          validateDayName(data.name, `day ${data.dayId}`);
+          allOperations.push(
+            planDay.prepareUpdate((d) => {
+              d.name = trimmedName;
+            })
           );
         }
-        if (trimmedName.length > MAX_DAY_NAME_LENGTH) {
-          throw new ValidationError(
-            `Day name cannot exceed ${MAX_DAY_NAME_LENGTH} characters`,
-            `Attempted to save day ${data.dayId} with name length ${trimmedName.length}`
-          );
-        }
-        allOperations.push(
-          planDay.prepareUpdate((d) => {
-            d.name = trimmedName;
+
+        // 2. Prepare deletions
+        const preparedDeletions = await Promise.all(
+          data.removedExerciseIds.map(async (removeId) => {
+            const pde = await database
+              .get<PlanDayExerciseModel>('plan_day_exercises')
+              .find(removeId);
+            return pde.prepareMarkAsDeleted();
           })
         );
-      }
+        allOperations.push(...preparedDeletions);
 
-      // 2. Prepare deletions
-      const preparedDeletions = await Promise.all(
-        data.removedExerciseIds.map(async (removeId) => {
-          const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(removeId);
-          return pde.prepareMarkAsDeleted();
-        })
-      );
-      allOperations.push(...preparedDeletions);
+        // 3. Prepare additions (with duplicate + limit check)
+        if (data.addedExercises.length > 0) {
+          // Get current exercises (accounting for prepared deletions)
+          const currentExercises = await database
+            .get<PlanDayExerciseModel>('plan_day_exercises')
+            .query(Q.where('plan_day_id', data.dayId))
+            .fetch();
 
-      // 3. Prepare additions (with duplicate + limit check)
-      if (data.addedExercises.length > 0) {
-        // Get current exercises (accounting for prepared deletions)
-        const currentExercises = await database
-          .get<PlanDayExerciseModel>('plan_day_exercises')
-          .query(Q.where('plan_day_id', data.dayId))
-          .fetch();
+          // Subtract the ones we're about to delete
+          const deletedIds = new Set(data.removedExerciseIds);
+          const remainingExercises = currentExercises.filter((e) => !deletedIds.has(e.id));
+          const currentCount = remainingExercises.length;
+          const existingExerciseIds = new Set(remainingExercises.map((e) => e.exerciseId));
 
-        // Subtract the ones we're about to delete
-        const deletedIds = new Set(data.removedExerciseIds);
-        const remainingExercises = currentExercises.filter((e) => !deletedIds.has(e.id));
-        const currentCount = remainingExercises.length;
-        const existingExerciseIds = new Set(remainingExercises.map((e) => e.exerciseId));
-
-        // Check limit
-        if (currentCount + data.addedExercises.length > MAX_EXERCISES_PER_DAY) {
-          const available = MAX_EXERCISES_PER_DAY - currentCount;
-          throw new ValidationError(
-            available <= 0
-              ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
-              : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
-            `Day ${data.dayId} has ${currentCount} exercises after removals, tried to add ${data.addedExercises.length}`
-          );
-        }
-
-        // Check duplicates
-        for (const ex of data.addedExercises) {
-          if (existingExerciseIds.has(ex.exercise_id)) {
+          // Check limit
+          if (currentCount + data.addedExercises.length > MAX_EXERCISES_PER_DAY) {
+            const available = MAX_EXERCISES_PER_DAY - currentCount;
             throw new ValidationError(
-              'One or more exercises are already in this workout day',
-              `Duplicate exercise ${ex.exercise_id} in day ${data.dayId}`
+              available <= 0
+                ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
+                : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
+              `Day ${data.dayId} has ${currentCount} exercises after removals, tried to add ${data.addedExercises.length}`
             );
           }
+
+          // Check duplicates
+          for (const ex of data.addedExercises) {
+            if (existingExerciseIds.has(ex.exercise_id)) {
+              throw new ValidationError(
+                'One or more exercises are already in this workout day',
+                `Duplicate exercise ${ex.exercise_id} in day ${data.dayId}`
+              );
+            }
+          }
+
+          // Prepare creates
+          const preparedCreates = data.addedExercises.map((ex) =>
+            database.get<PlanDayExerciseModel>('plan_day_exercises').prepareCreate((pde) => {
+              pde.planDayId = data.dayId;
+              pde.exerciseId = ex.exercise_id;
+              pde.orderIndex = ex.order_index;
+              pde.targetSets = DEFAULT_TARGET_SETS;
+              pde.targetReps = DEFAULT_TARGET_REPS;
+            })
+          );
+          allOperations.push(...preparedCreates);
         }
 
-        // Prepare creates
-        const preparedCreates = data.addedExercises.map((ex) =>
-          database.get<PlanDayExerciseModel>('plan_day_exercises').prepareCreate((pde) => {
-            pde.planDayId = data.dayId;
-            pde.exerciseId = ex.exercise_id;
-            pde.orderIndex = ex.order_index;
-            pde.targetSets = DEFAULT_TARGET_SETS;
-            pde.targetReps = DEFAULT_TARGET_REPS;
+        // 4. Prepare reorders
+        const preparedReorders = await Promise.all(
+          data.reorderedExercises.map(async ({ id, order_index }) => {
+            const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
+            return pde.prepareUpdate((e) => {
+              e.orderIndex = order_index;
+            });
           })
         );
-        allOperations.push(...preparedCreates);
-      }
+        allOperations.push(...preparedReorders);
 
-      // 4. Prepare reorders
-      const preparedReorders = await Promise.all(
-        data.reorderedExercises.map(async ({ id, order_index }) => {
-          const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
-          return pde.prepareUpdate((e) => {
-            e.orderIndex = order_index;
-          });
-        })
-      );
-      allOperations.push(...preparedReorders);
-
-      // Execute ALL operations in a single batch
-      if (allOperations.length > 0) {
-        await database.batch(...allOperations);
-      }
-    });
-  } catch (error) {
-    if (
-      error instanceof AuthError ||
-      error instanceof DatabaseError ||
-      error instanceof ValidationError
-    ) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to save changes. Please try again.',
-      `Failed to save plan day edits for ${data.dayId}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+        // Execute ALL operations in a single batch
+        if (allOperations.length > 0) {
+          await database.batch(...allOperations);
+        }
+      });
+    },
+    'Unable to save changes. Please try again.',
+    `Failed to save plan day edits for ${data.dayId}`
+  );
 }
 
 // ============================================================================
@@ -661,15 +555,14 @@ export async function savePlanDayEdits(data: {
  * Get plan by ID (Promise)
  */
 export async function getPlanById(id: string): Promise<WorkoutPlan> {
-  try {
-    const plan = await database.get<WorkoutPlanModel>('workout_plans').find(id);
-    return planToPlain(plan);
-  } catch (error) {
-    throw new DatabaseError(
-      'Unable to load workout plan. Please try again.',
-      `Failed to get plan by ID ${id}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+  return withDatabaseError(
+    async () => {
+      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(id);
+      return planToPlain(plan);
+    },
+    'Unable to load workout plan. Please try again.',
+    `Failed to get plan by ID ${id}`
+  );
 }
 
 /**
@@ -683,38 +576,21 @@ export function observePlan(id: string): Observable<WorkoutPlan> {
  * Get all plans for user (Promise)
  */
 export async function getUserPlans(userId: string): Promise<WorkoutPlan[]> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to view plans',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('view plans');
+      validateUserIdMatch(userId, currentUser.id);
 
-    if (userId !== currentUser.id) {
-      throw new AuthError(
-        'Authentication error. Please sign out and sign in again.',
-        `User ID mismatch - Expected: ${currentUser.id}, Received: ${userId}`
-      );
-    }
+      const plans = await database
+        .get<WorkoutPlanModel>('workout_plans')
+        .query(Q.where('user_id', userId), Q.sortBy('created_at', Q.desc))
+        .fetch();
 
-    const plans = await database
-      .get<WorkoutPlanModel>('workout_plans')
-      .query(Q.where('user_id', userId), Q.sortBy('created_at', Q.desc))
-      .fetch();
-
-    return plans.map(planToPlain);
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to load plans. Please try again.',
-      `Failed to get user plans: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return plans.map(planToPlain);
+    },
+    'Unable to load plans. Please try again.',
+    'Failed to get user plans'
+  );
 }
 
 /**
@@ -732,38 +608,21 @@ export function observeUserPlans(userId: string): Observable<WorkoutPlan[]> {
  * Get active plan for user (Promise)
  */
 export async function getActivePlan(userId: string): Promise<WorkoutPlan | null> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to view active plan',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('view active plan');
+      validateUserIdMatch(userId, currentUser.id);
 
-    if (userId !== currentUser.id) {
-      throw new AuthError(
-        'Authentication error. Please sign out and sign in again.',
-        `User ID mismatch - Expected: ${currentUser.id}, Received: ${userId}`
-      );
-    }
+      const plans = await database
+        .get<WorkoutPlanModel>('workout_plans')
+        .query(Q.where('user_id', userId), Q.where('is_active', true), Q.take(1))
+        .fetch();
 
-    const plans = await database
-      .get<WorkoutPlanModel>('workout_plans')
-      .query(Q.where('user_id', userId), Q.where('is_active', true), Q.take(1))
-      .fetch();
-
-    return plans.length > 0 && plans[0] ? planToPlain(plans[0]) : null;
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to load active plan. Please try again.',
-      `Failed to get active plan: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return plans.length > 0 && plans[0] ? planToPlain(plans[0]) : null;
+    },
+    'Unable to load active plan. Please try again.',
+    'Failed to get active plan'
+  );
 }
 
 /**
@@ -866,41 +725,39 @@ export function observePlanDayWithExercises(planDayId: string): Observable<PlanD
  * Get plan with all its days (Promise)
  */
 export async function getPlanWithDays(planId: string): Promise<PlanWithDays> {
-  try {
-    const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planId);
-    const days = await database
-      .get<PlanDayModel>('plan_days')
-      .query(Q.where('plan_id', planId), Q.sortBy('order_index', Q.asc))
-      .fetch();
+  return withDatabaseError(
+    async () => {
+      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planId);
+      const days = await database
+        .get<PlanDayModel>('plan_days')
+        .query(Q.where('plan_id', planId), Q.sortBy('order_index', Q.asc))
+        .fetch();
 
-    return {
-      ...planToPlain(plan),
-      days: days.map(planDayToPlain),
-    };
-  } catch (error) {
-    throw new DatabaseError(
-      'Unable to load plan details. Please try again.',
-      `Failed to get plan with days for ID ${planId}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return {
+        ...planToPlain(plan),
+        days: days.map(planDayToPlain),
+      };
+    },
+    'Unable to load plan details. Please try again.',
+    `Failed to get plan with days for ID ${planId}`
+  );
 }
 
 /**
  * Get exercise count for a plan day (Promise)
  */
 export async function getExerciseCountByDay(planDayId: string): Promise<number> {
-  try {
-    const count = await database
-      .get<PlanDayExerciseModel>('plan_day_exercises')
-      .query(Q.where('plan_day_id', planDayId))
-      .fetchCount();
-    return count;
-  } catch (error) {
-    throw new DatabaseError(
-      'Unable to count exercises. Please try again.',
-      `Failed to count exercises for day ${planDayId}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+  return withDatabaseError(
+    async () => {
+      const count = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', planDayId))
+        .fetchCount();
+      return count;
+    },
+    'Unable to count exercises. Please try again.',
+    `Failed to count exercises for day ${planDayId}`
+  );
 }
 
 /**
@@ -910,75 +767,73 @@ export async function getExerciseCountByDay(planDayId: string): Promise<number> 
 export async function getExerciseCountsByDays(
   planDayIds: string[]
 ): Promise<Record<string, number>> {
-  try {
-    const counts: Record<string, number> = {};
+  return withDatabaseError(
+    async () => {
+      const counts: Record<string, number> = {};
 
-    // Initialize all to 0
-    for (const id of planDayIds) {
-      counts[id] = 0;
-    }
-
-    // Batch query all exercises for these days
-    if (planDayIds.length > 0) {
-      const exercises = await database
-        .get<PlanDayExerciseModel>('plan_day_exercises')
-        .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
-        .fetch();
-
-      // Count per day
-      for (const exercise of exercises) {
-        counts[exercise.planDayId] = (counts[exercise.planDayId] ?? 0) + 1;
+      // Initialize all to 0
+      for (const id of planDayIds) {
+        counts[id] = 0;
       }
-    }
 
-    return counts;
-  } catch (error) {
-    throw new DatabaseError(
-      'Unable to count exercises. Please try again.',
-      `Failed to count exercises for days: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      // Batch query all exercises for these days
+      if (planDayIds.length > 0) {
+        const exercises = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
+          .fetch();
+
+        // Count per day
+        for (const exercise of exercises) {
+          counts[exercise.planDayId] = (counts[exercise.planDayId] ?? 0) + 1;
+        }
+      }
+
+      return counts;
+    },
+    'Unable to count exercises. Please try again.',
+    'Failed to count exercises for days'
+  );
 }
 
 /**
  * Get plan day with all its exercises (Promise)
  */
 export async function getPlanDayWithExercises(planDayId: string): Promise<PlanDayWithExercises> {
-  try {
-    const planDay = await database.get<PlanDayModel>('plan_days').find(planDayId);
-    const planDayExercises = await database
-      .get<PlanDayExerciseModel>('plan_day_exercises')
-      .query(Q.where('plan_day_id', planDayId), Q.sortBy('order_index', Q.asc))
-      .fetch();
+  return withDatabaseError(
+    async () => {
+      const planDay = await database.get<PlanDayModel>('plan_days').find(planDayId);
+      const planDayExercises = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', planDayId), Q.sortBy('order_index', Q.asc))
+        .fetch();
 
-    const exercisesWithDetails = await Promise.all(
-      planDayExercises.map(async (pde) => {
-        const exercise = await database.get<ExerciseModel>('exercises').find(pde.exerciseId);
+      const exercisesWithDetails = await Promise.all(
+        planDayExercises.map(async (pde) => {
+          const exercise = await database.get<ExerciseModel>('exercises').find(pde.exerciseId);
 
-        return {
-          ...planDayExerciseToPlain(pde),
-          exercise: {
-            id: exercise.id,
-            name: exercise.name,
-            body_parts: exercise.bodyParts,
-            target_muscles: exercise.targetMuscles,
-            equipments: exercise.equipments,
-            gif_url: exercise.gifUrl ?? undefined,
-          },
-        };
-      })
-    );
+          return {
+            ...planDayExerciseToPlain(pde),
+            exercise: {
+              id: exercise.id,
+              name: exercise.name,
+              body_parts: exercise.bodyParts,
+              target_muscles: exercise.targetMuscles,
+              equipments: exercise.equipments,
+              gif_url: exercise.gifUrl ?? undefined,
+            },
+          };
+        })
+      );
 
-    return {
-      ...planDayToPlain(planDay),
-      exercises: exercisesWithDetails,
-    };
-  } catch (error) {
-    throw new DatabaseError(
-      'Unable to load day details. Please try again.',
-      `Failed to get plan day with exercises for ID ${planDayId}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return {
+        ...planDayToPlain(planDay),
+        exercises: exercisesWithDetails,
+      };
+    },
+    'Unable to load day details. Please try again.',
+    `Failed to get plan day with exercises for ID ${planDayId}`
+  );
 }
 
 // ============================================================================
@@ -989,153 +844,89 @@ export async function getPlanDayWithExercises(planDayId: string): Promise<PlanDa
  * Update workout plan
  */
 export async function updatePlan(id: string, updates: UpdatePlan): Promise<WorkoutPlan> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to update plans',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('update plans');
 
-    const plan = await database.write(async () => {
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(id);
+      const plan = await database.write(async () => {
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(id);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to update this plan',
-          `User ${currentUser.id} attempted to update plan owned by ${plan.userId}`
-        );
-      }
+        validateOwnership(plan.userId, currentUser.id, 'update this plan');
 
-      // Validate name length if being updated
-      if (updates.name !== undefined) {
-        const trimmedName = updates.name.trim();
-        if (trimmedName.length === 0) {
-          throw new ValidationError(
-            'Plan name cannot be empty',
-            `Attempted to update plan ${id} with empty name`
+        // Validate name length if being updated
+        if (updates.name !== undefined) {
+          validatePlanName(updates.name, `plan ${id}`);
+        }
+
+        // If setting as active, deactivate other plans first
+        let deactivations: Model[] = [];
+        if (updates.is_active) {
+          const activePlans = await database
+            .get<WorkoutPlanModel>('workout_plans')
+            .query(
+              Q.where('user_id', plan.userId),
+              Q.where('is_active', true),
+              Q.where('id', Q.notEq(id))
+            )
+            .fetch();
+
+          deactivations = activePlans.map((p) =>
+            p.prepareUpdate((rec) => {
+              rec.isActive = false;
+            })
           );
         }
-        if (trimmedName.length > MAX_PLAN_NAME_LENGTH) {
-          throw new ValidationError(
-            `Plan name cannot exceed ${MAX_PLAN_NAME_LENGTH} characters`,
-            `Attempted to update plan ${id} with name length ${trimmedName.length}`
-          );
-        }
-      }
 
-      // If setting as active, deactivate other plans first
-      let deactivations: Model[] = [];
-      if (updates.is_active) {
-        const activePlans = await database
-          .get<WorkoutPlanModel>('workout_plans')
-          .query(
-            Q.where('user_id', plan.userId),
-            Q.where('is_active', true),
-            Q.where('id', Q.notEq(id))
-          )
-          .fetch();
+        const mainUpdate = plan.prepareUpdate((p) => {
+          if (updates.name !== undefined) p.name = updates.name;
+          if (updates.is_active !== undefined) p.isActive = updates.is_active;
+          if (updates.cover_image_url !== undefined) p.coverImageUrl = updates.cover_image_url;
+        });
 
-        deactivations = activePlans.map((p) =>
-          p.prepareUpdate((rec) => {
-            rec.isActive = false;
-          })
-        );
-      }
-
-      const mainUpdate = plan.prepareUpdate((p) => {
-        if (updates.name !== undefined) p.name = updates.name;
-        if (updates.is_active !== undefined) p.isActive = updates.is_active;
-        if (updates.cover_image_url !== undefined) p.coverImageUrl = updates.cover_image_url;
+        await database.batch(...deactivations, mainUpdate);
+        return plan;
       });
 
-      await database.batch(...deactivations, mainUpdate);
-      return plan;
-    });
-
-    return planToPlain(plan);
-  } catch (error) {
-    if (
-      error instanceof AuthError ||
-      error instanceof DatabaseError ||
-      error instanceof ValidationError
-    ) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to update plan. Please try again.',
-      `Failed to update plan ${id}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return planToPlain(plan);
+    },
+    'Unable to update plan. Please try again.',
+    `Failed to update plan ${id}`
+  );
 }
 
 /**
  * Update plan day
  */
 export async function updatePlanDay(id: string, updates: UpdatePlanDay): Promise<PlanDay> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to update plan days',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('update plan days');
 
-    const planDay = await database.write(async () => {
-      const planDay = await database.get<PlanDayModel>('plan_days').find(id);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+      const planDay = await database.write(async () => {
+        const planDay = await database.get<PlanDayModel>('plan_days').find(id);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to update this plan',
-          `User ${currentUser.id} attempted to update plan owned by ${plan.userId}`
-        );
-      }
+        validateOwnership(plan.userId, currentUser.id, 'update this plan');
 
-      // Validate name length if being updated
-      if (updates.name !== undefined) {
-        const trimmedName = updates.name.trim();
-        if (trimmedName.length === 0) {
-          throw new ValidationError(
-            'Day name cannot be empty',
-            `Attempted to update plan day ${id} with empty name`
-          );
+        // Validate name length if being updated
+        if (updates.name !== undefined) {
+          validateDayName(updates.name, `plan day ${id}`);
         }
-        if (trimmedName.length > MAX_DAY_NAME_LENGTH) {
-          throw new ValidationError(
-            `Day name cannot exceed ${MAX_DAY_NAME_LENGTH} characters`,
-            `Attempted to update plan day ${id} with name length ${trimmedName.length}`
-          );
-        }
-      }
 
-      await planDay.update((d) => {
-        if (updates.name !== undefined) d.name = updates.name;
-        if (updates.day_of_week !== undefined) d.dayOfWeek = updates.day_of_week;
-        if (updates.order_index !== undefined) d.orderIndex = updates.order_index;
+        await planDay.update((d) => {
+          if (updates.name !== undefined) d.name = updates.name;
+          if (updates.day_of_week !== undefined) d.dayOfWeek = updates.day_of_week;
+          if (updates.order_index !== undefined) d.orderIndex = updates.order_index;
+        });
+
+        return planDay;
       });
 
-      return planDay;
-    });
-
-    return planDayToPlain(planDay);
-  } catch (error) {
-    if (
-      error instanceof AuthError ||
-      error instanceof DatabaseError ||
-      error instanceof ValidationError
-    ) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to update day. Please try again.',
-      `Failed to update plan day ${id}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return planDayToPlain(planDay);
+    },
+    'Unable to update day. Please try again.',
+    `Failed to update plan day ${id}`
+  );
 }
 
 /**
@@ -1150,49 +941,33 @@ export async function updatePlanDayExercise(
     notes?: string;
   }
 ): Promise<PlanDayExercise> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to update exercises',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('update exercises');
 
-    const planDayExercise = await database.write(async () => {
-      const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
-      const planDay = await database.get<PlanDayModel>('plan_days').find(pde.planDayId);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+      const planDayExercise = await database.write(async () => {
+        const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
+        const planDay = await database.get<PlanDayModel>('plan_days').find(pde.planDayId);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to update this plan',
-          `User ${currentUser.id} attempted to update plan owned by ${plan.userId}`
-        );
-      }
+        validateOwnership(plan.userId, currentUser.id, 'update this plan');
 
-      await pde.update((e) => {
-        if (updates.target_sets !== undefined) e.targetSets = updates.target_sets;
-        if (updates.target_reps !== undefined) e.targetReps = updates.target_reps;
-        if (updates.rest_timer_seconds !== undefined)
-          e.restTimerSeconds = updates.rest_timer_seconds;
-        if (updates.notes !== undefined) e.notes = updates.notes;
+        await pde.update((e) => {
+          if (updates.target_sets !== undefined) e.targetSets = updates.target_sets;
+          if (updates.target_reps !== undefined) e.targetReps = updates.target_reps;
+          if (updates.rest_timer_seconds !== undefined)
+            e.restTimerSeconds = updates.rest_timer_seconds;
+          if (updates.notes !== undefined) e.notes = updates.notes;
+        });
+
+        return pde;
       });
 
-      return pde;
-    });
-
-    return planDayExerciseToPlain(planDayExercise);
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to update exercise. Please try again.',
-      `Failed to update plan day exercise ${id}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      return planDayExerciseToPlain(planDayExercise);
+    },
+    'Unable to update exercise. Please try again.',
+    `Failed to update plan day exercise ${id}`
+  );
 }
 
 /**
@@ -1204,54 +979,38 @@ export async function reorderPlanDayExercises(
 ): Promise<void> {
   if (exercises.length === 0) return;
 
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to reorder exercises',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('reorder exercises');
 
-    await database.write(async () => {
-      // Verify ownership via first exercise
-      const firstExercise = exercises[0];
-      if (!firstExercise) return; // Already checked above, but TypeScript needs this
+      await database.write(async () => {
+        // Verify ownership via first exercise
+        const firstExercise = exercises[0];
+        if (!firstExercise) return; // Already checked above, but TypeScript needs this
 
-      const firstPde = await database
-        .get<PlanDayExerciseModel>('plan_day_exercises')
-        .find(firstExercise.id);
-      const planDay = await database.get<PlanDayModel>('plan_days').find(firstPde.planDayId);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+        const firstPde = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .find(firstExercise.id);
+        const planDay = await database.get<PlanDayModel>('plan_days').find(firstPde.planDayId);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to reorder these exercises',
-          `User ${currentUser.id} attempted to reorder exercises in plan owned by ${plan.userId}`
+        validateOwnership(plan.userId, currentUser.id, 'reorder these exercises');
+
+        // Prepare all updates, then execute in a single batch (1 adapter op, 1 emission)
+        const preparedUpdates = await Promise.all(
+          exercises.map(async ({ id, order_index }) => {
+            const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
+            return pde.prepareUpdate((e) => {
+              e.orderIndex = order_index;
+            });
+          })
         );
-      }
-
-      // Prepare all updates, then execute in a single batch (1 adapter op, 1 emission)
-      const preparedUpdates = await Promise.all(
-        exercises.map(async ({ id, order_index }) => {
-          const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
-          return pde.prepareUpdate((e) => {
-            e.orderIndex = order_index;
-          });
-        })
-      );
-      await database.batch(...preparedUpdates);
-    });
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to reorder exercises. Please try again.',
-      `Failed to reorder exercises: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+        await database.batch(...preparedUpdates);
+      });
+    },
+    'Unable to reorder exercises. Please try again.',
+    'Failed to reorder exercises'
+  );
 }
 
 /**
@@ -1263,48 +1022,32 @@ export async function reorderPlanDays(
 ): Promise<void> {
   if (days.length === 0) return;
 
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to reorder days',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('reorder days');
 
-    await database.write(async () => {
-      // Verify ownership: day → plan → user
-      const planDay = await database.get<PlanDayModel>('plan_days').find(days[0]!.id);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+      await database.write(async () => {
+        // Verify ownership: day → plan → user
+        const planDay = await database.get<PlanDayModel>('plan_days').find(days[0]!.id);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to reorder these days',
-          `User ${currentUser.id} attempted to reorder days in plan owned by ${plan.userId}`
+        validateOwnership(plan.userId, currentUser.id, 'reorder these days');
+
+        // Prepare all updates, then execute in a single batch (1 adapter op, 1 emission)
+        const preparedUpdates = await Promise.all(
+          days.map(async ({ id, order_index }) => {
+            const day = await database.get<PlanDayModel>('plan_days').find(id);
+            return day.prepareUpdate((d) => {
+              d.orderIndex = order_index;
+            });
+          })
         );
-      }
-
-      // Prepare all updates, then execute in a single batch (1 adapter op, 1 emission)
-      const preparedUpdates = await Promise.all(
-        days.map(async ({ id, order_index }) => {
-          const day = await database.get<PlanDayModel>('plan_days').find(id);
-          return day.prepareUpdate((d) => {
-            d.orderIndex = order_index;
-          });
-        })
-      );
-      await database.batch(...preparedUpdates);
-    });
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to reorder days. Please try again.',
-      `Failed to reorder days: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+        await database.batch(...preparedUpdates);
+      });
+    },
+    'Unable to reorder days. Please try again.',
+    'Failed to reorder days'
+  );
 }
 
 // ============================================================================
@@ -1315,140 +1058,92 @@ export async function reorderPlanDays(
  * Delete workout plan (cascades to days and exercises via WatermelonDB)
  */
 export async function deletePlan(id: string): Promise<void> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to delete plans',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('delete plans');
 
-    await database.write(async () => {
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(id);
+      await database.write(async () => {
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(id);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to delete this plan',
-          `User ${currentUser.id} attempted to delete plan owned by ${plan.userId}`
-        );
-      }
+        validateOwnership(plan.userId, currentUser.id, 'delete this plan');
 
-      // Collect all deletions (exercises + days + plan) into a single batch
-      const allDeletions: Model[] = [];
+        // Collect all deletions (exercises + days + plan) into a single batch
+        const allDeletions: Model[] = [];
 
-      const days = await database
-        .get<PlanDayModel>('plan_days')
-        .query(Q.where('plan_id', id))
-        .fetch();
-
-      for (const day of days) {
-        const exercises = await database
-          .get<PlanDayExerciseModel>('plan_day_exercises')
-          .query(Q.where('plan_day_id', day.id))
+        const days = await database
+          .get<PlanDayModel>('plan_days')
+          .query(Q.where('plan_id', id))
           .fetch();
 
-        allDeletions.push(...exercises.map((e) => e.prepareMarkAsDeleted()));
-        allDeletions.push(day.prepareMarkAsDeleted());
-      }
+        for (const day of days) {
+          const exercises = await database
+            .get<PlanDayExerciseModel>('plan_day_exercises')
+            .query(Q.where('plan_day_id', day.id))
+            .fetch();
 
-      allDeletions.push(plan.prepareMarkAsDeleted());
-      await database.batch(...allDeletions);
-    });
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
+          allDeletions.push(...exercises.map((e) => e.prepareMarkAsDeleted()));
+          allDeletions.push(day.prepareMarkAsDeleted());
+        }
 
-    throw new DatabaseError(
-      'Unable to delete plan. Please try again.',
-      `Failed to delete plan ${id}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+        allDeletions.push(plan.prepareMarkAsDeleted());
+        await database.batch(...allDeletions);
+      });
+    },
+    'Unable to delete plan. Please try again.',
+    `Failed to delete plan ${id}`
+  );
 }
 
 /**
  * Delete plan day
  */
 export async function deletePlanDay(id: string): Promise<void> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to delete days',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('delete days');
 
-    await database.write(async () => {
-      const planDay = await database.get<PlanDayModel>('plan_days').find(id);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+      await database.write(async () => {
+        const planDay = await database.get<PlanDayModel>('plan_days').find(id);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to delete this day',
-          `User ${currentUser.id} attempted to delete day in plan owned by ${plan.userId}`
+        validateOwnership(plan.userId, currentUser.id, 'delete this day');
+
+        // Collect all deletions (exercises + day) into a single batch
+        const exercises = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', id))
+          .fetch();
+
+        await database.batch(
+          ...exercises.map((e) => e.prepareMarkAsDeleted()),
+          planDay.prepareMarkAsDeleted()
         );
-      }
-
-      // Collect all deletions (exercises + day) into a single batch
-      const exercises = await database
-        .get<PlanDayExerciseModel>('plan_day_exercises')
-        .query(Q.where('plan_day_id', id))
-        .fetch();
-
-      await database.batch(
-        ...exercises.map((e) => e.prepareMarkAsDeleted()),
-        planDay.prepareMarkAsDeleted()
-      );
-    });
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to delete day. Please try again.',
-      `Failed to delete plan day ${id}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+      });
+    },
+    'Unable to delete day. Please try again.',
+    `Failed to delete plan day ${id}`
+  );
 }
 
 /**
  * Remove exercise from plan day
  */
 export async function removeExerciseFromPlanDay(id: string): Promise<void> {
-  try {
-    const currentUser = useAuthStore.getState().user;
-    if (!currentUser?.id) {
-      throw new AuthError(
-        'Please sign in to remove exercises',
-        'User not authenticated - no user.id in authStore'
-      );
-    }
+  return withDatabaseError(
+    async () => {
+      const currentUser = requireAuth('remove exercises');
 
-    await database.write(async () => {
-      const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
-      const planDay = await database.get<PlanDayModel>('plan_days').find(pde.planDayId);
-      const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
+      await database.write(async () => {
+        const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
+        const planDay = await database.get<PlanDayModel>('plan_days').find(pde.planDayId);
+        const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
-      if (plan.userId !== currentUser.id) {
-        throw new AuthError(
-          'You do not have permission to remove this exercise',
-          `User ${currentUser.id} attempted to remove exercise from plan owned by ${plan.userId}`
-        );
-      }
+        validateOwnership(plan.userId, currentUser.id, 'remove this exercise');
 
-      await pde.markAsDeleted();
-    });
-  } catch (error) {
-    if (error instanceof AuthError || error instanceof DatabaseError) {
-      throw error;
-    }
-
-    throw new DatabaseError(
-      'Unable to remove exercise. Please try again.',
-      `Failed to remove exercise from plan day ${id}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+        await pde.markAsDeleted();
+      });
+    },
+    'Unable to remove exercise. Please try again.',
+    `Failed to remove exercise from plan day ${id}`
+  );
 }

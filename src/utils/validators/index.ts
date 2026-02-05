@@ -1,13 +1,15 @@
 /**
  * Validators - Main Export
  *
- * Input validation utilities (email, weight, reps, etc.)
+ * Input validation utilities for plans, workouts, forms, etc.
  *
  * USAGE:
- * import { validateEmail, validateWeight, validateReps } from '@/utils/validators';
+ * import { validateDayName, getDayCountError } from '@/utils/validators';
  */
 
-// Export validator functions here when implemented
+export * from './plans';
+
+// Future validators:
 // export * from './email';
 // export * from './workout';
 // export * from './forms';
