@@ -7,9 +7,10 @@
 
 import { useCallback, useState } from 'react';
 
-import { MAX_DAYS_PER_PLAN } from '@/constants';
+import { useAlertState, type AlertState } from '@/hooks/ui/useAlertState';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { createPlanDay, type PlanDay } from '@/services/database/operations/plans';
+import { getDayCountError } from '@/utils/validators';
 
 export interface UseAddDayDialogReturn {
   showAddDayDialog: boolean;
@@ -19,7 +20,7 @@ export interface UseAddDayDialogReturn {
   handleAddDayPress: () => Promise<void>;
   handleConfirmAddDay: () => Promise<void>;
   handleCancelAddDay: () => void;
-  alert: { title: string; description?: string } | null;
+  alert: AlertState | null;
   clearAlert: () => void;
 }
 
@@ -34,18 +35,15 @@ export function useAddDayDialog(params: {
   const [showAddDayDialog, setShowAddDayDialog] = useState(false);
   const [addDayName, setAddDayName] = useState('');
   const [isAddingDay, setIsAddingDay] = useState(false);
-  const [alert, setAlert] = useState<{ title: string; description?: string } | null>(null);
-  const clearAlert = useCallback(() => setAlert(null), []);
+  const { alert, setAlert, clearAlert } = useAlertState();
 
   const handleAddDayPress = useCallback(async () => {
     if (!activePlanId) return;
 
     // Check max days limit
-    if (planDaysCount >= MAX_DAYS_PER_PLAN) {
-      setAlert({
-        title: 'Day Limit Reached',
-        description: `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`,
-      });
+    const dayCountError = getDayCountError(planDaysCount);
+    if (dayCountError) {
+      setAlert(dayCountError);
       return;
     }
 
@@ -77,11 +75,9 @@ export function useAddDayDialog(params: {
     if (!activePlanId || isAddingDay) return;
 
     // Defense in depth: check limit even if dialog is already open
-    if (planDaysCount >= MAX_DAYS_PER_PLAN) {
-      setAlert({
-        title: 'Day Limit Reached',
-        description: `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`,
-      });
+    const dayCountError = getDayCountError(planDaysCount);
+    if (dayCountError) {
+      setAlert(dayCountError);
       setShowAddDayDialog(false);
       return;
     }

@@ -16,6 +16,7 @@ import {
   MAX_EXERCISES_PER_DAY,
   MAX_DAY_NAME_LENGTH,
 } from '@/constants';
+import { useAlertState, type AlertState } from '@/hooks/ui/useAlertState';
 import { ValidationError } from '@/utils/errors';
 
 /** Prefix for temporary exercise IDs (not yet persisted to DB) */
@@ -73,7 +74,7 @@ export interface UseEditDayReturn {
   navigateToExerciseDetail: (exercise: DayExercise) => void;
 
   // Alert dialog state
-  alert: { title: string; description?: string } | null;
+  alert: AlertState | null;
   clearAlert: () => void;
 }
 
@@ -86,8 +87,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
-  const [alert, setAlert] = useState<{ title: string; description?: string } | null>(null);
-  const clearAlert = useCallback(() => setAlert(null), []);
+  const { alert, setAlert, clearAlert } = useAlertState();
 
   // Track initial state for dirty detection
   const initialNameRef = useRef('');
