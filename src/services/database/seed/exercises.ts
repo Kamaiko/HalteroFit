@@ -52,13 +52,13 @@ export async function needsExerciseSeeding(): Promise<boolean> {
  * Clears existing exercises and re-imports from bundled dataset
  */
 export async function seedExercises(): Promise<{ success: boolean; count: number }> {
-  console.log('Starting exercise seeding...');
+  if (__DEV__) console.log('Starting exercise seeding...');
 
   try {
     // Clear existing exercises first (for re-seeding scenarios)
     const existingExercises = await database.get<ExerciseModel>('exercises').query().fetch();
     if (existingExercises.length > 0) {
-      console.log(`Clearing ${existingExercises.length} existing exercises...`);
+      if (__DEV__) console.log(`Clearing ${existingExercises.length} existing exercises...`);
       await database.write(async () => {
         for (const exercise of existingExercises) {
           await exercise.destroyPermanently();
@@ -99,13 +99,13 @@ export async function seedExercises(): Promise<{ success: boolean; count: number
       });
 
       totalInserted += batch.length;
-      console.log(`Seeded ${totalInserted}/${exercises.length} exercises`);
+      if (__DEV__) console.log(`Seeded ${totalInserted}/${exercises.length} exercises`);
     }
 
     // Mark seeding complete
     mmkvStorage.setNumber(EXERCISE_SEED_VERSION_KEY, SEED_VERSION);
 
-    console.log(`Exercise seeding complete: ${totalInserted} exercises`);
+    if (__DEV__) console.log(`Exercise seeding complete: ${totalInserted} exercises`);
     return { success: true, count: totalInserted };
   } catch (error) {
     console.error('Exercise seeding failed:', error);
@@ -121,13 +121,13 @@ export async function initializeExercises(): Promise<void> {
   const needsSeeding = await needsExerciseSeeding();
 
   if (needsSeeding) {
-    console.log('First launch or update detected, seeding exercises...');
+    if (__DEV__) console.log('First launch or update detected, seeding exercises...');
     const result = await seedExercises();
 
     if (!result.success) {
       throw new Error('Failed to seed exercises');
     }
   } else {
-    console.log('Exercises already seeded');
+    if (__DEV__) console.log('Exercises already seeded');
   }
 }

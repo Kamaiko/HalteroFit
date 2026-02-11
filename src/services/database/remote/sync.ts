@@ -62,7 +62,7 @@ export async function sync(): Promise<SyncResult> {
 
       // Pull changes from server
       pullChanges: async ({ lastPulledAt, schemaVersion, migration }) => {
-        console.log('📥 Pulling changes since:', new Date(lastPulledAt || 0));
+        if (__DEV__) console.log('Pulling changes since:', new Date(lastPulledAt || 0));
 
         const { data, error } = await supabase.rpc('pull_changes', {
           last_pulled_at: lastPulledAt || 0,
@@ -87,7 +87,7 @@ export async function sync(): Promise<SyncResult> {
         }
         result.pulledRecords = pulledCount;
 
-        console.log('✅ Pulled', pulledCount, 'changes');
+        if (__DEV__) console.log('Pulled', pulledCount, 'changes');
 
         return {
           changes: data.changes,
@@ -112,11 +112,11 @@ export async function sync(): Promise<SyncResult> {
         }
 
         if (pushCount === 0) {
-          console.log('⏭️ No changes to push');
+          if (__DEV__) console.log('No changes to push');
           return;
         }
 
-        console.log('📤 Pushing', pushCount, 'changes');
+        if (__DEV__) console.log('Pushing', pushCount, 'changes');
 
         const { error } = await supabase.rpc('push_changes', {
           changes: changes,
@@ -131,7 +131,7 @@ export async function sync(): Promise<SyncResult> {
         }
 
         result.pushedRecords = pushCount;
-        console.log('✅ Pushed', pushCount, 'changes');
+        if (__DEV__) console.log('Pushed', pushCount, 'changes');
       },
 
       // Migration support (for schema version changes)
@@ -142,15 +142,17 @@ export async function sync(): Promise<SyncResult> {
     });
 
     result.success = true;
-    console.log('✅ Sync completed successfully');
-    console.log('📊 Sync stats:', {
-      pulled: result.pulledRecords,
-      pushed: result.pushedRecords,
-    });
+    if (__DEV__) {
+      console.log('Sync completed successfully');
+      console.log('Sync stats:', {
+        pulled: result.pulledRecords,
+        pushed: result.pushedRecords,
+      });
+    }
 
     // Log detailed sync info (for debugging)
     if (__DEV__) {
-      console.log('🔍 Sync logs:', logger.formattedLogs);
+      console.log('Sync logs:', logger.formattedLogs);
     }
 
     return result;
@@ -158,7 +160,7 @@ export async function sync(): Promise<SyncResult> {
     const errorMessage = error instanceof Error ? error.message : String(error);
     result.errors.push(errorMessage);
 
-    console.error('❌ Sync failed:', errorMessage);
+    console.error('Sync failed:', errorMessage);
 
     if (error instanceof DatabaseError) {
       throw error;
@@ -221,7 +223,7 @@ export function setupAutoSync() {
       try {
         await sync();
       } catch (error) {
-        console.log('⚠️ Auto-sync failed (will retry later):', error);
+        if (__DEV__) console.log('Auto-sync failed (will retry later):', error);
       }
     }, 2000); // 2 second debounce
   };
@@ -230,17 +232,17 @@ export function setupAutoSync() {
   database
     .withChangesForTables(['workouts', 'workout_exercises', 'exercise_sets'])
     .subscribe(() => {
-      console.log('📝 Data changed, scheduling sync...');
+      if (__DEV__) console.log('Data changed, scheduling sync...');
       debouncedSync();
     });
 
-  console.log('✅ Auto-sync enabled');
+  if (__DEV__) console.log('Auto-sync enabled');
 }
 
 /**
  * Manual sync trigger (for pull-to-refresh)
  */
 export async function manualSync(): Promise<SyncResult> {
-  console.log('🔄 Manual sync triggered');
+  if (__DEV__) console.log('Manual sync triggered');
   return await sync();
 }
