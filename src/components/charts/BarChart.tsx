@@ -61,7 +61,7 @@ export function BarChart({
   labels,
   title,
   width,
-  height = CHART_DEFAULT_HEIGHT,
+  height: _height = CHART_DEFAULT_HEIGHT,
   barColor = Colors.primary.DEFAULT,
   showValues = false,
 }: BarChartProps) {

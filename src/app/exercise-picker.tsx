@@ -212,7 +212,7 @@ export default function ExercisePickerScreen() {
         </Button>
       </View>
     ),
-    [insets.bottom, isButtonDisabled, hasSelection, handleAddExercises, selectedCount, buttonText]
+    [insets.bottom, isButtonDisabled, hasSelection, handleAddExercises, buttonText]
   );
 
   return (

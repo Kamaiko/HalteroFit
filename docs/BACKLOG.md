@@ -194,7 +194,7 @@ function detectPlateauWithContext(exerciseHistory, user) {
     - Well-tested with Expo and React Navigation ecosystem
     - Used internally by @react-navigation/material-top-tabs
   - **Why NOT Expo Native Tabs:**
-    - SDK 54+ Native Tabs is for *main app navigation* (bottom/top tab bar)
+    - SDK 54+ Native Tabs is for _main app navigation_ (bottom/top tab bar)
     - NOT designed for internal sub-tabs within screens
     - Uses different native primitives (UITabBarController on iOS)
   - **Estimated effort:** ~2-3h

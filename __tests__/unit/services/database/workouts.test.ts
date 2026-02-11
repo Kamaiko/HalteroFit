@@ -19,7 +19,6 @@ import {
   createTestWorkout,
   createTestUser,
   resetTestIdCounter,
-  createTestWorkoutData,
   createMultipleRecords,
 } from '@test-helpers/database/factories';
 import { getAllRecords, countRecords } from '@test-helpers/database/queries';

@@ -189,7 +189,7 @@ module.exports = [
 
   // Jest setup file (.js and .ts) - MUST come after general TypeScript config
   {
-    files: ['jest.setup.js', 'jest.setup.ts'],
+    files: ['jest.setup.ts'],
     languageOptions: {
       globals: {
         global: 'writable',

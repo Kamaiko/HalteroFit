@@ -54,13 +54,7 @@
 import { Image, ImageSource, ImageErrorEventData } from 'expo-image';
 import { useState } from 'react';
 import { StyleSheet, StyleProp, ImageStyle } from 'react-native';
-import {
-  DURATION_MODERATE,
-  THUMBNAIL_SM,
-  THUMBNAIL_MD,
-  THUMBNAIL_LG,
-  THUMBNAIL_XL,
-} from '@/constants';
+import { DURATION_MODERATE, THUMBNAIL_MD, THUMBNAIL_LG, THUMBNAIL_XL } from '@/constants';
 
 /**
  * Props for CachedImage component

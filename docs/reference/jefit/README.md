@@ -11,10 +11,10 @@ The UI specification has been moved to the main docs folder:
 
 ## Source Materials
 
-| File | Description |
-|------|-------------|
+| File              | Description                             |
+| ----------------- | --------------------------------------- |
 | `Document 14.pdf` | Original Jefit PDF reference (36 pages) |
-| `screenshots/` | 35 organized screenshots from Jefit |
+| `screenshots/`    | 35 organized screenshots from Jefit     |
 
 ## Screenshots Structure
 

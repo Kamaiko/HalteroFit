@@ -69,7 +69,7 @@ export function useAddDayDialog(params: {
     // Normal: show dialog
     setAddDayName('');
     setShowAddDayDialog(true);
-  }, [activePlanId, planDaysCount, onDayAdded, handleError]);
+  }, [activePlanId, planDaysCount, onDayAdded, handleError, setAlert]);
 
   const handleConfirmAddDay = useCallback(async () => {
     if (!activePlanId || isAddingDay) return;
@@ -99,7 +99,7 @@ export function useAddDayDialog(params: {
     } finally {
       setIsAddingDay(false);
     }
-  }, [activePlanId, addDayName, planDaysCount, isAddingDay, onDayAdded, handleError]);
+  }, [activePlanId, addDayName, planDaysCount, isAddingDay, onDayAdded, handleError, setAlert]);
 
   const handleCancelAddDay = useCallback(() => {
     setShowAddDayDialog(false);

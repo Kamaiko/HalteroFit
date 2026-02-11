@@ -20,7 +20,6 @@ import { database } from '../local';
 import WorkoutModel from '../local/models/Workout';
 import WorkoutExerciseModel from '../local/models/WorkoutExercise';
 import ExerciseSetModel from '../local/models/ExerciseSet';
-import ExerciseModel from '../local/models/Exercise';
 import type {
   Workout,
   WorkoutWithDetails,
@@ -29,7 +28,6 @@ import type {
   WorkoutExercise,
   ExerciseSet,
 } from '../remote/types';
-import { DatabaseError, AuthError } from '@/utils/errors';
 import { requireAuth, validateUserIdMatch, validateOwnership } from '../utils/requireAuth';
 import { withDatabaseError } from '../utils/withDatabaseError';
 
@@ -104,7 +102,7 @@ export async function addExerciseToWorkout(
   return withDatabaseError(
     async () => {
       // Security validation - user must be authenticated
-      const currentUser = requireAuth('add exercises');
+      requireAuth('add exercises');
 
       const workoutExercise = await database.write(async () => {
         return await database.get<WorkoutExerciseModel>('workout_exercises').create((we) => {
@@ -156,7 +154,7 @@ export async function logSet(
   return withDatabaseError(
     async () => {
       // Security validation - user must be authenticated
-      const currentUser = requireAuth('log sets');
+      requireAuth('log sets');
 
       const exerciseSet = await database.write(async () => {
         return await database.get<ExerciseSetModel>('exercise_sets').create((set) => {
@@ -587,7 +585,7 @@ export async function markWorkoutAsSynced(id: string): Promise<void> {
     async () => {
       await database.write(async () => {
         const workout = await database.get<WorkoutModel>('workouts').find(id);
-        await workout.update((w) => {
+        await workout.update((_w) => {
           // Sync tracking handled by WatermelonDB _changed/_status
         });
       });

@@ -80,7 +80,7 @@ export function timestampInFuture(minutesFromNow: number = 5): Timestamp {
  * Generate a workout record
  */
 export function generateWorkout(overrides: Partial<SyncRecord> = {}): SyncRecord {
-  const now = Date.now();
+  const _now = Date.now();
   return {
     id: generateUUID(),
     user_id: generateUUID(),
@@ -210,7 +210,7 @@ export function generateConflict(
   baseRecord: SyncRecord,
   localIsNewer: boolean = true
 ): { local: SyncRecord; remote: SyncRecord } {
-  const timeDiff = 60 * 1000; // 1 minute difference
+  const _timeDiff = 60 * 1000; // 1 minute difference
 
   const local = {
     ...baseRecord,

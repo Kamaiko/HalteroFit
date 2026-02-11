@@ -192,7 +192,7 @@ export const supabaseHandlers = [
    */
   http.post(`${SUPABASE_URL}/rest/v1/rpc/pull_changes`, async ({ request }) => {
     const body = (await request.json()) as PullChangesRequest;
-    const { lastPulledAt, schemaVersion, migration } = body;
+    const { lastPulledAt, schemaVersion: _schemaVersion, migration: _migration } = body;
 
     // Get changes since lastPulledAt
     const changes = mockStore.getChangesSince(lastPulledAt || 0);
@@ -209,7 +209,7 @@ export const supabaseHandlers = [
    */
   http.post(`${SUPABASE_URL}/rest/v1/rpc/push_changes`, async ({ request }) => {
     const body = (await request.json()) as PushChangesRequest;
-    const { changes, lastPulledAt } = body;
+    const { changes, lastPulledAt: _lastPulledAt } = body;
 
     // Apply changes to mock store
     mockStore.applyChanges(changes);

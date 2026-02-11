@@ -49,11 +49,13 @@
 **Purpose:** Sélectionner un groupe musculaire ou afficher tous les exercices
 
 **UI Elements:**
+
 - Grid 3x4 d'images anatomiques
 - Labels sous chaque image: Triceps, Chest, Shoulder, Biceps, Abs, Back, Forearms, Upper Leg, Glutes, Cardio, Lower Leg, **Show All**
 - Chaque cellule est cliquable
 
 **User Flow:**
+
 1. User arrive sur cette page depuis le tab "Exercises"
 2. Click sur un muscle → ExerciseListScreen filtré
 3. Click sur "Show All" → ExerciseListScreen complet
@@ -69,6 +71,7 @@
 **Purpose:** Afficher et rechercher les exercices
 
 **UI Elements:**
+
 - Header: "← Exercises" + bouton "+" (custom exercises - ignoré MVP)
 - Search bar: "Search exercise name"
 - Filtres chips: Muscles ▼ | Equipment ▼ | Type ▼
@@ -77,12 +80,14 @@
 - Liste scrollable d'ExerciseCards
 
 **ExerciseCard:**
+
 ```
 [Image] [Nom de l'exercice]
         [Muscles ciblés en gris]
 ```
 
 **User Flow:**
+
 1. Scroll pour parcourir
 2. Search pour filtrer par nom
 3. Click sur un exercice → ExerciseDetailScreen (optionnel MVP)
@@ -96,12 +101,14 @@
 **Purpose:** Filtrer les exercices par catégorie
 
 **UI Elements:**
+
 - Header avec 3 tabs: Muscle | Equipment | Type
 - Liste d'options avec checkboxes
 - Bouton "Deselect all"
 - Gesture: swipe down pour fermer
 
 **Equipment Categories:**
+
 - No Equipment
 - Gym Equipment (expandable)
   - Free Weights
@@ -125,11 +132,13 @@
 **Purpose:** Afficher tous les plans de l'utilisateur
 
 **UI Elements:**
+
 - Header: "← All Plans" + "+ Create Plan"
 - Label: "Saved plans"
 - Grid de PlanCards (2 colonnes)
 
 **PlanCard:**
+
 ```
 [CURRENT badge si actif]    [...]
 [Image de fond]
@@ -138,12 +147,14 @@
 ```
 
 **Menu "..." (3 dots):**
+
 - Delete
 - Edit (ignoré MVP)
 - Copy (ignoré MVP)
 - Share (ignoré MVP)
 
 **User Flow:**
+
 1. Click sur "Select" → Active ce plan, va vers PlannedScreen
 2. Click sur "+ Create Plan" → Crée nouveau plan, va vers PlannedScreen
 3. Click sur "..." → Menu contextuel
@@ -157,16 +168,19 @@
 **Purpose:** Afficher le détail d'un plan avec ses jours
 
 **UI Elements:**
+
 - Header tabs (ignorés): Find | **Planned** | Instant
 - Banner avec image + nom du plan + "All Plans" button
 - Sub-tabs swipeable: **Overview** | Day Details
 - Actions: Upload icon (ignoré) | "..." menu
 
 **Overview Sub-tab:**
+
 - Liste de DayCards
 - "+ Add a day" button
 
 **DayCard:**
+
 ```
 [Muscle image] [Nom du jour]              [...]
                Est. Xm  | XX exercises
@@ -184,6 +198,7 @@
 **Purpose:** Afficher les exercices d'un jour spécifique
 
 **UI Elements:**
+
 - Header: Nom du jour + temps estimé + nb exercices
 - Boutons: "NEW" (ignoré) | "..."
 - Liste d'exercices avec:
@@ -193,6 +208,7 @@
 - "+ Add Exercise" button (toujours visible en bas)
 
 **User Flow:**
+
 1. Swipe depuis Overview pour arriver ici
 2. Click sur exercice → ActiveWorkoutScreen (preview mode)
 3. Click sur "+ Add Exercise" → AddExercisesScreen
@@ -206,6 +222,7 @@
 **Purpose:** Modifier le nom d'un jour et ses exercices
 
 **UI Elements:**
+
 - Header: "← Edit day (?)" + "Save"
 - Jour tag: "MON Workout Day #1 ×"
 - "+ Add exercise" button
@@ -213,6 +230,7 @@
 - Liste des exercices existants
 
 **User Flow:**
+
 1. Accessible via "..." → Edit sur un DayCard
 2. Modifier nom, ajouter/supprimer exercices
 3. "Save" pour confirmer
@@ -226,12 +244,14 @@
 **Purpose:** Sélectionner des exercices à ajouter à un jour
 
 **UI Elements:**
+
 - Header: "← Add Exercises" + "+" (custom - ignoré)
 - Même layout que ExerciseListScreen MAIS:
   - Checkboxes à droite de chaque exercice
   - Bouton "Add X exercise(s)" en bas (disabled si 0)
 
 **User Flow:**
+
 1. Cocher les exercices désirés
 2. Click "Add X exercise(s)"
 3. Retour vers Day Details avec exercices ajoutés
@@ -245,6 +265,7 @@
 **Position:** Fixe en bas à droite de PlannedScreen
 
 **États:**
+
 - **Avant workout:** "Start Workout" (bouton bleu)
 - **Pendant workout:** "End Workout" (bouton bleu)
 
@@ -261,6 +282,7 @@
 **Purpose:** Logger les sets pendant l'entraînement
 
 **UI Elements:**
+
 - Header: "←" + icons (stats, history, "...")
 - GIF animé de l'exercice (plein écran en haut)
 - Progress bar horizontale (dots pour chaque exercice)
@@ -280,6 +302,7 @@ Set  |  Lbs    |  Reps  |  ✓
 - Footer: [Book icon] [Timer] [Log Set / Skip Rest]
 
 **Interactions:**
+
 - Click sur Lbs/Reps → Éditer la valeur
 - Click "+" → Ajouter un set
 - Click "Delete" → Supprimer le dernier set
@@ -297,16 +320,19 @@ Set  |  Lbs    |  Reps  |  ✓
 **États:**
 
 **Timer inactif:**
+
 ```
 [Book] [Clock 00:00] [    Log Set    ]
 ```
 
 **Timer actif (après log):**
+
 ```
 [Book] [01:46]       [   Skip Rest   ]
 ```
 
 **Click sur timer → Expand:**
+
 ```
 [Book] [Timer]       [   Skip Rest   ]
 ────────────────────────────────────────
@@ -322,12 +348,14 @@ Rest Timer  03:00      Countdown  ○
 ```
 
 **Fonctionnalités:**
+
 - Countdown visuel (cercle qui se vide)
 - +15s / -15s pour ajuster
 - "Rest Timer XX:XX" pour configurer le défaut de l'exercice
 - "Skip Rest" pour passer au prochain set
 
 **Comportement après dernier set:**
+
 - Auto-swipe vers le prochain exercice (immédiat, pas d'attente)
 
 **Screenshot:** `screenshots/04-active-workout/02-rest-timer.png`
@@ -339,6 +367,7 @@ Rest Timer  03:00      Countdown  ○
 **Purpose:** Résumé et sauvegarde du workout
 
 **UI Elements:**
+
 - Header: "←" + "+ ADD EXERCISE"
 - Progress bar (complet)
 - "Workout Complete!" titre
@@ -360,6 +389,7 @@ X Exercises
 - Footer: [Trash] [End & Save Workout]
 
 **User Flow:**
+
 1. Click "End & Save Workout" → Sauvegarde + splash + redirect Progress
 2. Click Trash → Confirm dialog "Discard workout?"
 
@@ -372,6 +402,7 @@ X Exercises
 **Purpose:** Confirmer l'abandon du workout
 
 **UI Elements:**
+
 ```
 ┌─────────────────────────────────┐
 │ Are you sure you want to       │
@@ -395,6 +426,7 @@ X Exercises
 **Purpose:** Vue d'ensemble des stats et calendrier
 
 **UI Elements:**
+
 - Header: [Avatar] Username [Refresh] [Gear/Settings]
 - Sub-tabs: **Overview** | Body | Activity
 - Cards: Volume | Workout Time (avec mini-graphes)
@@ -412,11 +444,13 @@ X Exercises
 **Purpose:** Voir l'historique complet des workouts
 
 **UI Elements:**
+
 - Header: "←" + stats (Workout Time | Total Sessions | Longest Streak)
 - Calendriers mensuels empilés (scroll infini vers le passé)
 - Jours avec workout = cercle bleu
 
 **User Flow:**
+
 1. Click sur un jour avec cercle bleu → WorkoutLogScreen
 
 **Halterofit MVP:** Post-MVP
@@ -430,6 +464,7 @@ X Exercises
 **Purpose:** Détail d'un workout passé
 
 **UI Elements:**
+
 - Header: "← [Date]" + "+ ADD EXERCISE"
 - Sub-tabs: **Logs** | Body Stats | Photos
 - Start time
@@ -457,6 +492,7 @@ X Exercises
 **Purpose:** Configuration du compte et préférences
 
 **UI Elements:**
+
 - Header: "← Settings"
 - Profile card: [Avatar] [Name] [Email]
 - Sections:
@@ -465,6 +501,7 @@ X Exercises
   - **Connected App**
 
 **Halterofit MVP:**
+
 - Profile card → ProfileScreen
 - Dark Mode toggle
 - Unit system (inch/lb vs cm/kg)
@@ -480,6 +517,7 @@ X Exercises
 **Purpose:** Modifier les infos du profil
 
 **UI Elements:**
+
 - Header: "← Profile" + "Save"
 - Avatar avec "Change photo" button
 - Nom (avec pencil icon pour éditer)
@@ -492,6 +530,7 @@ X Exercises
   - Email (avec "Change" button)
 
 **Halterofit MVP:**
+
 - Nom (éditable)
 - Gender
 - Date of birth
@@ -507,11 +546,13 @@ X Exercises
 **Usage:** Overview/Day Details, Overview/Body/Activity, Logs/Body Stats/Photos
 
 **Props:**
+
 - `tabs: { key: string, label: string }[]`
 - `activeTab: string`
 - `onTabChange: (key: string) => void`
 
 **Comportement:**
+
 - Tabs cliquables dans le header
 - Contenu swipeable horizontalement
 - Indicateur animé sous le tab actif
@@ -523,11 +564,13 @@ X Exercises
 **Usage:** Filtres, Rest Timer, Menus contextuels
 
 **Props:**
+
 - `isOpen: boolean`
 - `onClose: () => void`
 - `snapPoints: string[]` (ex: ['50%', '90%'])
 
 **Comportement:**
+
 - Slide up depuis le bas
 - Swipe down pour fermer
 - Handle bar en haut
@@ -539,6 +582,7 @@ X Exercises
 **Usage:** Delete plan, Discard workout, Delete day
 
 **Props:**
+
 - `title: string`
 - `message: string`
 - `confirmLabel: string`
@@ -550,6 +594,7 @@ X Exercises
 ### 7.4 ExerciseCard
 
 **Props:**
+
 - `exercise: Exercise`
 - `showCheckbox?: boolean`
 - `isChecked?: boolean`
@@ -561,6 +606,7 @@ X Exercises
 ### 7.5 SetRow
 
 **Props:**
+
 - `setNumber: number`
 - `weight: number`
 - `reps: number`
@@ -574,6 +620,7 @@ X Exercises
 ### 7.6 RestTimerWidget
 
 **Props:**
+
 - `isActive: boolean`
 - `remainingSeconds: number`
 - `defaultSeconds: number`
@@ -586,21 +633,21 @@ X Exercises
 
 ### Écrans Jefit → Halterofit
 
-| Jefit Screen | Halterofit Screen | Fichier | MVP |
-|--------------|-------------------|---------|-----|
-| Discover | HomeScreen | `(tabs)/index.tsx` | Simplifié |
-| Muscle Selector | ExerciseSelectorScreen | `(tabs)/exercises/index.tsx` | Show All only |
-| Exercise List | ExerciseListScreen | `(tabs)/exercises/list.tsx` | Oui |
-| All Plans | PlansListScreen | `plans/index.tsx` | Oui |
-| Planned | PlanDetailScreen | `plans/[id]/index.tsx` | Oui |
-| Day Details | (inclus dans PlanDetailScreen) | - | Oui |
-| Edit Day | EditDayScreen | `plans/[id]/day/[dayId]/edit.tsx` | Oui |
-| Add Exercises | AddExercisesScreen | `plans/add-exercises.tsx` | Oui |
-| Active Workout | ActiveWorkoutScreen | `workout/active.tsx` | Oui |
-| Workout Complete | WorkoutSummaryScreen | `workout/summary.tsx` | Oui |
-| Progress Overview | ProgressScreen | `(tabs)/progress.tsx` | Simplifié |
-| Settings | SettingsScreen | `settings/index.tsx` | Oui |
-| Profile | ProfileScreen | `settings/profile.tsx` | Oui |
+| Jefit Screen      | Halterofit Screen              | Fichier                           | MVP           |
+| ----------------- | ------------------------------ | --------------------------------- | ------------- |
+| Discover          | HomeScreen                     | `(tabs)/index.tsx`                | Simplifié     |
+| Muscle Selector   | ExerciseSelectorScreen         | `(tabs)/exercises/index.tsx`      | Show All only |
+| Exercise List     | ExerciseListScreen             | `(tabs)/exercises/list.tsx`       | Oui           |
+| All Plans         | PlansListScreen                | `plans/index.tsx`                 | Oui           |
+| Planned           | PlanDetailScreen               | `plans/[id]/index.tsx`            | Oui           |
+| Day Details       | (inclus dans PlanDetailScreen) | -                                 | Oui           |
+| Edit Day          | EditDayScreen                  | `plans/[id]/day/[dayId]/edit.tsx` | Oui           |
+| Add Exercises     | AddExercisesScreen             | `plans/add-exercises.tsx`         | Oui           |
+| Active Workout    | ActiveWorkoutScreen            | `workout/active.tsx`              | Oui           |
+| Workout Complete  | WorkoutSummaryScreen           | `workout/summary.tsx`             | Oui           |
+| Progress Overview | ProgressScreen                 | `(tabs)/progress.tsx`             | Simplifié     |
+| Settings          | SettingsScreen                 | `settings/index.tsx`              | Oui           |
+| Profile           | ProfileScreen                  | `settings/profile.tsx`            | Oui           |
 
 ### Features Post-MVP
 
@@ -617,4 +664,4 @@ X Exercises
 
 ---
 
-*Document généré à partir de l'analyse du PDF Jefit de référence.*
+_Document généré à partir de l'analyse du PDF Jefit de référence._

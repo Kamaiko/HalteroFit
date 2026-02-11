@@ -7,7 +7,7 @@
  * @module test-helpers/database/queries
  */
 
-import { Database, Model, Q } from '@nozbe/watermelondb';
+import { Database, Model } from '@nozbe/watermelondb';
 import type { Clause } from '@nozbe/watermelondb/QueryDescription';
 
 /**

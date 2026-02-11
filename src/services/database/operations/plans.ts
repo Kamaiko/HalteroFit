@@ -25,7 +25,7 @@ import PlanDayExerciseModel from '../local/models/PlanDayExercise';
 import ExerciseModel from '../local/models/Exercise';
 import { requireAuth, validateUserIdMatch, validateOwnership } from '../utils/requireAuth';
 import { withDatabaseError } from '../utils/withDatabaseError';
-import { DatabaseError, ValidationError } from '@/utils/errors';
+import { ValidationError } from '@/utils/errors';
 
 // ============================================================================
 // Types

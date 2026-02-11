@@ -37,10 +37,6 @@ global.console = {
 // Mock our Supabase client to avoid loading native dependencies during tests
 jest.mock('@/services/supabase/client');
 
-// ============================================================================
-// 🆕 Global Test Setup (Phase 0.5.28 refactor)
-// ============================================================================
-
 beforeEach(() => {
   // Clear all mocks before each test
   jest.clearAllMocks();
@@ -49,10 +45,7 @@ beforeEach(() => {
   // (not here to avoid issues - tests explicitly call it)
 });
 
-// ============================================================================
-// 🆕 Custom Jest Matchers (Phase 0.5.28 refactor)
-// ============================================================================
-
+// Custom Jest Matchers
 interface CustomMatchers<R = unknown> {
   toBeValidWorkout(): R;
   toBeValidExercise(): R;

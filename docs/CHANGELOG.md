@@ -104,7 +104,7 @@ This document tracks completed development milestones and major changes across a
 - [x] Moved exercise-browser to root-level route (full-screen, no tabs)
 - [x] Moved exercise-picker to root-level route (full-screen, no tabs)
 - [x] Moved exercise/[id] detail to root-level route (full-screen, floating back button)
-- [x] Updated _layout.tsx with new Stack.Screen routes
+- [x] Updated \_layout.tsx with new Stack.Screen routes
 - [x] Deleted deprecated files: (tabs)/exercises/list.tsx, (tabs)/exercises/[id].tsx, (tabs)/exercises/picker.tsx
 
 ### Shared Components
@@ -142,7 +142,7 @@ This document tracks completed development milestones and major changes across a
 
 - Created: ExerciseListView.tsx, exercise-browser.tsx, exercise/[id].tsx, strings.ts
 - Refactored: exercise-picker.tsx, ExerciseCard.tsx, useExerciseSearch.ts
-- Updated: _layout.tsx, exercises/index.tsx, utils/index.ts, BACKLOG.md
+- Updated: \_layout.tsx, exercises/index.tsx, utils/index.ts, BACKLOG.md
 - Deleted: (tabs)/exercises/list.tsx, (tabs)/exercises/[id].tsx, (tabs)/exercises/picker.tsx
 
 ---

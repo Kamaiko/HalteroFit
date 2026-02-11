@@ -16,13 +16,13 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 ## Kanban
 
-| TODO (Top 5)                              | DOING                                    | DONE (Last 5)                        |
-| ----------------------------------------- | ---------------------------------------- | ------------------------------------ |
-| **2.1.3** AllPlansScreen `[M]` 🔴         | **UX** Popup/BottomSheet visual rework   | **2.1.4** EditDayScreen              |
-| **2.1.5** CreateEditPlanScreen `[S]`      |                                          | **2.1.6** AddDayDialog               |
-| **2.3.3** PlanCard component `[S]`        |                                          | **2.1.2** DayDetailsScreen           |
-|                                           |                                          | **1.2.3** ExerciseCard component     |
-|                                           |                                          | **2.1.1** WorkoutOverviewScreen      |
+| TODO (Top 5)                         | DOING                                  | DONE (Last 5)                    |
+| ------------------------------------ | -------------------------------------- | -------------------------------- |
+| **2.1.3** AllPlansScreen `[M]` 🔴    | **UX** Popup/BottomSheet visual rework | **2.1.4** EditDayScreen          |
+| **2.1.5** CreateEditPlanScreen `[S]` |                                        | **2.1.6** AddDayDialog           |
+| **2.3.3** PlanCard component `[S]`   |                                        | **2.1.2** DayDetailsScreen       |
+|                                      |                                        | **1.2.3** ExerciseCard component |
+|                                      |                                        | **2.1.1** WorkoutOverviewScreen  |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
@@ -192,7 +192,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 - [ ] **3.1.4** Implement workout resume on app restart `[S]`
       On app mount, check workoutStore.isWorkoutActive → show banner or auto-navigate.
-      Files: src/app/_layout.tsx, src/stores/workout/workoutStore.ts
+      Files: src/app/\_layout.tsx, src/stores/workout/workoutStore.ts
       Deps: 3.1.1, 3.2.1
 
 - [ ] **3.1.5** Implement discard workout flow `[S]`
@@ -203,7 +203,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 - [ ] **3.1.6** Write unit tests for workoutStore extensions `[S]`
       Test: state transitions, exercise navigation bounds, rest timer state machine, crash recovery.
-      Files: __tests__/stores/workoutStore.test.ts
+      Files: **tests**/stores/workoutStore.test.ts
       Deps: 3.1.1
 
 ### 3.2: Active Workout Screen & Exercise Navigation
@@ -215,7 +215,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Exercise GIF, exercise name, "PLAY VIDEO" link.
       Sets table area (placeholder). Footer bar (placeholder).
       Back button → discard confirm. Prevent swipe-back gesture.
-      Files: src/app/workout/active.tsx, src/app/workout/_layout.tsx
+      Files: src/app/workout/active.tsx, src/app/workout/\_layout.tsx
       Deps: 3.1.1
 
 - [ ] **3.2.2** Create useActiveWorkout hook `[M]`
@@ -275,7 +275,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 - [ ] **3.3.6** Write unit tests for set logging `[S]`
       Test: add/delete set, log set state transition, auto-fill values, set numbering.
-      Files: __tests__/hooks/useSetLogging.test.ts
+      Files: **tests**/hooks/useSetLogging.test.ts
       Deps: 3.3.3
 
 - [ ] **3.3.7** Add per-set editing to EditDayScreen `[M]`
@@ -317,7 +317,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 - [ ] **3.4.5** Write unit tests for rest timer `[S]`
       Test: state transitions, ±15s adjustments, per-exercise defaults, bounds.
-      Files: __tests__/hooks/useRestTimer.test.ts
+      Files: **tests**/hooks/useRestTimer.test.ts
       Deps: 3.4.1
 
 ### 3.5: Notifications & Sound
@@ -387,7 +387,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 - [ ] **3.6.6** Write unit tests for workout completion `[S]`
       Test: volume calculation, duration, 1RM formula, state cleanup.
-      Files: __tests__/hooks/useCompleteWorkout.test.ts
+      Files: **tests**/hooks/useCompleteWorkout.test.ts
       Deps: 3.6.1
 
 ### 3.7: Exercise History
@@ -433,9 +433,9 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 > Login, Register, Password Reset UI with form validation.
 
 - [ ] **4.1.1** Create auth route group layout `[S]` 🔴
-      Expo Router (auth)/_layout.tsx with Stack navigator.
+      Expo Router (auth)/\_layout.tsx with Stack navigator.
       Shared styling: centered content, app logo header, safe area.
-      Files: src/app/(auth)/_layout.tsx
+      Files: src/app/(auth)/\_layout.tsx
 
 - [ ] **4.1.2** Create LoginScreen `[M]` 🔴
       Email + password inputs with validation.
@@ -457,10 +457,10 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Deps: 4.1.1
 
 - [ ] **4.1.5** Setup protected route guard `[M]` 🔴
-      Root _layout.tsx: check authStore.isAuthenticated.
+      Root \_layout.tsx: check authStore.isAuthenticated.
       Redirect to /(auth)/login if not authenticated.
       Splash screen during initial auth check. Persist session via MMKV.
-      Files: src/app/_layout.tsx, src/stores/auth/authStore.ts
+      Files: src/app/\_layout.tsx, src/stores/auth/authStore.ts
 
 ### 4.2: Auth Service & Testing
 
@@ -479,12 +479,12 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 - [ ] **4.2.3** Create auth test infrastructure `[S]`
       Mock Supabase client, auth factories (mockUser, mockSession).
-      Files: __tests__/__helpers__/auth/
+      Files: **tests**/**helpers**/auth/
 
 - [ ] **4.2.4** Write auth service unit tests `[M]`
       Test: signIn/signUp/signOut flows, session refresh, MMKV persistence.
       Coverage target: 90%+.
-      Files: __tests__/services/auth/supabaseAuth.test.ts
+      Files: **tests**/services/auth/supabaseAuth.test.ts
       Deps: 4.2.1, 4.2.3
 
 ### 4.3: Settings & Profile
@@ -557,7 +557,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 - [ ] **4.4.6** Write Progress tab unit tests `[S]`
       Test: streak calculation, workout date queries, body stats CRUD.
-      Files: __tests__/services/database/operations/
+      Files: **tests**/services/database/operations/
       Deps: 4.4.3, 4.4.5
 
 ---
@@ -607,7 +607,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Bundle analysis. Lazy load heavy screens.
       Optimize FlashList, verify image caching.
       Target: <10MB bundle, <2s cold start.
-      Files: src/app/_layout.tsx, metro.config.js
+      Files: src/app/\_layout.tsx, metro.config.js
 
 - [ ] **5.2.2** Verify Sentry error monitoring `[S]`
       Trigger test error, confirm in dashboard. Setup alerts.

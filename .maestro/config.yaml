@@ -6,17 +6,17 @@ appId: host.exp.Exponent
 
 # Environment variables (can be overridden per-flow)
 env:
-  TEST_USER_EMAIL: "test@halterofit.com"
-  TEST_USER_PASSWORD: "TestPassword123!"
+  TEST_USER_EMAIL: 'test@halterofit.com'
+  TEST_USER_PASSWORD: 'TestPassword123!'
 
 # Test execution settings
 executionOrder:
-  continueOnFailure: false  # Stop on first failure
+  continueOnFailure: false # Stop on first failure
 
 # Platform-specific settings
 platform:
   ios:
-    disableAnimations: true  # Faster test execution
+    disableAnimations: true # Faster test execution
   android:
     disableAnimations: true
 

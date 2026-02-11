@@ -69,7 +69,7 @@ jobs:
           echo "   5. Implement auto-increment build numbers"
           echo "   6. Add release notes generation"
           echo ""
-          echo "📚 Documentation: docs/CONTRIBUTING.md (CI/CD Architecture section)"
+          echo "📚 Documentation: docs/DEVOPS_PIPELINE.md (CI/CD Architecture section)"
           echo "📚 EAS Build Docs: https://docs.expo.dev/build/introduction/"
           echo "📚 EAS Submit Docs: https://docs.expo.dev/submit/introduction/"
           exit 1

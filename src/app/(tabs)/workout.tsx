@@ -95,8 +95,6 @@ export default function WorkoutScreen() {
     [deleteExerciseOptimistic]
   );
 
-  const dayExercises = selectedDayExercises?.exercises ?? [];
-
   // Render scene for swipeable tabs
   const renderScene = useCallback(
     ({ route }: { route: TabRoute }) => {
@@ -115,6 +113,7 @@ export default function WorkoutScreen() {
       }
 
       if (route.key === 'tab-1') {
+        const dayExercises = selectedDayExercises?.exercises ?? [];
         return (
           <WorkoutDayDetailsContent
             selectedDay={selectedDay}
@@ -140,7 +139,7 @@ export default function WorkoutScreen() {
       handleDayPress,
       handleDayMenuPress,
       handleAddDayPress,
-      dayExercises,
+      selectedDayExercises,
       loadingExercises,
       handleAddExercisePress,
       handleExercisePress,

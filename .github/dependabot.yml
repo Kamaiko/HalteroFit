@@ -20,16 +20,16 @@ updates:
   # ===========================================================================
   # NPM Dependencies
   # ===========================================================================
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "America/New_York"
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'America/New_York'
 
     open-pull-requests-limit: 5
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
 
     # =========================================================================
     # GROUPS - Auto-merged safe packages
@@ -38,42 +38,42 @@ updates:
       # Dev tooling - TypeScript, Linting, Testing
       dev-dependencies:
         patterns:
-          - "@typescript-eslint/*"
-          - "@types/*"
-          - "@testing-library/*"
-          - "@commitlint/*"
-          - "eslint*"
-          - "jest"
-          - "prettier"
-          - "lint-staged"
-          - "husky"
-          - "typescript"
-          - "ts-node"
-          - "msw"
+          - '@typescript-eslint/*'
+          - '@types/*'
+          - '@testing-library/*'
+          - '@commitlint/*'
+          - 'eslint*'
+          - 'jest'
+          - 'prettier'
+          - 'lint-staged'
+          - 'husky'
+          - 'typescript'
+          - 'ts-node'
+          - 'msw'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
       # UI utilities - Stable APIs, safe for minor updates
       ui-utilities:
         patterns:
-          - "clsx"
-          - "class-variance-authority"
-          - "tailwind-merge"
-          - "tailwindcss-animate"
-          - "@rn-primitives/*"
+          - 'clsx'
+          - 'class-variance-authority'
+          - 'tailwind-merge'
+          - 'tailwindcss-animate'
+          - '@rn-primitives/*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
       # State/data libs - Patch only (minors can change app behavior)
       state-data-libs:
         patterns:
-          - "zustand"
-          - "zod"
-          - "@supabase/supabase-js"
+          - 'zustand'
+          - 'zod'
+          - '@supabase/supabase-js'
         update-types:
-          - "patch"
+          - 'patch'
 
     # =========================================================================
     # EXPO-LOCKED: Block ALL updates for native/SDK-coupled packages
@@ -88,63 +88,71 @@ updates:
       # -----------------------------------------------------------------------
       # EXPO SDK CORE
       # -----------------------------------------------------------------------
-      - dependency-name: "expo"
-      - dependency-name: "expo-*"
-      - dependency-name: "babel-preset-expo"
-      - dependency-name: "jest-expo"
+      - dependency-name: 'expo'
+      - dependency-name: 'expo-*'
+      - dependency-name: 'babel-preset-expo'
+      - dependency-name: 'jest-expo'
 
       # -----------------------------------------------------------------------
       # REACT ECOSYSTEM
       # -----------------------------------------------------------------------
-      - dependency-name: "react"
-      - dependency-name: "react-native"
-      - dependency-name: "react-test-renderer"
+      - dependency-name: 'react'
+      - dependency-name: 'react-native'
+      - dependency-name: 'react-test-renderer'
 
       # -----------------------------------------------------------------------
       # REACT NATIVE PACKAGES (all have native code)
       # -----------------------------------------------------------------------
-      - dependency-name: "react-native-*"
+      - dependency-name: 'react-native-*'
 
       # -----------------------------------------------------------------------
       # THIRD-PARTY NATIVE LIBRARIES
       # -----------------------------------------------------------------------
-      - dependency-name: "@sentry/react-native"
-      - dependency-name: "@shopify/flash-list"
-      - dependency-name: "@shopify/react-native-skia"
-      - dependency-name: "@nozbe/watermelondb"
-      - dependency-name: "victory-native"
-      - dependency-name: "nativewind"
+      - dependency-name: '@sentry/react-native'
+      - dependency-name: '@shopify/flash-list'
+      - dependency-name: '@shopify/react-native-skia'
+      - dependency-name: '@nozbe/watermelondb'
+      - dependency-name: '@gorhom/bottom-sheet'
+      - dependency-name: 'victory-native'
+      - dependency-name: 'nativewind'
 
       # -----------------------------------------------------------------------
       # TAILWINDCSS - Locked to v3 (NativeWind v4 requires TailwindCSS v3)
       # -----------------------------------------------------------------------
-      - dependency-name: "tailwindcss"
-        versions: [">=4.0.0"]
+      - dependency-name: 'tailwindcss'
+        versions: ['>=4.0.0']
+
+      # -----------------------------------------------------------------------
+      # ESLINT - Major blocked (ESLint 10 requires manual migration)
+      # Remove this ignore when ready to migrate to ESLint 10
+      # -----------------------------------------------------------------------
+      - dependency-name: 'eslint'
+        versions: ['>=10.0.0']
 
     labels:
-      - "dependencies"
+      - 'dependencies'
 
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
 
   # ===========================================================================
   # GitHub Actions
   # ===========================================================================
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "America/New_York"
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'America/New_York'
 
     open-pull-requests-limit: 3
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
 
     labels:
-      - "github-actions"
-      - "ci"
+      - 'github-actions'
+      - 'ci'
 
     commit-message:
-      prefix: "chore(ci)"
+      prefix: 'chore(ci)'

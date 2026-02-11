@@ -68,7 +68,7 @@ jobs:
           echo "   3. Install expo-github-action for EAS build automation"
           echo "   4. Add step to post QR code comment on PR"
           echo ""
-          echo "📚 Documentation: docs/CONTRIBUTING.md (CI/CD Architecture section)"
+          echo "📚 Documentation: docs/DEVOPS_PIPELINE.md (CI/CD Architecture section)"
           exit 1
 
       # TODO(Phase 2+): Implement EAS build steps

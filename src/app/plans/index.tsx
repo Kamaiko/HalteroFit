@@ -6,8 +6,6 @@
  * @see docs/reference/jefit/screenshots/03-plans/01-all-plans.png
  */
 
-import { View } from 'react-native';
-
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';

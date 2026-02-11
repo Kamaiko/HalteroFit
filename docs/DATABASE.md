@@ -32,21 +32,21 @@ This document provides an overview of Halterofit's hybrid database architecture 
 
 ### Core Tables (Logged Workouts)
 
-| Table             | Purpose                            | Relationships                  |
-| ----------------- | ---------------------------------- | ------------------------------ |
-| users             | User profiles and preferences      | → workouts, workout_plans      |
+| Table             | Purpose                            | Relationships                           |
+| ----------------- | ---------------------------------- | --------------------------------------- |
+| users             | User profiles and preferences      | → workouts, workout_plans               |
 | exercises         | Exercise library (ExerciseDB)      | ← workout_exercises, plan_day_exercises |
-| workouts          | Logged workout sessions            | → workout_exercises, ← workout_plans |
-| workout_exercises | Links workouts to exercises        | → exercise_sets                |
-| exercise_sets     | Individual sets within an exercise | (leaf)                         |
+| workouts          | Logged workout sessions            | → workout_exercises, ← workout_plans    |
+| workout_exercises | Links workouts to exercises        | → exercise_sets                         |
+| exercise_sets     | Individual sets within an exercise | (leaf)                                  |
 
 ### Workout Plans Tables (v8)
 
-| Table              | Purpose                              | Relationships            |
-| ------------------ | ------------------------------------ | ------------------------ |
-| workout_plans      | Reusable workout templates/routines  | → plan_days, ← users     |
-| plan_days          | Days within a plan (e.g., "Day 1")   | → plan_day_exercises     |
-| plan_day_exercises | Exercise templates in a day          | ← exercises              |
+| Table              | Purpose                             | Relationships        |
+| ------------------ | ----------------------------------- | -------------------- |
+| workout_plans      | Reusable workout templates/routines | → plan_days, ← users |
+| plan_days          | Days within a plan (e.g., "Day 1")  | → plan_day_exercises |
+| plan_day_exercises | Exercise templates in a day         | ← exercises          |
 
 **Schema SSoT:** `src/services/database/local/schema.ts`
 
@@ -62,19 +62,20 @@ This document provides an overview of Halterofit's hybrid database architecture 
 
 ### Overview
 
-| Attribute | Value                              |
-| --------- | ---------------------------------- |
-| Source    | ExerciseDB (Kaggle/GitHub)         |
-| Exercises | 1,500+                             |
-| Format    | Bundled JSON, seeded on first launch |
+| Attribute | Value                                 |
+| --------- | ------------------------------------- |
+| Source    | ExerciseDB (Kaggle/GitHub)            |
+| Exercises | 1,500+                                |
+| Format    | Bundled JSON, seeded on first launch  |
 | Content   | GIF URLs, instructions, muscle groups |
-| Location  | `assets/data/exercises.json`       |
+| Location  | `assets/data/exercises.json`          |
 
 ### Seeding Mechanism
 
 Exercises are loaded into WatermelonDB on first app launch via `initializeExercises()` in the root layout.
 
 **Files:**
+
 - Data: `assets/data/exercises.json`
 - Seeding service: `src/services/database/seed/exercises.ts`
 - Model: `src/services/database/local/models/Exercise.ts`
@@ -84,11 +85,13 @@ Exercises are loaded into WatermelonDB on first app launch via `initializeExerci
 ### Updating the Dataset
 
 **Option 1: Manual download (recommended)**
+
 1. Download from [Kaggle ExerciseDB](https://www.kaggle.com/datasets/exercisedb/fitness-exercises-dataset)
 2. Extract and replace `assets/data/exercises.json`
 3. Increment `SEED_VERSION` in `src/services/database/seed/exercises.ts`
 
 **Option 2: Kaggle CLI**
+
 ```bash
 set KAGGLE_API_TOKEN=<your-token>
 kaggle datasets download -d exercisedb/fitness-exercises-dataset -p assets/data --unzip --force
@@ -108,11 +111,11 @@ kaggle datasets download -d exercisedb/fitness-exercises-dataset -p assets/data 
 
 All database code resides in `src/services/database/`:
 
-| Directory     | Purpose                        |
-| ------------- | ------------------------------ |
-| `local/`      | Schema, models, migrations     |
-| `operations/` | Business logic (CRUD)          |
-| `remote/`     | Supabase sync, remote types    |
+| Directory     | Purpose                     |
+| ------------- | --------------------------- |
+| `local/`      | Schema, models, migrations  |
+| `operations/` | Business logic (CRUD)       |
+| `remote/`     | Supabase sync, remote types |
 
 ### Patterns
 
@@ -186,13 +189,13 @@ All database code resides in `src/services/database/`:
 
 ### Schema (Single Source of Truth)
 
-| Component           | Location                                   |
-| ------------------- | ------------------------------------------ |
-| WatermelonDB Schema | `src/services/database/local/schema.ts`    |
-| WatermelonDB Models | `src/services/database/local/models/`      |
-| Migrations (local)  | `src/services/database/local/migrations.ts`|
-| Migrations (cloud)  | `supabase/migrations/`                     |
-| Operations (CRUD)   | `src/services/database/operations/`        |
+| Component           | Location                                    |
+| ------------------- | ------------------------------------------- |
+| WatermelonDB Schema | `src/services/database/local/schema.ts`     |
+| WatermelonDB Models | `src/services/database/local/models/`       |
+| Migrations (local)  | `src/services/database/local/migrations.ts` |
+| Migrations (cloud)  | `supabase/migrations/`                      |
+| Operations (CRUD)   | `src/services/database/operations/`         |
 
 ### External Documentation
 

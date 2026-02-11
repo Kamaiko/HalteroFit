@@ -7,7 +7,9 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "lint": "eslint . --ext .ts,.tsx --fix && prettier --write \"**/*.{ts,tsx,json}\"",
+    "lint": "eslint . --fix && prettier --write .",
+    "lint:check": "eslint . --cache --cache-location .eslintcache",
+    "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
     "test": "jest",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
@@ -85,8 +87,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
+      "eslint --fix"
     ],
     "*.json": [
       "prettier --write"

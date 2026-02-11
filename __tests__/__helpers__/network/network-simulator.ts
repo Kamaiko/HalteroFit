@@ -88,12 +88,12 @@ export class NetworkSimulator {
 
     // Add delay to all handlers
     mockSupabaseServer.use(
-      http.post('*', async ({ request }) => {
+      http.post('*', async () => {
         await delay(this.latency);
         // Forward to original handlers
         return passthrough();
       }),
-      http.get('*', async ({ request }) => {
+      http.get('*', async () => {
         await delay(this.latency);
         return passthrough();
       })
@@ -110,13 +110,13 @@ export class NetworkSimulator {
 
     // Randomly fail requests based on drop rate
     mockSupabaseServer.use(
-      http.post('*', async ({ request }) => {
+      http.post('*', async () => {
         if (Math.random() < this.dropRate) {
           return HttpResponse.error();
         }
         return passthrough();
       }),
-      http.get('*', async ({ request }) => {
+      http.get('*', async () => {
         if (Math.random() < this.dropRate) {
           return HttpResponse.error();
         }

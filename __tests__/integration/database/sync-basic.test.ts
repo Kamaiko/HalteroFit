@@ -16,7 +16,7 @@
  */
 
 import { http, HttpResponse } from 'msw';
-import { mockSupabaseServer, seedMockData } from '@test-helpers/network/mock-supabase';
+import { mockSupabaseServer } from '@test-helpers/network/mock-supabase';
 import {
   generateChangeSet,
   generatePullResponse,

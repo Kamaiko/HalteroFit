@@ -32,12 +32,6 @@ logs/
 # Temporary Files
 .cache/
 
-# Tools
-storybook-static/
-patches/
-.detox/
-.flipper/
-
 # Lock Files
 package-lock.json
 *.lock

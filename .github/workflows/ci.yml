@@ -54,15 +54,18 @@ jobs:
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: .eslintcache
-          key: ${{ runner.os }}-eslintcache-${{ hashFiles('**/.eslintrc.json', 'src/**/*.ts', 'src/**/*.tsx') }}
+          key: ${{ runner.os }}-eslintcache-${{ hashFiles('eslint.config.js', 'src/**/*.ts', 'src/**/*.tsx') }}
           restore-keys: |
             ${{ runner.os }}-eslintcache-
 
       - name: TypeScript type-check
         run: npm run type-check
 
-      - name: ESLint + Prettier
-        run: npx eslint . --ext .ts,.tsx --cache --cache-location .eslintcache
+      - name: ESLint
+        run: npm run lint:check
+
+      - name: Prettier format check
+        run: npm run format:check
 
   # ============================================================================
   # Job 2: Expo SDK Compatibility
@@ -196,7 +199,7 @@ jobs:
   #
   #   steps:
   #     - name: Checkout code
-  #       uses: actions/checkout@v5
+  #       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
   #
   #     - name: Setup Maestro
   #       run: |
@@ -217,7 +220,7 @@ jobs:
   #
   #     - name: Upload Maestro results
   #       if: always()
-  #       uses: actions/upload-artifact@v4
+  #       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4.6.0
   #       with:
   #         name: maestro-results
   #         path: maestro-results/
@@ -275,16 +278,49 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Auto-merge runtime patch and minor updates
-        # Runtime patch (0.0.X): Bug fixes only
-        # Runtime minor (0.X.0): New features, backward compatible (semver promise)
-        # Industry standard: Auto-merge both after CI passes
-        # Example: react-native 0.73.1 -> 0.73.2 (patch) or 0.73.0 -> 0.74.0 (minor)
+      - name: Auto-merge runtime patch updates
+        # Runtime patch (0.0.X): Bug fixes only - safe for all packages
         if: |
           steps.metadata.outputs.dependency-type == 'direct:production' &&
-          (steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
-           steps.metadata.outputs.update-type == 'version-update:semver-minor')
+          steps.metadata.outputs.update-type == 'version-update:semver-patch'
         run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-merge runtime minor updates (non-critical)
+        # Runtime minor (0.X.0): New features, backward compatible (semver promise)
+        # Exclude state/data libs (supabase, zustand, zod) - minors may change app behavior
+        # Those packages are defined as patch-only in dependabot.yml (state-data-libs group)
+        if: |
+          steps.metadata.outputs.dependency-type == 'direct:production' &&
+          steps.metadata.outputs.update-type == 'version-update:semver-minor' &&
+          !contains(steps.metadata.outputs.dependency-names, '@supabase/supabase-js') &&
+          !contains(steps.metadata.outputs.dependency-names, 'zustand') &&
+          !contains(steps.metadata.outputs.dependency-names, 'zod')
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on state/data library minor updates
+        # State/data libs (supabase, zustand, zod): minors require manual review
+        # Aligned with dependabot.yml state-data-libs group (patch-only auto-merge)
+        if: |
+          steps.metadata.outputs.dependency-type == 'direct:production' &&
+          steps.metadata.outputs.update-type == 'version-update:semver-minor' &&
+          (contains(steps.metadata.outputs.dependency-names, '@supabase/supabase-js') ||
+           contains(steps.metadata.outputs.dependency-names, 'zustand') ||
+           contains(steps.metadata.outputs.dependency-names, 'zod'))
+        run: |
+          gh pr comment "$PR_URL" --body "⚠️ **STATE/DATA LIBRARY MINOR UPDATE**
+
+          This is a minor update for a state or data library that may change app behavior.
+
+          **Action required:**
+          1. Review the changelog for behavior changes
+          2. Test affected features locally
+          3. Merge manually after verification"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -301,7 +337,26 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Comment on MAJOR updates requiring review
+      - name: Comment on MAJOR dev dependency updates
+        # Major dev updates (ESLint, TypeScript, etc.): may require config migration
+        if: |
+          steps.metadata.outputs.dependency-type == 'direct:development' &&
+          steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr comment "$PR_URL" --body "⚠️ **MAJOR DEV DEPENDENCY UPDATE**
+
+          This is a major version update for a dev dependency.
+
+          **Action required:**
+          1. Check the migration guide for breaking changes
+          2. Update configuration files if needed
+          3. Test lint/build/test pipeline locally
+          4. Merge manually after verification"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on MAJOR production updates requiring review
         # Major updates (X.0.0): Breaking changes - ALWAYS require manual review
         # Post helpful comment with action items
         # Exclude GitHub Actions (already auto-merged in previous step)
@@ -355,7 +410,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 10  # Recent commits sufficient, scan runs on every push
+          fetch-depth: 10 # Recent commits sufficient, scan runs on every push
 
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@7635b24fd512a2e817dd3e9dd661caaf035a079d # v3.93.1

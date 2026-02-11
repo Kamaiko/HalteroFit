@@ -157,6 +157,7 @@ async function example4_SuccessCase() {
 // Example 5: Using useErrorHandler Hook in Components
 // ============================================================================
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Example5_ComponentUsage() {
   const { handleError } = useErrorHandler();
 

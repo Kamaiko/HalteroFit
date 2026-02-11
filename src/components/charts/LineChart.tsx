@@ -64,10 +64,10 @@ export function LineChart({
   labels,
   title,
   width,
-  height = CHART_DEFAULT_HEIGHT,
+  height: _height = CHART_DEFAULT_HEIGHT,
   smoothCurve = true,
   lineColor = Colors.primary.DEFAULT,
-  showGrid = true,
+  showGrid: _showGrid = true,
 }: LineChartProps) {
   // Calculate default width as 90% of screen width
   const defaultWidth = Dimensions.get('window').width * CHART_WIDTH_RATIO;

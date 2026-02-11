@@ -10,12 +10,10 @@
  */
 
 import { Database } from '@nozbe/watermelondb';
-import { Q } from '@nozbe/watermelondb';
 import { createTestDatabase, cleanupTestDatabase } from '@test-helpers/database/test-database';
 import Exercise from '@/services/database/local/models/Exercise';
 import { createTestExercise, resetTestIdCounter } from '@test-helpers/database/factories';
-import { getAllRecords, countRecords } from '@test-helpers/database/queries';
-import { wait } from '@test-helpers/database/time';
+import { getAllRecords } from '@test-helpers/database/queries';
 
 // NOTE: Sync protocol tests removed - require real SQLite, moved to E2E
 // See: docs/TESTING.md

@@ -275,7 +275,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
     } finally {
       setIsSaving(false);
     }
-  }, [dayId, dayName, exercises, isSaving]);
+  }, [dayId, dayName, exercises, isSaving, setAlert]);
 
   // ── Delete day ─────────────────────────────────────────────────────────
   const handleDeleteDay = useCallback(async () => {
