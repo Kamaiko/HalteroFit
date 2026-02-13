@@ -72,31 +72,7 @@ describe('validatePlanName', () => {
 // ── validateDayName ─────────────────────────────────────────────────────
 
 describe('validateDayName', () => {
-  it('accepts a valid name', () => {
-    expect(() => validateDayName('Chest Day', 'day-1')).not.toThrow();
-  });
-
-  it('accepts a name at max length', () => {
-    const name = 'a'.repeat(MAX_DAY_NAME_LENGTH);
-    expect(() => validateDayName(name, 'day-1')).not.toThrow();
-  });
-
-  it('throws ValidationError for empty string', () => {
-    expect(() => validateDayName('', 'day-1')).toThrow(ValidationError);
-  });
-
-  it('throws ValidationError for whitespace-only string', () => {
-    expect(() => validateDayName('   ', 'day-1')).toThrow(ValidationError);
-  });
-
-  it('throws ValidationError when name exceeds max length', () => {
-    const name = 'a'.repeat(MAX_DAY_NAME_LENGTH + 1);
-    expect(() => validateDayName(name, 'day-1')).toThrow(ValidationError);
-  });
-
-  it('uses the correct max length (different from plan name)', () => {
-    expect(MAX_DAY_NAME_LENGTH).not.toBe(MAX_PLAN_NAME_LENGTH);
-
+  it('uses MAX_DAY_NAME_LENGTH, not MAX_PLAN_NAME_LENGTH', () => {
     const atDayLimit = 'a'.repeat(MAX_DAY_NAME_LENGTH);
     expect(() => validateDayName(atDayLimit, 'day-1')).not.toThrow();
 

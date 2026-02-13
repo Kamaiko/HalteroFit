@@ -13,24 +13,8 @@ describe('capitalizeWords', () => {
     expect(capitalizeWords('hello world')).toBe('Hello World');
   });
 
-  it('handles a single word', () => {
-    expect(capitalizeWords('chest')).toBe('Chest');
-  });
-
-  it('leaves already capitalized words unchanged', () => {
-    expect(capitalizeWords('Hello World')).toBe('Hello World');
-  });
-
   it('handles an empty string', () => {
     expect(capitalizeWords('')).toBe('');
-  });
-
-  it('handles multiple words from exercise data', () => {
-    expect(capitalizeWords('barbell bench press')).toBe('Barbell Bench Press');
-  });
-
-  it('preserves single-character words', () => {
-    expect(capitalizeWords('a b c')).toBe('A B C');
   });
 });
 

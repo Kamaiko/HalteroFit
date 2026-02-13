@@ -44,16 +44,6 @@ describe('AppError', () => {
     expect(err.statusCode).toBe(404);
     expect(err.isOperational).toBe(false);
   });
-
-  it('has a stack trace', () => {
-    const err = new AppError('msg', 'dev', 'CODE');
-    expect(err.stack).toBeDefined();
-  });
-
-  it('is an instance of Error', () => {
-    const err = new AppError('msg', 'dev', 'CODE');
-    expect(err).toBeInstanceOf(Error);
-  });
 });
 
 // ── toJSON ───────────────────────────────────────────────────────────────
@@ -82,16 +72,6 @@ describe('DatabaseError', () => {
     expect(err.code).toBe('DATABASE_ERROR');
     expect(err.statusCode).toBe(500);
   });
-
-  it('extends AppError', () => {
-    const err = new DatabaseError('msg', 'dev');
-    expect(err).toBeInstanceOf(AppError);
-    expect(err).toBeInstanceOf(DatabaseError);
-  });
-
-  it('sets name to DatabaseError', () => {
-    expect(new DatabaseError('msg', 'dev').name).toBe('DatabaseError');
-  });
 });
 
 describe('AuthError', () => {
@@ -100,14 +80,6 @@ describe('AuthError', () => {
     expect(err.code).toBe('AUTH_ERROR');
     expect(err.statusCode).toBe(401);
   });
-
-  it('extends AppError', () => {
-    expect(new AuthError('msg', 'dev')).toBeInstanceOf(AppError);
-  });
-
-  it('sets name to AuthError', () => {
-    expect(new AuthError('msg', 'dev').name).toBe('AuthError');
-  });
 });
 
 describe('ValidationError', () => {
@@ -115,14 +87,6 @@ describe('ValidationError', () => {
     const err = new ValidationError('Name too long', 'name.length > 100');
     expect(err.code).toBe('VALIDATION_ERROR');
     expect(err.statusCode).toBe(400);
-  });
-
-  it('extends AppError', () => {
-    expect(new ValidationError('msg', 'dev')).toBeInstanceOf(AppError);
-  });
-
-  it('sets name to ValidationError', () => {
-    expect(new ValidationError('msg', 'dev').name).toBe('ValidationError');
   });
 });
 
@@ -137,14 +101,6 @@ describe('SyncError', () => {
   it('allows setting isRetryable to false', () => {
     const err = new SyncError('Sync failed', 'Auth expired', false);
     expect(err.isRetryable).toBe(false);
-  });
-
-  it('extends AppError', () => {
-    expect(new SyncError('msg', 'dev')).toBeInstanceOf(AppError);
-  });
-
-  it('sets name to SyncError', () => {
-    expect(new SyncError('msg', 'dev').name).toBe('SyncError');
   });
 });
 

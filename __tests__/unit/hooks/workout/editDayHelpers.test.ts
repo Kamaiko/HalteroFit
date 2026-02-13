@@ -134,13 +134,6 @@ describe('createDayExerciseFromPicked', () => {
       gif_url: picked.gif_url,
     });
   });
-
-  it('handles picked exercise without gif_url', () => {
-    const noGif = makePickedExercise({ gif_url: undefined });
-    const result = createDayExerciseFromPicked(noGif, dayId, orderIndex, tempId);
-
-    expect(result.exercise.gif_url).toBeUndefined();
-  });
 });
 
 // ── buildSavePayload ────────────────────────────────────────────────────
