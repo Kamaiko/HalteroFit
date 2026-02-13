@@ -10,23 +10,20 @@ import { router } from 'expo-router';
 import type { DayExercise } from '@/components/workout/DayExerciseCard';
 import type { PickedExercise } from '@/stores/exercises/exercisePickerStore';
 import { useExercisePickerStore } from '@/stores/exercises/exercisePickerStore';
-import {
-  DEFAULT_TARGET_SETS,
-  DEFAULT_TARGET_REPS,
-  MAX_EXERCISES_PER_DAY,
-  MAX_DAY_NAME_LENGTH,
-} from '@/constants';
+import { MAX_EXERCISES_PER_DAY, MAX_DAY_NAME_LENGTH } from '@/constants';
 import { useAlertState, type AlertState } from '@/hooks/ui/useAlertState';
 import { ValidationError } from '@/utils/errors';
-
-/** Prefix for temporary exercise IDs (not yet persisted to DB) */
-const TEMP_EXERCISE_ID_PREFIX = 'temp_';
-
 import {
   getPlanDayWithExercises,
   savePlanDayEdits,
   deletePlanDay,
 } from '@/services/database/operations/plans';
+import {
+  isTempExerciseId,
+  generateTempExerciseId,
+  createDayExerciseFromPicked,
+  buildSavePayload,
+} from './editDayHelpers';
 
 // Newly added exercises that don't have a DB record yet
 interface PendingExercise {
@@ -138,9 +135,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
   const removeExercise = useCallback((exerciseId: string) => {
     setExercises((prev) => prev.filter((e) => e.id !== exerciseId));
 
-    // Track if it's an existing DB record (not a pending add)
-    const isPending = exerciseId.startsWith(TEMP_EXERCISE_ID_PREFIX);
-    if (!isPending) {
+    if (!isTempExerciseId(exerciseId)) {
       removedIdsRef.current.add(exerciseId);
     } else {
       pendingAddsRef.current = pendingAddsRef.current.filter((p) => p.tempId !== exerciseId);
@@ -170,33 +165,10 @@ export function useEditDay(dayId: string): UseEditDayReturn {
       return;
     }
 
-    // Convert picked exercises to DayExercise format with temp IDs
     const newExercises: DayExercise[] = result.map((picked, index) => {
-      const tempId = `${TEMP_EXERCISE_ID_PREFIX}${Date.now()}_${index}`;
-
-      // Track pending add
+      const tempId = generateTempExerciseId(index);
       pendingAddsRef.current.push({ tempId, exercise: picked });
-
-      return {
-        id: tempId,
-        plan_day_id: dayId,
-        exercise_id: picked.id,
-        order_index: exercises.length + index,
-        target_sets: DEFAULT_TARGET_SETS,
-        target_reps: DEFAULT_TARGET_REPS,
-        rest_timer_seconds: undefined,
-        notes: undefined,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-        exercise: {
-          id: picked.id,
-          name: picked.name,
-          body_parts: picked.body_parts,
-          target_muscles: picked.target_muscles,
-          equipments: picked.equipments,
-          gif_url: picked.gif_url,
-        },
-      };
+      return createDayExerciseFromPicked(picked, dayId, exercises.length + index, tempId);
     });
 
     setExercises((prev) => [...prev, ...newExercises]);
@@ -235,35 +207,16 @@ export function useEditDay(dayId: string): UseEditDayReturn {
     setIsSaving(true);
 
     try {
-      // Build added exercises list from pending adds
-      const addedExercises = pendingAddsRef.current
-        .map((pending) => {
-          const currentIndex = exercises.findIndex((e) => e.id === pending.tempId);
-          if (currentIndex === -1) return null; // Was removed after adding
-          return {
-            exercise_id: pending.exercise.id,
-            order_index: currentIndex,
-          };
-        })
-        .filter((e): e is NonNullable<typeof e> => e !== null);
-
-      // Build reorder list from existing (non-temp) exercises
-      const reorderedExercises = exercises
-        .filter((e) => !e.id.startsWith(TEMP_EXERCISE_ID_PREFIX))
-        .map((e) => ({
-          id: e.id,
-          order_index: exercises.indexOf(e),
-        }));
-
-      // Save all changes in a single transaction
-      await savePlanDayEdits({
+      const payload = buildSavePayload({
         dayId,
-        name: nameToSave !== initialNameRef.current ? nameToSave : undefined,
-        removedExerciseIds: Array.from(removedIdsRef.current),
-        addedExercises,
-        reorderedExercises,
+        dayName,
+        initialName: initialNameRef.current,
+        exercises,
+        pendingAdds: pendingAddsRef.current,
+        removedIds: removedIdsRef.current,
       });
 
+      await savePlanDayEdits(payload);
       router.back();
     } catch (error) {
       if (error instanceof ValidationError) {
