@@ -84,8 +84,3 @@ export const Colors = {
     max: '#c53030', // text-rpe-max
   },
 } as const;
-
-/**
- * Type helper for color keys
- */
-export type ColorKeys = keyof typeof Colors;

@@ -102,13 +102,3 @@ export class SyncError extends AppError {
 export function isOperationalError(error: unknown): error is AppError {
   return error instanceof AppError && error.isOperational;
 }
-
-/**
- * Type guard to check if an error is retryable (for sync operations)
- *
- * @param error - Error to check
- * @returns true if error is a SyncError marked as retryable
- */
-export function isRetryableError(error: unknown): error is SyncError {
-  return error instanceof SyncError && error.isRetryable;
-}

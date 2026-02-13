@@ -3,7 +3,7 @@
  *
  * This barrel exports components built or heavily customized for this project.
  * ShadCN/react-native-reusables primitives (button, text, card, input, label,
- * progress, skeleton, alert, alert-dialog, icon) are imported directly from
+ * alert-dialog, icon) are imported directly from
  * their files — e.g. `from '@/components/ui/button'`.
  *
  * Usage:
@@ -11,7 +11,7 @@
  *   import { Button } from '@/components/ui/button';  // ShadCN primitive
  */
 
-export { CachedImage, CachedImageStyles } from './cached-image';
+export { CachedImage } from './cached-image';
 export type { CachedImageProps } from './cached-image';
 
 export { Tabs } from './tabs';

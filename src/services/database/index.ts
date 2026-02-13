@@ -10,6 +10,7 @@
  *
  * USAGE:
  * import { createWorkout, observeUserWorkouts } from '@/services/database';
+ * import { createPlan, getExercises } from '@/services/database';
  */
 
 // WatermelonDB database instance
@@ -18,30 +19,8 @@ export { database } from './local';
 // Types
 export type * from './remote/types';
 
-// Workout operations (Promise-based - imperative)
-export {
-  createWorkout,
-  addExerciseToWorkout,
-  logSet,
-  getWorkoutById,
-  getUserWorkouts,
-  getActiveWorkout,
-  getWorkoutWithDetails,
-  getLastCompletedWorkout,
-  updateWorkout,
-  completeWorkout,
-  deleteWorkout,
-  getUnsyncedWorkouts,
-  markWorkoutAsSynced,
-} from './operations/workouts';
-
-// Workout operations (Observable-based - reactive)
-export {
-  observeWorkout,
-  observeUserWorkouts,
-  observeActiveWorkout,
-  observeWorkoutWithDetails,
-} from './operations/workouts';
+// All operations (workouts, plans, exercises)
+export * from './operations';
 
 // Sync operations
 export {

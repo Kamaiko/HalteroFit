@@ -13,12 +13,7 @@
  * if (error) { setAlert(error); return; }
  */
 
-import {
-  MAX_DAYS_PER_PLAN,
-  MAX_EXERCISES_PER_DAY,
-  MAX_DAY_NAME_LENGTH,
-  MAX_PLAN_NAME_LENGTH,
-} from '@/constants';
+import { MAX_DAYS_PER_PLAN, MAX_DAY_NAME_LENGTH, MAX_PLAN_NAME_LENGTH } from '@/constants';
 import { ValidationError } from '@/utils/errors';
 
 // ============================================================================
@@ -36,27 +31,6 @@ export function getDayCountError(
     return {
       title: 'Day Limit Reached',
       description: `This plan already has ${MAX_DAYS_PER_PLAN} days (maximum allowed).`,
-    };
-  }
-  return null;
-}
-
-/**
- * Check if adding exercises would exceed the day limit.
- * Returns an error object suitable for alert dialogs, or null if valid.
- */
-export function getExerciseCountError(
-  currentCount: number,
-  addingCount: number = 1
-): { title: string; description: string } | null {
-  if (currentCount + addingCount > MAX_EXERCISES_PER_DAY) {
-    const available = MAX_EXERCISES_PER_DAY - currentCount;
-    return {
-      title: 'Exercise Limit Reached',
-      description:
-        available <= 0
-          ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum).`
-          : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY}).`,
     };
   }
   return null;

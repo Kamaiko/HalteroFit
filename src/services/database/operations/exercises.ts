@@ -35,6 +35,39 @@ export interface Exercise {
 // Helpers
 // ============================================================================
 
+/**
+ * Build WatermelonDB filter queries for exercise search/filtering.
+ * Shared between getExercises() and getExerciseCount().
+ */
+function buildExerciseFilterQueries(options: {
+  search?: string;
+  bodyPart?: string;
+  targetMuscle?: string;
+}): Q.Clause[] {
+  const { search, bodyPart, targetMuscle } = options;
+  const queries: Q.Clause[] = [];
+
+  // Search by name (case-insensitive, word-order independent)
+  if (search && search.trim().length > 0) {
+    const words = search.trim().split(/\s+/);
+    for (const word of words) {
+      queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(word)}%`)));
+    }
+  }
+
+  // Filter by body part (stored as JSON array, search within string)
+  if (bodyPart && bodyPart.trim().length > 0) {
+    queries.push(Q.where('body_parts', Q.like(`%"${Q.sanitizeLikeString(bodyPart)}"%`)));
+  }
+
+  // Filter by target muscle (stored as JSON array, search within string)
+  if (targetMuscle && targetMuscle.trim().length > 0) {
+    queries.push(Q.where('target_muscles', Q.like(`%"${Q.sanitizeLikeString(targetMuscle)}"%`)));
+  }
+
+  return queries;
+}
+
 function exerciseToPlain(exercise: ExerciseModel): Exercise {
   return {
     id: exercise.id,
@@ -93,26 +126,7 @@ export async function getExercises(options?: ExerciseFilterOptions): Promise<Exe
   try {
     const { search, bodyPart, targetMuscle, limit = DEFAULT_PAGE_SIZE, offset = 0 } = options ?? {};
 
-    const queries: Q.Clause[] = [];
-
-    // Search by name (case-insensitive, word-order independent)
-    if (search && search.trim().length > 0) {
-      const words = search.trim().split(/\s+/);
-      for (const word of words) {
-        queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(word)}%`)));
-      }
-    }
-
-    // Filter by body part (stored as JSON array, search within string)
-    if (bodyPart && bodyPart.trim().length > 0) {
-      queries.push(Q.where('body_parts', Q.like(`%"${Q.sanitizeLikeString(bodyPart)}"%`)));
-    }
-
-    // Filter by target muscle (stored as JSON array, search within string)
-    if (targetMuscle && targetMuscle.trim().length > 0) {
-      queries.push(Q.where('target_muscles', Q.like(`%"${Q.sanitizeLikeString(targetMuscle)}"%`)));
-    }
-
+    const queries = buildExerciseFilterQueries({ search, bodyPart, targetMuscle });
     queries.push(Q.sortBy('name', Q.asc));
     queries.push(Q.take(limit));
     queries.push(Q.skip(offset));
@@ -167,22 +181,7 @@ export async function getExerciseCount(options?: {
 }): Promise<number> {
   try {
     const { search, bodyPart, targetMuscle } = options ?? {};
-    const queries: Q.Clause[] = [];
-
-    if (search && search.trim().length > 0) {
-      const words = search.trim().split(/\s+/);
-      for (const word of words) {
-        queries.push(Q.where('name', Q.like(`%${Q.sanitizeLikeString(word)}%`)));
-      }
-    }
-
-    if (bodyPart && bodyPart.trim().length > 0) {
-      queries.push(Q.where('body_parts', Q.like(`%"${Q.sanitizeLikeString(bodyPart)}"%`)));
-    }
-
-    if (targetMuscle && targetMuscle.trim().length > 0) {
-      queries.push(Q.where('target_muscles', Q.like(`%"${Q.sanitizeLikeString(targetMuscle)}"%`)));
-    }
+    const queries = buildExerciseFilterQueries({ search, bodyPart, targetMuscle });
 
     return await database
       .get<ExerciseModel>('exercises')

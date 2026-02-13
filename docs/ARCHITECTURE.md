@@ -11,11 +11,11 @@ This document explains how Halterofit's codebase is organized. It covers folder 
   - [3. `/hooks` - Custom React Hooks](#3-hooks---custom-react-hooks)
   - [4. `/services` - Business Logic](#4-services---business-logic)
   - [5. `/stores` - Global State (Zustand)](#5-stores---global-state-zustand)
-  - [6. `/types` - TypeScript Definitions](#6-types---typescript-definitions)
+  - [6. `/types` - TypeScript Types](#6-types---typescript-types)
   - [7. `/utils` - Pure Utility Functions](#7-utils---pure-utility-functions)
   - [8. `/lib` - UI Utility Helpers](#8-lib---ui-utility-helpers)
-  - [9. `/tests` - Test Infrastructure](#9-tests---test-infrastructure)
-  - [10. `/constants` - App-wide Constants](#10-constants---app-wide-constants)
+  - [9. `/tests` - Test Infrastructure](#9-tests--test-infrastructure)
+  - [10. `/constants` - App Constants](#10-constants---app-constants)
 - [Data Flow](#data-flow)
   - [Offline-First Sync Flow](#3-offline-first-sync-flow)
 
@@ -27,14 +27,15 @@ Halterofit uses a **scalable modular architecture** inspired by React Native/Exp
 
 ```
 src/
-├── app/              # Navigation & Screens (Expo Router)
-├── components/       # UI Components (Feature-organized)
-├── hooks/            # Custom React Hooks
-├── services/         # Business Logic & External Services
-├── stores/           # Global State (Zustand)
-├── types/            # TypeScript Definitions
-├── utils/            # Pure Utility Functions
-└── constants/        # App-wide Constants
+├── app/              # Screens & Navigation (Expo Router)
+├── components/       # UI Components (by feature: ui/, exercises/, workout/, charts/, layout/)
+├── hooks/            # Business Logic Hooks (exercises/, workout/, ui/)
+├── services/         # Database, Storage, Auth, Supabase
+├── stores/           # Global State - Zustand + MMKV (auth/, exercises/, workout/)
+├── constants/        # Colors, Layout, Animation, Workout limits
+├── utils/            # Errors, Validators, Strings, Sentry
+├── types/            # Shared types (placeholder)
+└── lib/              # UI utility (cn() helper for NativeWind)
 ```
 
 ### Architectural Principles
@@ -55,19 +56,26 @@ src/
 
 ```
 app/
-├── (tabs)/               # Main tab navigation
-│   ├── exercises/        # Exercises tab (nested routes)
-│   │   ├── _layout.tsx   # Stack navigator for exercises
-│   │   ├── index.tsx     # Muscle selector grid
-│   │   └── list.tsx      # Exercise list with search
-│   ├── _layout.tsx       # Tab bar configuration
-│   ├── index.tsx         # Home/Dashboard
-│   ├── workout.tsx       # Active workout
-│   ├── stats.tsx         # Statistics
-│   └── settings.tsx      # Settings
-├── _layout.tsx           # Global layout + DB init
-├── +not-found.tsx        # 404 page
-└── index.tsx             # Root redirect
+├── (tabs)/                  # Main tab navigation
+│   ├── exercises/           # Exercises tab (nested routes)
+│   │   ├── _layout.tsx      # Stack navigator for exercises
+│   │   └── index.tsx        # Muscle selector grid
+│   ├── _layout.tsx          # Tab bar configuration
+│   ├── index.tsx            # Home/Dashboard
+│   ├── workout.tsx          # Workout plan management
+│   ├── stats.tsx            # Statistics (placeholder)
+│   └── settings.tsx         # Settings (placeholder)
+├── exercise/
+│   └── [id].tsx             # Exercise detail (full-screen)
+├── plans/
+│   ├── _layout.tsx          # Plans stack navigator
+│   └── index.tsx            # Plan list
+├── _layout.tsx              # Global layout + DB init + Sentry
+├── +not-found.tsx           # 404 page
+├── edit-day.tsx             # Edit plan day exercises
+├── exercise-browser.tsx     # Browse exercises by muscle
+├── exercise-picker.tsx      # Pick exercises for plan day
+└── index.tsx                # Root redirect
 ```
 
 **Conventions**:
@@ -75,7 +83,7 @@ app/
 - Screens suffixed with `.tsx`
 - Layouts named `_layout.tsx`
 - Use `(groups)` for route organization without URL segments
-- Keep screens thin, delegate logic to hooks/services
+- Keep screens thin — delegate business logic to hooks in `src/hooks/`
 
 ---
 
@@ -85,342 +93,254 @@ app/
 
 ```
 components/
-├── ui/               # React Native Reusables components (shadcn/ui)
-│   ├── button.tsx
-│   ├── text.tsx
-│   ├── icon.tsx      # Ionicons wrapper
-│   └── ...
-├── layout/           # Screen layout components
-│   ├── ScreenContainer.tsx  # SafeAreaView + status bar styling
+├── ui/                  # ShadCN primitives + project-custom components
+│   ├── alert-dialog.tsx # AlertDialog (ShadCN, used by dialogs)
+│   ├── bottom-sheet.tsx # BottomSheet (custom, Gorhom)
+│   ├── button.tsx       # Button (ShadCN)
+│   ├── cached-image.tsx # CachedImage (custom, expo-image)
+│   ├── card.tsx         # Card (ShadCN)
+│   ├── confirm-dialog.tsx # ConfirmDialog (custom, wraps Dialog)
+│   ├── dialog.tsx       # Dialog (custom, base shell)
+│   ├── icon.tsx         # Ionicons wrapper (custom)
+│   ├── index.ts         # Barrel: custom components only
+│   ├── input.tsx        # Input (ShadCN)
+│   ├── input-dialog.tsx # InputDialog (custom, wraps Dialog)
+│   ├── label.tsx        # Label (ShadCN)
+│   ├── tabs.tsx         # Tabs (custom, react-native-pager-view)
+│   └── text.tsx         # Text (ShadCN)
+├── exercises/           # Exercise-specific components
+│   ├── ExerciseCard.tsx
+│   ├── ExerciseGifHeader.tsx
+│   ├── ExerciseListView.tsx
 │   └── index.ts
-├── charts/           # Victory Native chart components
-│   └── ...
-├── lists/            # FlashList components
-│   └── ...
-├── fitness/          # (Planned) Custom fitness-specific components
-└── shared/           # (Planned) Shared utility components
+├── workout/             # Workout plan components
+│   ├── DayCard.tsx
+│   ├── DayExerciseCard.tsx
+│   ├── DragHandle.tsx
+│   ├── EditDayExerciseCard.tsx
+│   ├── ExerciseThumbnail.tsx
+│   ├── PlanHeader.tsx
+│   ├── SwipeableContext.ts
+│   ├── WorkoutDayDetailsContent.tsx
+│   ├── WorkoutList.tsx         # Phase 2 (not yet used)
+│   ├── WorkoutListItem.tsx     # Phase 2 (not yet used)
+│   ├── WorkoutOverviewContent.tsx
+│   └── index.ts
+├── charts/              # Victory Native chart components
+│   ├── BarChart.tsx
+│   ├── LineChart.tsx
+│   └── index.ts
+└── layout/              # Screen layout components
+    ├── ErrorFallbackScreen.tsx
+    ├── ScreenContainer.tsx
+    └── index.ts
 ```
 
-**Organization Notes:**
+**Barrel Convention for `ui/`:**
 
-- `ui/`: Components from React Native Reusables CLI (lowercase naming per shadcn convention)
-- `layout/`: Screen structure components (SafeAreaView wrappers, consistent styling)
-- `charts/`: Victory Native visualization components
-- `lists/`: FlashList optimized list components
-- `fitness/`: (Planned) Custom workout tracking components
-- `shared/`: (Planned) Cross-feature utility components
+The `ui/index.ts` barrel exports only **project-custom** components (CachedImage, Tabs, BottomSheet, dialogs). ShadCN primitives (button, text, card, input, label, alert-dialog, icon) are imported directly from their files:
+
+```tsx
+import { CachedImage, Tabs, BottomSheet } from '@/components/ui'; // Custom
+import { Button } from '@/components/ui/button'; // ShadCN
+```
 
 **Conventions**:
 
-- **React Native Reusables components** (ui/): lowercase file names (shadcn convention)
-- **Custom components** (fitness/, charts/, lists/, shared/): PascalCase file names
-- Export named components: `export function Button() {}`
-- Include types in same file for small components
-- Create `index.ts` for barrel exports when >3 components
-- Use NativeWind v4 (Tailwind) for styling
-- Icons via `@expo/vector-icons` (MaterialIcons, Ionicons, FontAwesome)
-
-**Icon Adaptation Note:**
-React Native Reusables defaults to `lucide-react-native`, but we use `@expo/vector-icons` for broader icon coverage. When installing RN Reusables components with icons:
-
-1. Replace `lucide-react-native` imports with `@expo/vector-icons`
-2. Map icon names (e.g., `Check` → MaterialIcons `check`, `X` → MaterialIcons `close`)
-3. See [TECHNICAL.md ADR-016](TECHNICAL.md#adr-016-react-native-vector-icons) for full icon strategy
-
-**Example**:
-
-```tsx
-// components/ui/Button.tsx
-interface ButtonProps {
-  onPress: () => void;
-  children: React.ReactNode;
-  variant?: 'primary' | 'secondary';
-}
-
-export function Button({ onPress, children, variant = 'primary' }: ButtonProps) {
-  return (
-    <Pressable
-      onPress={onPress}
-      className={`px-4 py-2 rounded-lg ${variant === 'primary' ? 'bg-primary' : 'bg-secondary'}`}
-    >
-      <Text className="text-foreground font-semibold">{children}</Text>
-    </Pressable>
-  );
-}
-```
+- `ui/` files: lowercase (ShadCN convention)
+- All other component files: PascalCase
+- NativeWind v4 (Tailwind) for styling
+- Icons via `@/components/ui/icon` (Ionicons wrapper)
+- Named exports: `export function ComponentName() {}`
 
 ---
 
 ### 3. `/hooks` - Custom React Hooks
 
-**Purpose**: Reusable stateful logic
+**Purpose**: Encapsulate business logic and state management for screens
+
+Each screen with non-trivial logic has a matching hook. Hooks can compose other hooks for complex screens.
 
 ```
 hooks/
+├── exercises/
+│   ├── useExerciseDetail.ts    # Data loading for exercise/[id].tsx
+│   ├── useExercisePicker.ts    # Selection + validation for exercise-picker.tsx
+│   ├── useExerciseSearch.ts    # Search + pagination for exercise-browser.tsx
+│   └── index.ts
 ├── workout/
-│   ├── useActiveWorkout.ts
-│   ├── useSetLogger.ts
-│   └── index.ts
-├── analytics/        # Post-MVP
-│   ├── useWorkoutStats.ts
-│   └── index.ts
-├── auth/
-│   ├── useAuth.ts
+│   ├── useWorkoutScreen.ts     # Main hook for workout.tsx (composes sub-hooks)
+│   ├── useEditDay.ts           # Edit day logic for edit-day.tsx
+│   ├── useAddDayDialog.ts      # Add day dialog state (sub-hook)
+│   ├── useDayMenu.ts           # Day context menu actions (sub-hook)
+│   ├── useExerciseActions.ts   # Exercise reorder/delete (sub-hook)
 │   └── index.ts
 └── ui/
-    ├── useTheme.ts
+    ├── useAlertState.ts        # Alert dialog state pattern
+    ├── useErrorHandler.ts      # Centralized error → alert conversion
     └── index.ts
 ```
 
+**Hook Composition Pattern:**
+
+`useWorkoutScreen` composes `useAddDayDialog` + `useDayMenu` + `useExerciseActions` — each sub-hook handles one concern, the parent wires them together.
+
 **Conventions**:
 
-- Prefix with `use`: `useActiveWorkout()`
-- Return objects, not arrays: `{ workout, isLoading, error }`
-- Encapsulate complex state logic
-- Can use stores, services, other hooks
-
-**Example**:
-
-```tsx
-// hooks/workout/useActiveWorkout.ts
-import { useWorkoutStore } from '@/stores';
-import { createWorkout, completeWorkout } from '@/services';
-
-export function useActiveWorkout() {
-  const { isWorkoutActive, workoutStartTime } = useWorkoutStore();
-
-  const startWorkout = async () => {
-    const workout = await createWorkout({
-      user_id: 'user-123',
-      started_at: Date.now() / 1000,
-    });
-    useWorkoutStore.getState().startWorkout();
-    return workout;
-  };
-
-  return {
-    isActive: isWorkoutActive,
-    startTime: workoutStartTime,
-    startWorkout,
-  };
-}
-```
+- Prefix with `use`: `useExerciseSearch()`
+- Return objects: `{ data, loading, error, handleAction }`
+- Import via barrel: `import { useEditDay } from '@/hooks/workout'`
 
 ---
 
 ### 4. `/services` - Business Logic Layer
 
-**Purpose**: External services, API calls, database operations
+**Purpose**: Database operations, external services, storage
 
 ```
 services/
-├── database/              # WatermelonDB database
-│   ├── local/             # WatermelonDB (SQLite local storage)
-│   │   ├── schema.ts      # Database schema
-│   │   ├── migrations.ts  # Schema migrations
-│   │   ├── models/        # WatermelonDB models
-│   │   │   ├── Workout.ts
+├── database/
+│   ├── local/                  # WatermelonDB (SQLite local storage)
+│   │   ├── schema.ts           # Database schema (v8)
+│   │   ├── migrations.ts       # Schema migrations (v1-v8)
+│   │   ├── models/             # WatermelonDB model classes
+│   │   │   ├── User.ts
 │   │   │   ├── Exercise.ts
-│   │   │   └── ...
-│   │   └── index.ts       # Database instance
+│   │   │   ├── Workout.ts
+│   │   │   ├── WorkoutExercise.ts
+│   │   │   ├── ExerciseSet.ts
+│   │   │   ├── WorkoutPlan.ts
+│   │   │   ├── PlanDay.ts
+│   │   │   └── PlanDayExercise.ts
+│   │   └── index.ts            # Database instance + model exports
 │   │
-│   ├── remote/            # Supabase sync protocol
-│   │   ├── sync.ts        # WatermelonDB sync implementation
-│   │   └── types.ts       # Sync-related types
+│   ├── remote/                 # Supabase sync protocol
+│   │   ├── sync.ts             # WatermelonDB sync (Phase 2)
+│   │   └── types.ts            # Database types (Exercise, Workout, Plan, etc.)
 │   │
-│   ├── operations/        # Business logic (CRUD)
-│   │   ├── workouts.ts    # Workout CRUD operations
-│   │   ├── exercises.ts   # Exercise CRUD operations (Phase 1+)
-│   │   └── sets.ts        # Set CRUD operations (Phase 1+)
+│   ├── operations/             # Business logic (CRUD)
+│   │   ├── workouts.ts         # 17 functions (Promise + Observable)
+│   │   ├── plans.ts            # 26 functions (Promise + Observable)
+│   │   ├── exercises.ts        # 6 functions (read-only, no auth)
+│   │   └── index.ts            # Barrel (re-exports all operations)
 │   │
-│   └── index.ts           # Public API (barrel export)
+│   ├── seed/                   # Exercise library seeding
+│   │   ├── exercises.ts        # Seed 1,300+ exercises from JSON
+│   │   └── index.ts
+│   │
+│   ├── utils/                  # Database operation helpers
+│   │   ├── requireAuth.ts      # Auth guards (requireAuth, validateOwnership)
+│   │   ├── withDatabaseError.ts # Error wrapper for DB operations
+│   │   └── index.ts
+│   │
+│   └── index.ts                # Public API barrel
 │
-├── supabase/         # Supabase client
+├── storage/                    # MMKV encrypted storage
+│   ├── mmkvStorage.ts          # Core MMKV interface
+│   ├── storage.ts              # Async wrapper (for Supabase client)
+│   ├── zustandStorage.ts       # Zustand persist adapter
+│   └── index.ts
+│
+├── supabase/                   # Supabase client
 │   ├── client.ts
 │   └── index.ts
-├── storage/          # MMKV encrypted storage
-│   ├── mmkvStorage.ts
-│   └── index.ts
-├── api/              # External APIs (if needed)
-├── analytics/        # Post-MVP - Analytics calculations
-└── notifications/    # Push notifications
+│
+└── auth/                       # Auth services (Phase 1 - in progress)
+    └── index.ts
 ```
 
-**Database Architecture:**
+**Database Operation Patterns:**
 
-- **`local/`** - WatermelonDB concerns (schema, models, migrations)
-- **`remote/`** - Supabase sync protocol
-- **`operations/`** - Business logic (CRUD functions)
+All write operations follow: `requireAuth()` + `withDatabaseError()` + ownership validation.
+Exercise operations are read-only (seed data, no auth needed).
+Each domain provides both Promise-based (imperative) and Observable (reactive) APIs.
 
-**Conventions**:
-
-- Pure functions when possible
-- Return Promises for async operations
-- Throw descriptive errors
-- **Colocation**: Types defined in same module (`database/types.ts`)
-- Use `@/services` barrel export for common imports
-
-**Example**:
+**Import Convention:**
 
 ```typescript
-// services/database/watermelon/workouts.ts
-import { database } from './index';
-import { Workout } from '@/models';
-import type { CreateWorkout } from './types';
-
-export async function createWorkout(data: CreateWorkout): Promise<Workout> {
-  const workout = await database.write(async () => {
-    return await database.collections.get<Workout>('workouts').create((workout) => {
-      workout.userId = data.user_id;
-      workout.startedAt = data.started_at;
-    });
-  });
-
-  return workout;
-}
+import { createPlan, observeActivePlan } from '@/services/database/operations';
+import { mmkvStorage } from '@/services/storage';
+import { supabase } from '@/services/supabase';
 ```
 
 ---
 
 ### 5. `/stores` - Global State (Zustand)
 
-**Purpose**: Application-wide state management
+**Purpose**: Application-wide state management with MMKV persistence
 
 ```
 stores/
 ├── auth/
-│   ├── authStore.ts
+│   ├── authStore.ts              # Auth session (user, isAuthenticated)
+│   ├── authStore.manual-test.ts  # Dev tool: MMKV persistence validation
+│   └── index.ts
+├── exercises/
+│   ├── exercisePickerStore.ts    # Exercise picker selection state
 │   └── index.ts
 ├── workout/
-│   ├── workoutStore.ts
+│   ├── workoutStore.ts           # Active workout state
+│   ├── workoutStore.manual-test.ts # Dev tool: MMKV persistence validation
 │   └── index.ts
-├── analytics/        # Post-MVP
-│   └── analyticsStore.ts
-├── settings/
-│   └── settingsStore.ts
-└── index.ts          # Barrel exports all stores
+└── index.ts                      # Barrel exports all stores
 ```
 
 **Conventions**:
 
-- Use Zustand for global state
-- Export both hook and types: `export { useAuthStore } from './authStore'`
-- Keep stores focused (single responsibility)
+- Zustand with `persist()` middleware + MMKV storage adapter
+- Export hook + types: `export { useAuthStore } from './authStore'`
+- Import directly: `import { useAuthStore } from '@/stores/auth'`
 - **Persistence strategy**:
-  - ✅ Simple state → Zustand `persist()` middleware (auth session, preferences)
-  - ✅ Cross-service validation → Use `useAuthStore.getState().user?.id` directly
-  - ❌ Complex/relational data → Use service layer (WatermelonDB operations)
-
-**Example**:
-
-```typescript
-// stores/auth/authStore.ts
-import { create } from 'zustand';
-import { supabase } from '@/services/supabase';
-
-export interface User {
-  id: string;
-  email: string;
-}
-
-export interface AuthState {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-
-  // Actions
-  setUser: (user: User | null) => void;
-  signOut: () => Promise<void>;
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  isLoading: true,
-  isAuthenticated: false,
-
-  setUser: (user) =>
-    set({
-      user,
-      isAuthenticated: user !== null,
-      isLoading: false,
-    }),
-
-  signOut: async () => {
-    await supabase.auth.signOut();
-    set({ user: null, isAuthenticated: false });
-  },
-}));
-```
+  - Simple state (auth, preferences) → Zustand `persist()` + MMKV
+  - Complex/relational data → WatermelonDB (via services layer)
 
 ---
 
 ### 6. `/types` - TypeScript Types
 
-**Purpose**: Shared type definitions (NOT colocated)
+**Purpose**: Shared type definitions for cross-module use
 
 ```
 types/
-├── api/              # External API types
-│   └── ExerciseDB.ts
-├── user/             # User-related types
-│   └── profile.ts
-├── workout/          # Workout templates, programs
-│   └── templates.ts
-└── index.ts          # Barrel exports
+└── index.ts          # Placeholder (JIT approach)
 ```
 
-**Convention: Type Colocation vs Shared Types**
+Currently empty. Types are colocated with their implementation:
 
-✅ **Colocate types** when:
+- Database types → `services/database/remote/types.ts`
+- Exercise types → `services/database/operations/exercises.ts`
+- Plan types → `services/database/operations/plans.ts`
+- Component props → same file as the component
 
-- Types are ONLY used within one module
-- Example: `database/types.ts` (only used by database service)
-
-❌ **Shared types folder** when:
-
-- Types used across multiple modules
-- Public API contracts
-- External service types
+Shared types will be added here when needed (e.g., types used across 3+ modules).
 
 ---
 
 ### 7. `/utils` - Pure Utility Functions
 
-**Purpose**: Pure functions, no side effects
+**Purpose**: Pure functions, error classes, validation
 
 ```
 utils/
-├── calculations/     # 1RM, volume, plate calculator
-│   ├── oneRepMax.ts
+├── errors.ts              # Error hierarchy (AppError → Database/Auth/Validation/SyncError)
+├── sentry.ts              # Sentry initialization and helpers
+├── strings.ts             # capitalizeWords, stripStepPrefix
+├── calculations/          # Placeholder (Phase 5+: 1RM, volume, plates)
 │   └── index.ts
-├── formatters/       # Date, weight, duration formatting
-│   ├── weight.ts
+├── formatters/            # Placeholder (Phase 2+: weight, date, duration)
 │   └── index.ts
-├── validators/       # Input validation
-│   ├── email.ts
+├── validators/            # Input validation
+│   ├── plans.ts           # Plan/day name validators (result-based + throwing)
 │   └── index.ts
-└── index.ts          # Barrel exports
+└── index.ts               # Barrel exports
 ```
 
-**Conventions**:
-
-- Pure functions only (same input = same output)
-- No state, no side effects
-- Export named functions: `export function formatWeight() {}`
-- Include unit tests
-
-**Example**:
+**Import Convention:**
 
 ```typescript
-// utils/calculations/oneRepMax.ts
-/**
- * Calculate 1RM using Epley formula
- * 1RM = weight × (1 + reps/30)
- */
-export function calculateOneRepMax(weight: number, reps: number): number {
-  if (reps === 1) return weight;
-  return Math.round(weight * (1 + reps / 30));
-}
+import { capitalizeWords } from '@/utils'; // Generic utilities via barrel
+import { DatabaseError } from '@/utils/errors'; // Domain-specific via direct import
+import { validatePlanName } from '@/utils/validators'; // Domain-specific via direct import
 ```
 
 ---
@@ -543,20 +463,19 @@ __tests__/                      # All tests centralized (renamed from tests/)
 
 ### 10. `/constants` - App Constants
 
-**Purpose**: Configuration values, colors, sizes
+**Purpose**: Configuration values, colors, sizes, limits
 
 ```
 constants/
-├── colors.ts         # Color palette (must match Tailwind)
-├── sizes.ts          # Spacing, font sizes
+├── animation.ts      # Duration constants (DURATION_INSTANT/FAST/STANDARD/MODERATE)
+├── colors.ts         # Color palette (must match tailwind.config.ts)
+├── database.ts       # DEFAULT_PAGE_SIZE, SEARCH_DEBOUNCE_MS
+├── layout.ts         # ICON_SIZE_*, THUMBNAIL_*, TAB_BAR_*, CHART_*
+├── workout.ts        # MAX_EXERCISES_PER_DAY, MAX_DAYS_PER_PLAN, defaults
 └── index.ts          # Barrel exports
 ```
 
-**Conventions**:
-
-- Use PascalCase for constants: `Colors`, `Sizes`
-- Colors MUST match `tailwind.config.ts`
-- Export as `const` objects
+**Convention:** Always import via barrel: `import { Colors, ICON_SIZE_MD } from '@/constants'`
 
 ---
 

@@ -27,6 +27,8 @@
 import { useCallback } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import { Ionicons } from '@/components/ui/icon';
+import { Colors, ICON_SIZE_2XL } from '@/constants';
 import type { Workout } from '@/services/database/remote/types';
 import { WorkoutListItem } from './WorkoutListItem';
 
@@ -60,7 +62,12 @@ interface WorkoutListProps {
 function EmptyState({ message }: { message: string }) {
   return (
     <View className="flex-1 items-center justify-center p-8 min-h-[400px]">
-      <Text className="text-6xl mb-4">💪</Text>
+      <Ionicons
+        name="barbell-outline"
+        size={ICON_SIZE_2XL}
+        color={Colors.foreground.secondary}
+        className="mb-4"
+      />
       <Text className="text-lg font-semibold text-foreground text-center mb-2">{message}</Text>
       <Text className="text-sm text-foreground-secondary text-center">
         Track your progress and reach your goals
@@ -75,7 +82,7 @@ function EmptyState({ message }: { message: string }) {
 function LoadingState() {
   return (
     <View className="flex-1 items-center justify-center p-8 min-h-[400px]">
-      <ActivityIndicator size="large" color="#8A2BE2" />
+      <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
       <Text className="text-sm text-foreground-secondary mt-4">Loading workouts...</Text>
     </View>
   );
