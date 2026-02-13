@@ -29,6 +29,9 @@ build/
 logs/
 *.log
 
+# Vendored Libraries
+src/lib/
+
 # Temporary Files
 .cache/
 
