@@ -9,7 +9,6 @@
  */
 
 export * from './types';
-export { planToPlain, planDayToPlain, planDayExerciseToPlain } from './mappers';
 export * from './plan-operations';
 export * from './day-operations';
 export * from './exercise-operations';

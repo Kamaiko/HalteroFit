@@ -12,24 +12,9 @@ import { database } from '../local';
 import ExerciseModel from '../local/models/Exercise';
 import { DatabaseError } from '@/utils/errors';
 import { DEFAULT_PAGE_SIZE } from '@/constants';
+import type { Exercise } from '../remote/types';
 
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface Exercise {
-  id: string;
-  exercisedb_id: string;
-  name: string;
-  body_parts: string[];
-  target_muscles: string[];
-  secondary_muscles: string[];
-  equipments: string[];
-  instructions: string[];
-  gif_url?: string;
-  created_at: number;
-  updated_at: number;
-}
+export type { Exercise };
 
 // ============================================================================
 // Helpers

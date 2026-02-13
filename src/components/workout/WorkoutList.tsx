@@ -29,7 +29,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors, ICON_SIZE_2XL } from '@/constants';
-import type { Workout } from '@/services/database/remote/types';
+import type { Workout } from '@/services/database/operations';
 import { WorkoutListItem } from './WorkoutListItem';
 
 interface WorkoutListProps {

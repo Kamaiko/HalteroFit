@@ -7,7 +7,8 @@
 import type WorkoutPlanModel from '../../local/models/WorkoutPlan';
 import type PlanDayModel from '../../local/models/PlanDay';
 import type PlanDayExerciseModel from '../../local/models/PlanDayExercise';
-import type { WorkoutPlan, PlanDay, PlanDayExercise } from './types';
+import type ExerciseModel from '../../local/models/Exercise';
+import type { WorkoutPlan, PlanDay, PlanDayExercise, PlanDayWithExercises } from './types';
 
 export function planToPlain(plan: WorkoutPlanModel): WorkoutPlan {
   return {
@@ -46,4 +47,33 @@ export function planDayExerciseToPlain(pde: PlanDayExerciseModel): PlanDayExerci
     created_at: pde.createdAt.getTime(),
     updated_at: pde.updatedAt.getTime(),
   };
+}
+
+/** Map a PlanDayExercise model + its Exercise model to a plain object with details */
+export function planDayExerciseWithDetailToPlain(
+  pde: PlanDayExerciseModel,
+  exercise: ExerciseModel
+): PlanDayWithExercises['exercises'][number] {
+  return {
+    ...planDayExerciseToPlain(pde),
+    exercise: {
+      id: exercise.id,
+      name: exercise.name,
+      body_parts: exercise.bodyParts,
+      target_muscles: exercise.targetMuscles,
+      equipments: exercise.equipments,
+      gif_url: exercise.gifUrl ?? undefined,
+    },
+  };
+}
+
+/** Count exercises per day from a flat list of exercise models */
+export function countExercisesByDay(
+  exercises: PlanDayExerciseModel[],
+  planDayIds: string[]
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const id of planDayIds) counts[id] = 0;
+  for (const e of exercises) counts[e.planDayId] = (counts[e.planDayId] ?? 0) + 1;
+  return counts;
 }

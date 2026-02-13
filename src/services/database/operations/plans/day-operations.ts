@@ -24,7 +24,12 @@ import ExerciseModel from '../../local/models/Exercise';
 import { requireAuth, validateOwnership } from '../../utils/requireAuth';
 import { withDatabaseError } from '../../utils/withDatabaseError';
 import type { PlanDay, PlanDayWithExercises, CreatePlanDay, UpdatePlanDay } from './types';
-import { planDayToPlain, planDayExerciseToPlain } from './mappers';
+import {
+  planDayToPlain,
+  planDayExerciseToPlain,
+  planDayExerciseWithDetailToPlain,
+  countExercisesByDay,
+} from './mappers';
 
 // ============================================================================
 // CREATE
@@ -231,14 +236,7 @@ export function observeExerciseCountsByDays(
     .get<PlanDayExerciseModel>('plan_day_exercises')
     .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
     .observe()
-    .pipe(
-      map((exercises) => {
-        const counts: Record<string, number> = {};
-        for (const id of planDayIds) counts[id] = 0;
-        for (const e of exercises) counts[e.planDayId] = (counts[e.planDayId] ?? 0) + 1;
-        return counts;
-      })
-    );
+    .pipe(map((exercises) => countExercisesByDay(exercises, planDayIds)));
 }
 
 /**
@@ -268,17 +266,7 @@ export function observePlanDayWithExercises(planDayId: string): Observable<PlanD
         Promise.all(
           planDayExercises.map(async (pde) => {
             const exercise = await database.get<ExerciseModel>('exercises').find(pde.exerciseId);
-            return {
-              ...planDayExerciseToPlain(pde),
-              exercise: {
-                id: exercise.id,
-                name: exercise.name,
-                body_parts: exercise.bodyParts,
-                target_muscles: exercise.targetMuscles,
-                equipments: exercise.equipments,
-                gif_url: exercise.gifUrl ?? undefined,
-              },
-            };
+            return planDayExerciseWithDetailToPlain(pde, exercise);
           })
         )
       ).pipe(
@@ -306,18 +294,7 @@ export async function getPlanDayWithExercises(planDayId: string): Promise<PlanDa
       const exercisesWithDetails = await Promise.all(
         planDayExercises.map(async (pde) => {
           const exercise = await database.get<ExerciseModel>('exercises').find(pde.exerciseId);
-
-          return {
-            ...planDayExerciseToPlain(pde),
-            exercise: {
-              id: exercise.id,
-              name: exercise.name,
-              body_parts: exercise.bodyParts,
-              target_muscles: exercise.targetMuscles,
-              equipments: exercise.equipments,
-              gif_url: exercise.gifUrl ?? undefined,
-            },
-          };
+          return planDayExerciseWithDetailToPlain(pde, exercise);
         })
       );
 
@@ -349,35 +326,43 @@ export async function getExerciseCountByDay(planDayId: string): Promise<number> 
 }
 
 /**
+ * Get exercise IDs and count for a plan day (Promise)
+ * Used by exercise picker to check duplicates and limits.
+ */
+export async function getExerciseIdsAndCountByDay(
+  planDayId: string
+): Promise<{ exerciseIds: string[]; count: number }> {
+  return withDatabaseError(
+    async () => {
+      const exercises = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', planDayId))
+        .fetch();
+      const exerciseIds = exercises.map((e) => e.exerciseId);
+      return { exerciseIds, count: exerciseIds.length };
+    },
+    'Unable to load exercises. Please try again.',
+    `Failed to get exercise IDs for day ${planDayId}`
+  );
+}
+
+/**
  * Get exercise counts for multiple plan days (Promise)
  * Returns a map of day_id -> count
  */
 export async function getExerciseCountsByDays(
   planDayIds: string[]
 ): Promise<Record<string, number>> {
+  if (planDayIds.length === 0) return {};
+
   return withDatabaseError(
     async () => {
-      const counts: Record<string, number> = {};
+      const exercises = await database
+        .get<PlanDayExerciseModel>('plan_day_exercises')
+        .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
+        .fetch();
 
-      // Initialize all to 0
-      for (const id of planDayIds) {
-        counts[id] = 0;
-      }
-
-      // Batch query all exercises for these days
-      if (planDayIds.length > 0) {
-        const exercises = await database
-          .get<PlanDayExerciseModel>('plan_day_exercises')
-          .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
-          .fetch();
-
-        // Count per day
-        for (const exercise of exercises) {
-          counts[exercise.planDayId] = (counts[exercise.planDayId] ?? 0) + 1;
-        }
-      }
-
-      return counts;
+      return countExercisesByDay(exercises, planDayIds);
     },
     'Unable to count exercises. Please try again.',
     'Failed to count exercises for days'

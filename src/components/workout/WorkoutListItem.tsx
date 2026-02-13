@@ -13,7 +13,7 @@
 
 import { memo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import type { Workout } from '@/services/database/remote/types';
+import type { Workout } from '@/services/database/operations';
 import { formatWorkoutDate, formatDuration } from '@/utils/formatters';
 
 interface WorkoutListItemProps {

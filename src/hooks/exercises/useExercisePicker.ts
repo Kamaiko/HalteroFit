@@ -10,14 +10,14 @@
 
 import { useCallback, useState } from 'react';
 import { router } from 'expo-router';
-import { Q } from '@nozbe/watermelondb';
 
 import { MAX_EXERCISES_PER_DAY } from '@/constants';
 import { useExerciseSearch } from '@/hooks/exercises/useExerciseSearch';
-import { database } from '@/services/database/local';
-import PlanDayExerciseModel from '@/services/database/local/models/PlanDayExercise';
 import type { Exercise } from '@/services/database/operations';
-import { addExercisesToPlanDay } from '@/services/database/operations/plans';
+import {
+  addExercisesToPlanDay,
+  getExerciseIdsAndCountByDay,
+} from '@/services/database/operations/plans';
 import {
   useExercisePickerStore,
   type PickedExercise,
@@ -122,12 +122,9 @@ export function useExercisePicker({
         existingExerciseIds = new Set(ids);
         currentCount = ids.length;
       } else {
-        const existingExercises = await database
-          .get<PlanDayExerciseModel>('plan_day_exercises')
-          .query(Q.where('plan_day_id', targetDayId))
-          .fetch();
-        existingExerciseIds = new Set(existingExercises.map((e) => e.exerciseId));
-        currentCount = existingExercises.length;
+        const result = await getExerciseIdsAndCountByDay(targetDayId);
+        existingExerciseIds = new Set(result.exerciseIds);
+        currentCount = result.count;
       }
 
       const selectedExerciseIds = Array.from(selectedIds);
