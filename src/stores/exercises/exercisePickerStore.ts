@@ -4,7 +4,7 @@
  * Ephemeral Zustand store for passing selected exercises from the exercise picker
  * back to the calling screen (e.g., Edit Day) without URL params.
  *
- * Flow: Edit Day → exercise-picker (mode=pick) → store.setResult() → router.back()
+ * Flow: Edit Day → exercise/picker (mode=pick) → store.setResult() → router.back()
  *       → Edit Day reads result on focus → store.clearResult()
  */
 

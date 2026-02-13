@@ -49,10 +49,10 @@ const MUSCLE_GROUPS: MuscleGroup[] = [
 export default function ExerciseSelectorScreen() {
   const handleMusclePress = (muscle: MuscleGroup) => {
     if (muscle.id === 'show-all') {
-      router.push('/exercise-browser');
+      router.push('/exercise/browser');
     } else if (muscle.filterType && muscle.filterValue) {
       router.push({
-        pathname: '/exercise-browser',
+        pathname: '/exercise/browser',
         params: {
           filterType: muscle.filterType,
           filterValue: muscle.filterValue,

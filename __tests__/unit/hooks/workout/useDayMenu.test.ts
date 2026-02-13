@@ -65,7 +65,7 @@ describe('useDayMenu', () => {
   // ── handleEditDay ─────────────────────────────────────────────────
 
   describe('handleEditDay', () => {
-    it('navigates to /edit-day with menuDay.id', () => {
+    it('navigates to /plans/edit-day with menuDay.id', () => {
       const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
       const day = makePlanDay('day-42', 'Push Day');
 
@@ -77,7 +77,7 @@ describe('useDayMenu', () => {
       });
 
       expect(mockRouterPush).toHaveBeenCalledWith({
-        pathname: '/edit-day',
+        pathname: '/plans/edit-day',
         params: { dayId: 'day-42' },
       });
     });

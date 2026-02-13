@@ -68,7 +68,7 @@ export default function WorkoutScreen() {
   const handleAddExercisePress = useCallback(() => {
     if (!selectedDay) return;
     router.push({
-      pathname: '/exercise-picker',
+      pathname: '/exercise/picker',
       params: { dayId: selectedDay.id, dayName: selectedDay.name },
     });
   }, [selectedDay]);
@@ -83,7 +83,7 @@ export default function WorkoutScreen() {
   const handleEditExercise = useCallback(
     (_exercise: DayExercise) => {
       if (!selectedDay) return;
-      router.push({ pathname: '/edit-day', params: { dayId: selectedDay.id } });
+      router.push({ pathname: '/plans/edit-day', params: { dayId: selectedDay.id } });
     },
     [selectedDay]
   );

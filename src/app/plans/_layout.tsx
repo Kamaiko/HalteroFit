@@ -2,7 +2,7 @@
  * Plans Stack Layout
  *
  * Stack navigation for plans-related screens.
- * Accessible via "All Plans" button from Workout tab.
+ * Includes: plan list (index), edit day.
  */
 
 import { Stack } from 'expo-router';
@@ -20,6 +20,9 @@ export default function PlansLayout() {
         headerBackTitle: '',
         contentStyle: { backgroundColor: Colors.background.DEFAULT },
       }}
-    />
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="edit-day" options={{ headerShown: false, gestureEnabled: false }} />
+    </Stack>
   );
 }

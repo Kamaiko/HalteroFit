@@ -65,16 +65,17 @@ app/
 │   ├── workout.tsx          # Workout plan management
 │   ├── stats.tsx            # Statistics (placeholder)
 │   └── settings.tsx         # Settings (placeholder)
-├── exercise/
-│   └── [id].tsx             # Exercise detail (full-screen)
-├── plans/
-│   ├── _layout.tsx          # Plans stack navigator
-│   └── index.tsx            # Plan list
+├── exercise/                # Exercise full-screen routes
+│   ├── _layout.tsx          # Stack navigator (headerShown: false)
+│   ├── [id].tsx             # Exercise detail (/exercise/123)
+│   ├── browser.tsx          # Browse exercises by muscle (/exercise/browser)
+│   └── picker.tsx           # Pick exercises for plan day (/exercise/picker)
+├── plans/                   # Plan full-screen routes
+│   ├── _layout.tsx          # Stack navigator (header for index, hidden for edit-day)
+│   ├── index.tsx            # Plan list (/plans)
+│   └── edit-day.tsx         # Edit plan day exercises (/plans/edit-day)
 ├── _layout.tsx              # Global layout + DB init + Sentry
 ├── +not-found.tsx           # 404 page
-├── edit-day.tsx             # Edit plan day exercises
-├── exercise-browser.tsx     # Browse exercises by muscle
-├── exercise-picker.tsx      # Pick exercises for plan day
 └── index.tsx                # Root redirect
 ```
 
@@ -84,6 +85,8 @@ app/
 - Layouts named `_layout.tsx`
 - Use `(groups)` for route organization without URL segments
 - Keep screens thin — delegate business logic to hooks in `src/hooks/`
+- **Route grouping**: `(tabs)/feature/` for tab screens, `feature/` for full-screen routes grouped by domain
+- **Naming**: `exercises/` (plural = collection tab), `exercise/` (singular = resource routes)
 
 ---
 

@@ -7,7 +7,7 @@
  * - Exercise counter
  * - FlashList with loading/empty states
  *
- * Used by: exercise-browser, exercise-picker
+ * Used by: exercise/browser, exercise/picker
  */
 
 import { ScreenContainer } from '@/components/layout';

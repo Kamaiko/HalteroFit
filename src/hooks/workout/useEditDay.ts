@@ -155,7 +155,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
   const navigateToExercisePicker = useCallback(() => {
     const existingIds = exercises.map((e) => e.exercise_id).join(',');
     router.push({
-      pathname: '/exercise-picker',
+      pathname: '/exercise/picker',
       params: { dayId, mode: 'pick', existingExerciseIds: existingIds },
     });
   }, [dayId, exercises]);

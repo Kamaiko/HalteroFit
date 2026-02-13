@@ -41,7 +41,7 @@ export function useDayMenu(params: { onDayDeleted: (dayId: string) => void }): U
   const handleEditDay = useCallback(() => {
     menuSheetRef.current?.close();
     if (!menuDay) return;
-    router.push({ pathname: '/edit-day', params: { dayId: menuDay.id } });
+    router.push({ pathname: '/plans/edit-day', params: { dayId: menuDay.id } });
   }, [menuDay]);
 
   const handleDeleteDayPress = useCallback(() => {
