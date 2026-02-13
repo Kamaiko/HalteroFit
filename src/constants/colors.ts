@@ -10,8 +10,8 @@
  * - Any native styling that requires hex values
  *
  * For regular components, prefer Tailwind className:
- * ✅ <View className="bg-primary">
- * ❌ <View style={{ backgroundColor: COLORS.primary }}>
+ * GOOD: <View className="bg-primary">
+ * BAD:  <View style={{ backgroundColor: COLORS.primary }}>
  */
 
 export const Colors = {

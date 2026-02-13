@@ -32,7 +32,7 @@ export function ErrorFallbackScreen() {
         padding: 24,
       }}
     >
-      <Text style={{ fontSize: 48, marginBottom: 16 }}>⚠️</Text>
+      <Text style={{ fontSize: 48, marginBottom: 16 }}>!</Text>
       <Text
         style={{
           fontSize: 20,

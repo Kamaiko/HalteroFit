@@ -48,7 +48,7 @@ export const authStoreTestHelpers = {
       id: 'test-user-123',
       email: 'test@halterofit.com',
     });
-    console.log('✅ Simulated login:', useAuthStore.getState().user);
+    console.log('Simulated login:', useAuthStore.getState().user);
   },
 
   /**
@@ -56,7 +56,7 @@ export const authStoreTestHelpers = {
    */
   simulateLogout: async () => {
     await useAuthStore.getState().signOut();
-    console.log('✅ Simulated logout:', useAuthStore.getState());
+    console.log('Simulated logout:', useAuthStore.getState());
   },
 
   /**
@@ -64,7 +64,7 @@ export const authStoreTestHelpers = {
    */
   checkState: () => {
     const state = useAuthStore.getState();
-    console.log('📊 Current auth state:', {
+    console.log('Current auth state:', {
       user: state.user,
       isAuthenticated: state.isAuthenticated,
       isLoading: state.isLoading,
@@ -78,7 +78,7 @@ export const authStoreTestHelpers = {
   verifyPersistence: () => {
     const state = useAuthStore.getState();
     const isPersisted = state.user !== null && state.isAuthenticated;
-    console.log(isPersisted ? '✅ Persistence working!' : '❌ Persistence failed', state);
+    console.log(isPersisted ? 'Persistence working!' : 'Persistence failed', state);
     return isPersisted;
   },
 };
@@ -87,5 +87,5 @@ export const authStoreTestHelpers = {
 if (typeof window !== 'undefined') {
   // @ts-ignore - Dev tool
   window.authTest = authStoreTestHelpers;
-  console.log('💡 Auth test helpers available: window.authTest');
+  console.log('Auth test helpers available: window.authTest');
 }

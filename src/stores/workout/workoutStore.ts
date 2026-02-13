@@ -68,7 +68,7 @@ export const useWorkoutStore = create<WorkoutState>()(
         }
         // Successfully rehydrated
         if (state && state.isWorkoutActive) {
-          console.log('✅ Workout session restored:', {
+          console.log('Workout session restored:', {
             started: state.workoutStartTime,
             id: state.currentWorkoutId,
           });

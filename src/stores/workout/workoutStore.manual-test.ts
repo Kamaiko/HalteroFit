@@ -46,7 +46,7 @@ export const workoutStoreTestHelpers = {
    */
   simulateStart: (workoutId?: string) => {
     useWorkoutStore.getState().startWorkout(workoutId || 'test-workout-123');
-    console.log('✅ Simulated workout start:', useWorkoutStore.getState());
+    console.log('Simulated workout start:', useWorkoutStore.getState());
   },
 
   /**
@@ -54,7 +54,7 @@ export const workoutStoreTestHelpers = {
    */
   simulateEnd: () => {
     useWorkoutStore.getState().endWorkout();
-    console.log('✅ Simulated workout end:', useWorkoutStore.getState());
+    console.log('Simulated workout end:', useWorkoutStore.getState());
   },
 
   /**
@@ -62,7 +62,7 @@ export const workoutStoreTestHelpers = {
    */
   checkState: () => {
     const state = useWorkoutStore.getState();
-    console.log('📊 Current workout state:', {
+    console.log('Current workout state:', {
       isWorkoutActive: state.isWorkoutActive,
       workoutStartTime: state.workoutStartTime,
       currentWorkoutId: state.currentWorkoutId,
@@ -79,7 +79,7 @@ export const workoutStoreTestHelpers = {
   verifyPersistence: () => {
     const state = useWorkoutStore.getState();
     const isPersisted = state.isWorkoutActive && state.currentWorkoutId !== null;
-    console.log(isPersisted ? '✅ Persistence working!' : '❌ Persistence failed', state);
+    console.log(isPersisted ? 'Persistence working!' : 'Persistence failed', state);
     return isPersisted;
   },
 
@@ -92,10 +92,10 @@ export const workoutStoreTestHelpers = {
       const elapsed = Math.floor(
         (Date.now() - new Date(state.workoutStartTime).getTime()) / 1000 / 60
       );
-      console.log(`✅ Crash recovery successful! Workout restored (${elapsed} min elapsed)`);
+      console.log(`Crash recovery successful! Workout restored (${elapsed} min elapsed)`);
       return true;
     }
-    console.log('❌ No workout to recover');
+    console.log('No workout to recover');
     return false;
   },
 };
@@ -104,5 +104,5 @@ export const workoutStoreTestHelpers = {
 if (typeof window !== 'undefined') {
   // @ts-ignore - Dev tool
   window.workoutTest = workoutStoreTestHelpers;
-  console.log('💡 Workout test helpers available: window.workoutTest');
+  console.log('Workout test helpers available: window.workoutTest');
 }

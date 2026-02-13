@@ -29,7 +29,7 @@ const adapter = new SQLiteAdapter({
   jsi: true,
   // Development mode - logs SQL queries (disable in production)
   onSetUpError: (error) => {
-    console.error('❌ Database setup error:', error);
+    console.error('Database setup error:', error);
   },
 });
 

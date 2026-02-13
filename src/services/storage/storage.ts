@@ -66,7 +66,7 @@ export const storage = {
 
   /**
    * Clear all storage
-   * ⚠️ Use with caution - deletes everything
+   * Use with caution - deletes everything
    */
   async clear(): Promise<void> {
     try {

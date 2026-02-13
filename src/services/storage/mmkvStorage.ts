@@ -95,7 +95,7 @@ export const mmkvStorage = {
 
   /**
    * Clear all storage
-   * ⚠️ Use with caution - deletes everything
+   * Use with caution - deletes everything
    */
   clearAll(): void {
     storage.clearAll();
