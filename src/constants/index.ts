@@ -11,4 +11,5 @@ export * from './animation';
 export * from './colors';
 export * from './database';
 export * from './layout';
+export * from './muscles';
 export * from './workout';

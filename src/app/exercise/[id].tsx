@@ -22,7 +22,7 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { Text } from '@/components/ui/text';
-import { ExerciseGifHeader } from '@/components/exercises';
+import { ExerciseGifHeader, MuscleHighlighter } from '@/components/exercises';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors, ICON_SIZE_MD, ICON_SIZE_2XL, SCROLL_THROTTLE_60FPS } from '@/constants';
 import { useExerciseDetail } from '@/hooks/exercises';
@@ -201,6 +201,12 @@ export default function ExerciseDetailScreen() {
               <Text className="text-foreground-tertiary">No muscle information available</Text>
             )}
           </View>
+
+          {/* Muscle Visualization */}
+          <MuscleHighlighter
+            targetMuscles={exercise.target_muscles}
+            secondaryMuscles={exercise.secondary_muscles}
+          />
 
           {/* Equipment Section */}
           <View className="mb-6">

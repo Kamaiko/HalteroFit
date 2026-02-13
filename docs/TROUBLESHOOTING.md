@@ -50,6 +50,36 @@ eas build --profile development --platform android
 - App icon should show Halterofit branding (NOT Expo Go)
 - App name should be "Halterofit (dev)"
 
+### App Crashes on Launch: "react context shouldn't be created before"
+
+**Symptoms:**
+
+- App crashes immediately on launch (Android emulator)
+- Stack trace shows `IllegalArgumentException: App react context shouldn't be created before`
+- Crash originates from `DevLauncherAppLoader.kt` (native layer)
+
+**Cause:**
+
+Stale Dev Client state on the emulator. Happens after hot reload, dev server restart, or interrupted sessions. This is a native Android issue, not a code bug.
+
+**Solution:**
+
+```bash
+# Clear app data (keeps app installed)
+adb shell pm clear com.halterofit.app
+
+# Then relaunch
+npm start
+```
+
+If that doesn't work:
+
+```bash
+# Uninstall and reinstall
+adb uninstall com.halterofit.app
+eas build --profile development --platform android
+```
+
 ### When to Rebuild Development Build
 
 You need to rebuild when:

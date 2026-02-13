@@ -17,6 +17,7 @@ module.exports = [
       'coverage/**',
       '__mocks__/**', // Jest mocks (no type checking needed)
       '**/*.manual-test.ts', // Manual test helpers (not Jest tests)
+      'src/lib/**', // Vendored third-party code (not our formatting)
     ],
   },
 

@@ -684,6 +684,11 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 ### 6.3: Muscle Visualization
 
 > 11 muscle group icons + anatomy body diagrams (front/back).
+>
+> **Research note (2026-02-13):** Hybrid approach decided.
+> - **Full body diagram (6.3.2):** Use `react-native-body-highlighter` (Expo compatible, SVG, front/back, male/female, muscle highlighting by slug). Requires mapping DB `target_muscles` → package slugs. **Will be implemented in the next section.**
+> - **Muscle group icons (6.3.1):** Source ~11 static SVG icons from Flaticon/Vecteezy (body-highlighter renders full body only, cannot crop to individual regions). Style: circular cropped anatomy like Jefit.
+> - **No all-in-one package exists** for both use cases.
 
 - [ ] **6.3.1** Create 11 muscle group icon set `[L]`
       SVG icons: chest, back, shoulders, biceps, triceps, forearms, abs, quads, hamstrings, glutes, calves.
