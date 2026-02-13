@@ -14,39 +14,11 @@
 import { memo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import type { Workout } from '@/services/database/remote/types';
+import { formatWorkoutDate, formatDuration } from '@/utils/formatters';
 
 interface WorkoutListItemProps {
   item: Workout;
   onPress?: (workout: Workout) => void;
-}
-
-/**
- * Format date to readable string
- * Example: "Jan 30, 2025"
- */
-function formatWorkoutDate(timestamp: number): string {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-/**
- * Format duration from seconds to readable string
- * Example: "1h 23m" or "45m"
- */
-function formatDuration(seconds?: number): string {
-  if (!seconds) return 'Not completed';
-
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  return `${minutes}m`;
 }
 
 /**
