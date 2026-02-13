@@ -9,4 +9,4 @@
 
 export * from './auth';
 export * from './workout';
-export * from './exercisePickerStore';
+export * from './exercises';

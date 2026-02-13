@@ -1,13 +1,14 @@
 /**
- * UI Components - Generic Reusable Components
+ * UI Components - Project-Customized Components
  *
- * Purpose: Generic, reusable UI primitives used across features
- * Convention: Library-agnostic interfaces with sophisticated internals
+ * This barrel exports components built or heavily customized for this project.
+ * ShadCN/react-native-reusables primitives (button, text, card, input, label,
+ * progress, skeleton, alert, alert-dialog, icon) are imported directly from
+ * their files — e.g. `from '@/components/ui/button'`.
  *
  * Usage:
  *   import { CachedImage, Tabs, BottomSheet } from '@/components/ui';
- *
- * @see docs/ARCHITECTURE.md - Component organization principles
+ *   import { Button } from '@/components/ui/button';  // ShadCN primitive
  */
 
 export { CachedImage, CachedImageStyles } from './cached-image';

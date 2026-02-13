@@ -14,3 +14,5 @@ export { WorkoutOverviewContent } from './WorkoutOverviewContent';
 export type { WorkoutOverviewContentProps } from './WorkoutOverviewContent';
 export { WorkoutDayDetailsContent } from './WorkoutDayDetailsContent';
 export type { WorkoutDayDetailsContentProps } from './WorkoutDayDetailsContent';
+export { WorkoutList } from './WorkoutList';
+export { WorkoutListItem } from './WorkoutListItem';

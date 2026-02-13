@@ -13,8 +13,7 @@
  * @see docs/reference/jefit/screenshots/Description_exercice2.png
  */
 
-import { useLocalSearchParams, router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -26,7 +25,7 @@ import { Text } from '@/components/ui/text';
 import { ExerciseGifHeader } from '@/components/exercises';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors, ICON_SIZE_MD, ICON_SIZE_2XL, SCROLL_THROTTLE_60FPS } from '@/constants';
-import { getExerciseById, type Exercise } from '@/services/database/operations';
+import { useExerciseDetail } from '@/hooks/exercises';
 import { capitalizeWords, stripStepPrefix } from '@/utils';
 
 // ============================================================================
@@ -56,38 +55,7 @@ const GIF_FADE_DISTANCE = 150;
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const [exercise, setExercise] = useState<Exercise | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Load exercise data
-  useEffect(() => {
-    async function loadExercise() {
-      if (!id) {
-        setError('Exercise ID not provided');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getExerciseById(id);
-        setExercise(data);
-      } catch (err) {
-        console.error('Failed to load exercise:', err);
-        setError('Unable to load exercise details');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadExercise();
-  }, [id]);
-
-  const handleBack = useCallback(() => {
-    router.back();
-  }, []);
+  const { exercise, loading, error, handleBack } = useExerciseDetail(id);
 
   // Scroll-based fade animation for GIF section
   const scrollY = useSharedValue(0);

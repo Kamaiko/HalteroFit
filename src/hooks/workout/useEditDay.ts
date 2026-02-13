@@ -8,8 +8,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import type { DayExercise } from '@/components/workout/DayExerciseCard';
-import type { PickedExercise } from '@/stores/exercisePickerStore';
-import { useExercisePickerStore } from '@/stores/exercisePickerStore';
+import type { PickedExercise } from '@/stores/exercises/exercisePickerStore';
+import { useExercisePickerStore } from '@/stores/exercises/exercisePickerStore';
 import {
   DEFAULT_TARGET_SETS,
   DEFAULT_TARGET_REPS,
