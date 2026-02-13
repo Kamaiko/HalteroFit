@@ -85,10 +85,7 @@ interface StatCardProps {
 function StatCard({ icon, value, label }: StatCardProps) {
   return (
     <View className="flex-1 bg-background-surface rounded-2xl p-4 items-center border border-background-elevated shadow-sm">
-      <View
-        className="w-16 h-16 rounded-full items-center justify-center mb-3"
-        style={{ backgroundColor: Colors.background.elevated }}
-      >
+      <View className="w-16 h-16 rounded-full items-center justify-center mb-3 bg-background-elevated">
         <MaterialIcons name={icon as any} size={ICON_SIZE_LG} color={Colors.primary.DEFAULT} />
       </View>
       <Text className="text-2xl font-bold text-foreground mb-1">{value}</Text>

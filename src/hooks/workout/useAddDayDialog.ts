@@ -10,6 +10,7 @@ import { useCallback, useState } from 'react';
 import { useAlertState, type AlertState } from '@/hooks/ui/useAlertState';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { createPlanDay, type PlanDay } from '@/services/database/operations/plans';
+import { DEFAULT_DAY_NAME, DEFAULT_FIRST_DAY_NAME } from '@/constants';
 import { getDayCountError } from '@/utils/validators';
 
 export interface UseAddDayDialogReturn {
@@ -53,7 +54,7 @@ export function useAddDayDialog(params: {
       try {
         const newDay = await createPlanDay({
           plan_id: activePlanId,
-          name: 'Workout Day #1',
+          name: DEFAULT_FIRST_DAY_NAME,
           order_index: 0,
         });
         // Observable will auto-update planDays. Notify parent to select it.
@@ -82,7 +83,7 @@ export function useAddDayDialog(params: {
       return;
     }
 
-    const name = addDayName.trim() || 'New day';
+    const name = addDayName.trim() || DEFAULT_DAY_NAME;
     setIsAddingDay(true);
     try {
       const newDay = await createPlanDay({

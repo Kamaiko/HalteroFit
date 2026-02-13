@@ -25,7 +25,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { EditDayExerciseCard } from '@/components/workout/EditDayExerciseCard';
-import { Colors, MAX_DAY_NAME_LENGTH } from '@/constants';
+import { Colors, ICON_SIZE_MD, ICON_SIZE_SM, ICON_SIZE_XS, MAX_DAY_NAME_LENGTH } from '@/constants';
 import { useEditDay } from '@/hooks/workout/useEditDay';
 import type { DayExercise } from '@/components/workout/DayExerciseCard';
 
@@ -118,7 +118,7 @@ export default function EditDayScreen() {
       {/* Header */}
       <View className="flex-row items-center border-b border-background-elevated px-4 py-3">
         <Pressable onPress={handleBack} className="mr-3" hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
+          <Ionicons name="arrow-back" size={ICON_SIZE_MD} color={Colors.foreground.DEFAULT} />
         </Pressable>
         <Text className="flex-1 text-xl font-semibold text-foreground">Edit day</Text>
         <Pressable onPress={handleSave} disabled={isSaving} hitSlop={8}>
@@ -145,7 +145,7 @@ export default function EditDayScreen() {
             selectTextOnFocus
             maxLength={MAX_DAY_NAME_LENGTH}
           />
-          <Ionicons name="pencil-outline" size={16} color={Colors.foreground.tertiary} />
+          <Ionicons name="pencil-outline" size={ICON_SIZE_XS} color={Colors.foreground.tertiary} />
         </View>
         {dayName.length > MAX_DAY_NAME_LENGTH * 0.8 && (
           <Text
@@ -181,7 +181,7 @@ export default function EditDayScreen() {
                 className="mr-3 h-10 w-10 items-center justify-center rounded-full"
                 style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
               >
-                <Ionicons name="add" size={22} color={Colors.primary.DEFAULT} />
+                <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.DEFAULT} />
               </View>
               <Text className="text-base font-medium text-foreground">Add exercise</Text>
             </Pressable>

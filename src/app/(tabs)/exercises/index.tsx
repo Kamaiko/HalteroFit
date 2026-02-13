@@ -8,7 +8,7 @@
 
 import { Text } from '@/components/ui/text';
 import { Ionicons } from '@/components/ui/icon';
-import { Colors } from '@/constants';
+import { Colors, ICON_SIZE_MD } from '@/constants';
 import { ScreenContainer } from '@/components/layout';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -104,22 +104,18 @@ interface MuscleCardProps {
 function MuscleCard({ label, isShowAll = false, onPress }: MuscleCardProps) {
   return (
     <Pressable
-      className="mb-3 aspect-square w-[31%] items-center justify-center rounded-xl"
-      style={{
-        backgroundColor: isShowAll ? Colors.primary.DEFAULT : Colors.background.surface,
-      }}
+      className={`mb-3 aspect-square w-[31%] items-center justify-center rounded-xl ${isShowAll ? 'bg-primary' : 'bg-background-surface'}`}
       onPress={onPress}
     >
       <View className="mb-2 h-12 w-12 items-center justify-center rounded-full bg-background-elevated">
         <Ionicons
           name={isShowAll ? 'list' : 'body'}
-          size={24}
+          size={ICON_SIZE_MD}
           color={isShowAll ? Colors.foreground.DEFAULT : Colors.foreground.secondary}
         />
       </View>
       <Text
-        className="text-center text-sm font-medium"
-        style={{ color: isShowAll ? Colors.foreground.inverse : Colors.foreground.DEFAULT }}
+        className={`text-center text-sm font-medium ${isShowAll ? 'text-white' : 'text-foreground'}`}
       >
         {label}
       </Text>

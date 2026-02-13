@@ -286,12 +286,17 @@ export function useEditDay(dayId: string): UseEditDayReturn {
       await deletePlanDay(dayId);
       router.back();
     } catch (error) {
-      console.error('Failed to delete day:', error);
+      if (error instanceof ValidationError) {
+        setAlert({ title: 'Error', description: error.userMessage });
+      } else {
+        console.error('Failed to delete day:', error);
+        setAlert({ title: 'Error', description: 'Failed to delete day. Please try again.' });
+      }
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
-  }, [dayId, isDeleting]);
+  }, [dayId, isDeleting, setAlert]);
 
   // ── Discard ────────────────────────────────────────────────────────────
   const handleConfirmDiscard = useCallback(() => {

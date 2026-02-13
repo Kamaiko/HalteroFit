@@ -13,6 +13,7 @@
 import { type RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
+import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import {
   createPlan,
@@ -97,14 +98,14 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     try {
       const newPlan = await createPlan({
         user_id: user.id,
-        name: 'New Workout',
+        name: DEFAULT_PLAN_NAME,
         is_active: true,
       });
 
       await createPlanDay({
         plan_id: newPlan.id,
-        name: 'Workout Day #1',
-        day_of_week: 'MON',
+        name: DEFAULT_FIRST_DAY_NAME,
+        day_of_week: DEFAULT_FIRST_DAY_OF_WEEK,
         order_index: 0,
       });
     } catch (error) {

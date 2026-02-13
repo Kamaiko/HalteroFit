@@ -103,7 +103,7 @@ export default function ExerciseDetailScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
+    <View className="flex-1 bg-background">
       {/* Floating Back Button - stays fixed while scrolling, respects safe area */}
       <Pressable
         onPress={handleBack}
@@ -127,7 +127,7 @@ export default function ExerciseDetailScreen() {
         scrollEventThrottle={SCROLL_THROTTLE_60FPS}
       >
         {/* GIF Section - edge-to-edge with overlay fade */}
-        <View style={{ position: 'relative' }}>
+        <View className="relative">
           <ExerciseGifHeader gifUrl={exercise.gif_url} />
           {/* Overlay that fades in to cover GIF uniformly */}
           <Animated.View
@@ -147,7 +147,7 @@ export default function ExerciseDetailScreen() {
         </View>
 
         {/* Exercise Title - Below GIF */}
-        <View style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 24 }}>
+        <View className="px-4 pt-6 pb-6">
           <Text className="text-xl font-bold text-foreground">
             {capitalizeWords(exercise.name)}
           </Text>

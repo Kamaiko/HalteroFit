@@ -34,10 +34,11 @@ export default function RootLayout() {
         // Initialize Sentry
         initSentry();
 
-        // ⚠️ DEV MODE - REMOVE BEFORE PRODUCTION ⚠️
-        // This enables a mock user for UI testing without Supabase auth
-        // TODO: Remove this line when implementing real auth (Phase 1)
-        enableDevMode();
+        // DEV MODE: mock user for UI testing without Supabase auth
+        // Remove when implementing real auth (Phase 1)
+        if (__DEV__) {
+          enableDevMode();
+        }
 
         // Seed exercises on first launch
         await initializeExercises();
@@ -78,13 +79,12 @@ export default function RootLayout() {
       <Sentry.ErrorBoundary fallback={ErrorFallbackScreen}>
         <SafeAreaProvider>
           <StatusBar style="light" backgroundColor={Colors.background.DEFAULT} />
-          {/* ⚠️ DEV MODE BANNER - Remove enableDevMode() call above to hide */}
           {__DEV__ && (
             <View style={{ backgroundColor: '#ff6b35', paddingVertical: 4, paddingHorizontal: 12 }}>
               <Text
                 style={{ color: 'white', fontSize: 11, textAlign: 'center', fontWeight: '600' }}
               >
-                🔧 DEV MODE - Mock User Active
+                [DEV] Mock User Active
               </Text>
             </View>
           )}

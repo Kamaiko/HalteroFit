@@ -34,3 +34,19 @@ export const CARD_ACTIVE_STYLE = { transform: [{ scale: 1.02 }], opacity: 0.9 } 
 
 /** Height of the Start Workout floating button */
 export const START_BUTTON_HEIGHT = 56;
+
+// ============================================================================
+// Default Names
+// ============================================================================
+
+/** Default name for a new workout plan */
+export const DEFAULT_PLAN_NAME = 'New Workout';
+
+/** Default name for the first day in a new plan */
+export const DEFAULT_FIRST_DAY_NAME = 'Workout Day #1';
+
+/** Default day-of-week for the first day in a new plan */
+export const DEFAULT_FIRST_DAY_OF_WEEK = 'MON';
+
+/** Default name when adding a day without entering a name */
+export const DEFAULT_DAY_NAME = 'New day';
