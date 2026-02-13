@@ -16,9 +16,6 @@
 // WatermelonDB database instance
 export { database } from './local';
 
-// Types
-export type * from './remote/types';
-
 // All operations (workouts, plans, exercises)
 export * from './operations';
 
