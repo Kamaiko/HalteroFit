@@ -1,0 +1,56 @@
+name: Dependency Check
+
+on:
+  schedule:
+    - cron: '0 10 1 * *' # 1st of each month at 10 AM UTC (6 AM EST)
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  issues: write
+
+jobs:
+  check-deps:
+    name: Check Outdated Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check outdated packages
+        id: outdated
+        run: |
+          echo "## Outdated Packages" > report.md
+          echo '```' >> report.md
+          npm outdated || true
+          npm outdated >> report.md 2>&1 || echo "All packages are up to date." >> report.md
+          echo '```' >> report.md
+          echo "" >> report.md
+          echo "## Security Audit" >> report.md
+          echo '```' >> report.md
+          npm audit 2>&1 >> report.md || true
+          echo '```' >> report.md
+          echo "" >> report.md
+          echo "## Recommended Update Steps" >> report.md
+          echo '```bash' >> report.md
+          echo "npm update                # Update within semver ranges" >> report.md
+          echo "npx expo install --fix    # Fix Expo SDK compatibility" >> report.md
+          echo "npm test                  # Verify nothing broke" >> report.md
+          echo '```' >> report.md
+
+      - name: Create issue
+        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
+        with:
+          title: 'Monthly dependency update report'
+          content-filepath: report.md
+          labels: dependencies

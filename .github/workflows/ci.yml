@@ -3,8 +3,6 @@ name: CI
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
 
 # Cancel in-progress runs when a new commit is pushed to the same branch
 concurrency:
@@ -26,8 +24,6 @@ jobs:
 
     steps:
       - name: Checkout code
-        # SHA pinning for security: immutable reference + version comment for readability
-        # Dependabot will automatically update both SHA and comment
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Node.js
@@ -66,6 +62,11 @@ jobs:
 
       - name: Prettier format check
         run: npm run format:check
+
+      - name: Security audit
+        # Only fail on CRITICAL vulnerabilities
+        # Rationale: glob (HIGH) is CLI-only, doesn't affect React Native runtime
+        run: npm audit --audit-level=critical
 
   # ============================================================================
   # Job 2: Expo SDK Compatibility
@@ -146,260 +147,7 @@ jobs:
           retention-days: 7
 
   # ============================================================================
-  # Job 4: Security (npm audit)
-  # ============================================================================
-  security-scan:
-    name: Security
-    runs-on: ubuntu-latest
-    timeout-minutes: 3
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run npm audit
-        # audit-level=critical: Only fail on CRITICAL vulnerabilities
-        # Rationale: glob (HIGH) is CLI-only, doesn't affect React Native runtime
-        # glob is transitive dep of expo (@expo/cli) - used for dev tooling only
-        # Mobile app never executes glob CLI commands at runtime
-        run: npm audit --audit-level=critical
-        continue-on-error: false
-
-      - name: Security scan results
-        if: failure()
-        run: |
-          echo "🚨 CRITICAL security vulnerabilities detected"
-          echo "Run 'npm audit' locally to see details"
-          echo "Fix with 'npm audit fix' or review manually"
-          exit 1
-
-  # ============================================================================
-  # Job 5: E2E Tests (Maestro) - PHASE 3+
-  # Uncomment when Task 10.2 is complete (Setup Maestro E2E Automation)
-  # ============================================================================
-  # e2e-tests:
-  #   name: E2E Tests (Maestro)
-  #   needs: [code-quality, unit-tests, security-scan]
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 20
-  #
-  #   # Only run E2E on release branches or workflow dispatch
-  #   if: |
-  #     github.event_name == 'workflow_dispatch' ||
-  #     startsWith(github.ref, 'refs/heads/release/')
-  #
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-  #
-  #     - name: Setup Maestro
-  #       run: |
-  #         curl -Ls "https://get.maestro.mobile.dev" | bash
-  #         echo "$HOME/.maestro/bin" >> $GITHUB_PATH
-  #
-  #     - name: Download EAS Build (Android)
-  #       run: |
-  #         npx eas-cli@latest build:download \
-  #           --platform android \
-  #           --profile preview \
-  #           --output app.apk
-  #       env:
-  #         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-  #
-  #     - name: Run Maestro tests
-  #       run: maestro test .maestro/
-  #
-  #     - name: Upload Maestro results
-  #       if: always()
-  #       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4.6.0
-  #       with:
-  #         name: maestro-results
-  #         path: maestro-results/
-  #         retention-days: 7
-  #
-  #   # Reference: docs/E2E_STRATEGY.md for complete setup guide
-
-  # ============================================================================
-  # Job 5: Auto-Merge (Dependabot PRs)
-  # ============================================================================
-  dependabot-auto-merge:
-    name: Auto-Merge
-    needs: [code-quality, expo-doctor, unit-tests, security-scan, secrets-scan]
-    runs-on: ubuntu-latest
-
-    # Only run on Dependabot PRs
-    if: github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'
-
-    # Elevated permissions for merging
-    permissions:
-      contents: write
-      pull-requests: write
-
-    steps:
-      - name: Fetch Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2.3.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log merge details
-        run: |
-          echo "📦 Package(s): ${{ steps.metadata.outputs.dependency-names }}"
-          echo "🔄 Update type: ${{ steps.metadata.outputs.update-type }}"
-          echo "🏷️  Ecosystem: ${{ steps.metadata.outputs.package-ecosystem }}"
-          echo "📋 Dependency type: ${{ steps.metadata.outputs.dependency-type }}"
-
-      - name: Auto-merge GitHub Actions
-        # GitHub Actions: CI infrastructure, not app code
-        # NOTE: fetch-metadata returns 'github_actions' not 'github-actions'
-        if: steps.metadata.outputs.package-ecosystem == 'github_actions'
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Auto-merge dev dependencies
-        # Dev dependencies: ESLint, TypeScript, Jest, etc.
-        # Safe to auto-merge minor/patch, manual review for major
-        if: |
-          steps.metadata.outputs.dependency-type == 'direct:development' &&
-          steps.metadata.outputs.update-type != 'version-update:semver-major'
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Auto-merge runtime patch updates
-        # Runtime patch (0.0.X): Bug fixes only - safe for all packages
-        if: |
-          steps.metadata.outputs.dependency-type == 'direct:production' &&
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Auto-merge runtime minor updates (non-critical)
-        # Runtime minor (0.X.0): New features, backward compatible (semver promise)
-        # Exclude state/data libs (supabase, zustand, zod) - minors may change app behavior
-        # Those packages are defined as patch-only in dependabot.yml (state-data-libs group)
-        if: |
-          steps.metadata.outputs.dependency-type == 'direct:production' &&
-          steps.metadata.outputs.update-type == 'version-update:semver-minor' &&
-          !contains(steps.metadata.outputs.dependency-names, '@supabase/supabase-js') &&
-          !contains(steps.metadata.outputs.dependency-names, 'zustand') &&
-          !contains(steps.metadata.outputs.dependency-names, 'zod')
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Comment on state/data library minor updates
-        # State/data libs (supabase, zustand, zod): minors require manual review
-        # Aligned with dependabot.yml state-data-libs group (patch-only auto-merge)
-        if: |
-          steps.metadata.outputs.dependency-type == 'direct:production' &&
-          steps.metadata.outputs.update-type == 'version-update:semver-minor' &&
-          (contains(steps.metadata.outputs.dependency-names, '@supabase/supabase-js') ||
-           contains(steps.metadata.outputs.dependency-names, 'zustand') ||
-           contains(steps.metadata.outputs.dependency-names, 'zod'))
-        run: |
-          gh pr comment "$PR_URL" --body "⚠️ **STATE/DATA LIBRARY MINOR UPDATE**
-
-          This is a minor update for a state or data library that may change app behavior.
-
-          **Action required:**
-          1. Review the changelog for behavior changes
-          2. Test affected features locally
-          3. Merge manually after verification"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Auto-merge indirect dependencies (patch/minor)
-        # Indirect (transitive) dependencies: tested via project tests
-        # Security patches often come as indirect updates (e.g., node-forge via expo)
-        if: |
-          steps.metadata.outputs.dependency-type == 'indirect' &&
-          (steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
-           steps.metadata.outputs.update-type == 'version-update:semver-minor')
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Comment on MAJOR dev dependency updates
-        # Major dev updates (ESLint, TypeScript, etc.): may require config migration
-        if: |
-          steps.metadata.outputs.dependency-type == 'direct:development' &&
-          steps.metadata.outputs.update-type == 'version-update:semver-major'
-        run: |
-          gh pr comment "$PR_URL" --body "⚠️ **MAJOR DEV DEPENDENCY UPDATE**
-
-          This is a major version update for a dev dependency.
-
-          **Action required:**
-          1. Check the migration guide for breaking changes
-          2. Update configuration files if needed
-          3. Test lint/build/test pipeline locally
-          4. Merge manually after verification"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Comment on MAJOR production updates requiring review
-        # Major updates (X.0.0): Breaking changes - ALWAYS require manual review
-        # Post helpful comment with action items
-        # Exclude GitHub Actions (already auto-merged in previous step)
-        if: |
-          steps.metadata.outputs.dependency-type == 'direct:production' &&
-          steps.metadata.outputs.update-type == 'version-update:semver-major' &&
-          steps.metadata.outputs.package-ecosystem != 'github_actions'
-        run: |
-          gh pr comment "$PR_URL" --body "🚨 **MAJOR UPDATE - Breaking Changes Expected**
-
-          This is a ${{ steps.metadata.outputs.update-type }} update for a runtime dependency.
-
-          **Required actions before merging:**
-          1. Read the changelog and migration guide
-          2. Review all breaking changes
-          3. Test the app thoroughly on both iOS and Android
-          4. Check for required code changes
-
-          ⚠️ Do NOT auto-merge this PR without careful review!"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Comment on indirect MAJOR updates
-        # Major updates for transitive deps may indicate breaking changes in parent
-        if: |
-          steps.metadata.outputs.dependency-type == 'indirect' &&
-          steps.metadata.outputs.update-type == 'version-update:semver-major'
-        run: |
-          gh pr comment "$PR_URL" --body "⚠️ **INDIRECT MAJOR UPDATE**
-
-          This is a major version update for a transitive dependency.
-
-          **Action required:**
-          1. Check if this breaks any direct dependencies
-          2. Run the app locally to verify functionality
-          3. Merge manually after verification"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # ============================================================================
-  # Job 6: Secrets (TruffleHog)
+  # Job 4: Secrets (TruffleHog)
   # ============================================================================
   secrets-scan:
     name: Secrets

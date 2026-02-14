@@ -21,28 +21,28 @@ This document covers all technical architecture decisions (ADRs), technology sta
 
 **Current Production Stack (Development Build):**
 
-| Category             | Technology                | Version | Purpose                                            |
-| -------------------- | ------------------------- | ------- | -------------------------------------------------- |
-| **Framework**        | Expo SDK                  | 54.0.21 | React Native framework with managed workflow       |
-| **Language**         | TypeScript                | 5.9     | Type-safe development                              |
-| **UI Library**       | React Native              | 0.81.5  | Mobile UI framework                                |
-| **Styling**          | NativeWind                | v4      | Tailwind CSS for React Native                      |
-| **UI Components**    | React Native Reusables    | Latest  | shadcn/ui for React Native                         |
-| **Icons**            | React Native Vector Icons | Latest  | 10,000+ icons (Material, Ionicons, FA)             |
-| **Database**         | WatermelonDB              | 0.28.0  | Offline-first reactive database                    |
-| **Storage**          | MMKV                      | 4.0.0   | Encrypted key-value storage                        |
-| **State Management** | Zustand                   | 5.0.8   | Lightweight global state                           |
-| **Validation**       | Zod                       | 4.3.5   | Schema validation and type inference               |
-| **Backend**          | Supabase                  | 2.78.0  | PostgreSQL + Auth + Storage                        |
-| **Charts**           | Victory Native            | 41.20.1 | Data visualization (Skia-based)                    |
-| **Lists**            | FlashList                 | 2.2.0   | High-performance lists                             |
-| **Images**           | expo-image                | 3.0.10  | Optimized image loading with caching               |
-| **Navigation**       | Expo Router               | 6.0.14  | File-based routing                                 |
-| **Error Monitoring** | Sentry                    | 7.4.0   | Crash reporting and monitoring                     |
-| **Build**            | EAS Build                 | Latest  | Cloud-based native builds                          |
-| **Testing**          | Jest + RNTL + Maestro     | Latest  | Unit, integration, and E2E testing                 |
-| **Linting**          | ESLint + Prettier         | Latest  | Code quality and formatting                        |
-| **CI/CD**            | GitHub Actions            | Latest  | Automated testing, linting, Dependabot, TruffleHog |
+| Category             | Technology                | Version | Purpose                                      |
+| -------------------- | ------------------------- | ------- | -------------------------------------------- |
+| **Framework**        | Expo SDK                  | 54.0.21 | React Native framework with managed workflow |
+| **Language**         | TypeScript                | 5.9     | Type-safe development                        |
+| **UI Library**       | React Native              | 0.81.5  | Mobile UI framework                          |
+| **Styling**          | NativeWind                | v4      | Tailwind CSS for React Native                |
+| **UI Components**    | React Native Reusables    | Latest  | shadcn/ui for React Native                   |
+| **Icons**            | React Native Vector Icons | Latest  | 10,000+ icons (Material, Ionicons, FA)       |
+| **Database**         | WatermelonDB              | 0.28.0  | Offline-first reactive database              |
+| **Storage**          | MMKV                      | 4.0.0   | Encrypted key-value storage                  |
+| **State Management** | Zustand                   | 5.0.8   | Lightweight global state                     |
+| **Validation**       | Zod                       | 4.3.5   | Schema validation and type inference         |
+| **Backend**          | Supabase                  | 2.78.0  | PostgreSQL + Auth + Storage                  |
+| **Charts**           | Victory Native            | 41.20.1 | Data visualization (Skia-based)              |
+| **Lists**            | FlashList                 | 2.2.0   | High-performance lists                       |
+| **Images**           | expo-image                | 3.0.10  | Optimized image loading with caching         |
+| **Navigation**       | Expo Router               | 6.0.14  | File-based routing                           |
+| **Error Monitoring** | Sentry                    | 7.4.0   | Crash reporting and monitoring               |
+| **Build**            | EAS Build                 | Latest  | Cloud-based native builds                    |
+| **Testing**          | Jest + RNTL + Maestro     | Latest  | Unit, integration, and E2E testing           |
+| **Linting**          | ESLint + Prettier         | Latest  | Code quality and formatting                  |
+| **CI/CD**            | GitHub Actions            | Latest  | Automated testing, linting, TruffleHog       |
 
 ### AI-Assisted Development Tools
 
@@ -450,11 +450,10 @@ _Status: Active or Future Phase_
 
 - Native GitHub integration (no external service)
 - Automated testing on every PR
-- Dependabot for dependency updates
 - TruffleHog for secret scanning
 - Free for public repos, generous free tier for private
 
-**Workflows:** CI (test, lint, type-check), Dependabot auto-merge, secret scanning
+**Workflows:** CI (test, lint, type-check, audit), secret scanning, monthly dep-check
 
 **Status:** Implemented
 
