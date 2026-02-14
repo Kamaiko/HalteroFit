@@ -10,6 +10,9 @@ export const DEFAULT_TARGET_SETS = 3;
 /** Default number of reps for a new exercise */
 export const DEFAULT_TARGET_REPS = 10;
 
+/** Average minutes per exercise for time estimation (includes sets, rest, transitions) */
+export const MINUTES_PER_EXERCISE = 5;
+
 // ============================================================================
 // Validation Limits
 // ============================================================================

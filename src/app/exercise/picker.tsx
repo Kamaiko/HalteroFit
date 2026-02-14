@@ -11,7 +11,7 @@ import { ExerciseCard, ExerciseListView } from '@/components/exercises';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { AlertDialog } from '@/components/ui/alert-dialog';
-import { Colors, START_BUTTON_HEIGHT } from '@/constants';
+import { BORDER_RADIUS_LG, Colors, START_BUTTON_HEIGHT } from '@/constants';
 import { useExercisePicker } from '@/hooks/exercises';
 import type { Exercise } from '@/services/database/operations';
 import { useLocalSearchParams } from 'expo-router';
@@ -77,7 +77,7 @@ export default function ExercisePickerScreen() {
           style={{
             backgroundColor: !hasSelection ? Colors.background.surface : Colors.primary.DEFAULT,
             minHeight: START_BUTTON_HEIGHT,
-            borderRadius: 12,
+            borderRadius: BORDER_RADIUS_LG,
             opacity: !hasSelection ? 0.85 : 1,
           }}
           onPress={handleAddExercises}

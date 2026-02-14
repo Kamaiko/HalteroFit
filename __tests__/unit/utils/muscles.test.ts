@@ -1,10 +1,10 @@
 /**
- * Muscle mapping constants - Unit tests
+ * Muscle mapping utilities - Unit tests
  *
- * Tests getMuscleHighlighterData from src/constants/muscles.ts
+ * Tests getMuscleHighlighterData from src/utils/muscles.ts
  */
 
-import { getMuscleHighlighterData } from '@/constants/muscles';
+import { getMuscleHighlighterData } from '@/utils/muscles';
 
 // ── Basic mapping ───────────────────────────────────────────────────────
 

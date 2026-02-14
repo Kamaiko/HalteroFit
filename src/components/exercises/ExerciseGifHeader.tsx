@@ -31,14 +31,15 @@ const GRADIENT_HEIGHT = 60;
 /**
  * Gradient colors for smooth transition from GIF to dark background.
  * Uses 6 stops for a natural, non-abrupt fade effect.
+ * Derived from Colors.background.DEFAULT via hex+alpha (RRGGBBAA format).
  */
 const GRADIENT_COLORS = [
-  'rgba(18, 18, 18, 0)',
-  'rgba(18, 18, 18, 0.05)',
-  'rgba(18, 18, 18, 0.15)',
-  'rgba(18, 18, 18, 0.4)',
-  'rgba(18, 18, 18, 0.8)',
-  Colors.background.DEFAULT,
+  `${Colors.background.DEFAULT}00`, // 0% opacity
+  `${Colors.background.DEFAULT}0D`, // ~5% opacity
+  `${Colors.background.DEFAULT}26`, // ~15% opacity
+  `${Colors.background.DEFAULT}66`, // ~40% opacity
+  `${Colors.background.DEFAULT}CC`, // ~80% opacity
+  Colors.background.DEFAULT, // 100% opacity
 ] as const;
 
 /** Distribution of gradient color stops */

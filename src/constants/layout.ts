@@ -74,3 +74,16 @@ export const CHART_WIDTH_RATIO = 0.9;
 
 /** Default chart domain padding (20px on all sides) */
 export const CHART_DOMAIN_PADDING = 20;
+
+// ============================================================================
+// Border Radius
+// ============================================================================
+
+/** Small border radius: checkboxes, small elements (4px) */
+export const BORDER_RADIUS_SM = 4;
+
+/** Medium border radius: thumbnails, buttons (8px) */
+export const BORDER_RADIUS_MD = 8;
+
+/** Large border radius: cards, previews, banners (12px) */
+export const BORDER_RADIUS_LG = 12;

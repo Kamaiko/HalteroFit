@@ -17,7 +17,7 @@ import { Pressable, View } from 'react-native';
 
 import { Ionicons, MaterialIcons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors, CARD_ACTIVE_STYLE } from '@/constants';
+import { Colors, CARD_ACTIVE_STYLE, MINUTES_PER_EXERCISE } from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DragHandle } from './DragHandle';
@@ -31,9 +31,6 @@ interface DayCardProps {
   drag?: () => void;
   isActive?: boolean;
 }
-
-// Time estimation: average minutes per exercise (includes sets, rest, transitions)
-const MINUTES_PER_EXERCISE = 5;
 
 /**
  * Estimate workout time based on exercise count

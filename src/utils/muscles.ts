@@ -1,5 +1,5 @@
 /**
- * Muscle Mapping Constants
+ * Muscle Mapping Utilities
  *
  * Maps ExerciseDB muscle names to body-highlighter SVG slugs.
  * Used by MuscleHighlighter component to convert exercise data

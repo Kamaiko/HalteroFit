@@ -5,6 +5,7 @@
  */
 
 import {
+  BORDER_RADIUS_SM,
   Colors,
   ICON_SIZE_XS,
   ICON_SIZE_SM,
@@ -65,7 +66,7 @@ export const ExerciseCard = memo(function ExerciseCard({
     () => ({
       width: 24,
       height: 24,
-      borderRadius: 4,
+      borderRadius: BORDER_RADIUS_SM,
       borderWidth: 2,
       borderColor: selected ? Colors.primary.DEFAULT : Colors.border.input,
       backgroundColor: selected ? Colors.primary.DEFAULT : 'transparent',

@@ -21,3 +21,6 @@ export * from './formatters';
 
 // Validators
 export * from './validators';
+
+// Muscle mapping
+export * from './muscles';

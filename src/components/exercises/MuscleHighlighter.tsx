@@ -13,7 +13,7 @@ import { View } from 'react-native';
 
 import Body from '@/lib/body-highlighter';
 import { Colors } from '@/constants/colors';
-import { getMuscleHighlighterData } from '@/constants/muscles';
+import { getMuscleHighlighterData } from '@/utils/muscles';
 
 // ============================================================================
 // Types

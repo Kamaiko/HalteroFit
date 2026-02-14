@@ -7,7 +7,7 @@
  */
 
 import { View, Text, Pressable } from 'react-native';
-import { Colors } from '@/constants';
+import { BORDER_RADIUS_MD, Colors } from '@/constants';
 
 export function ErrorFallbackScreen() {
   const handleRestart = () => {
@@ -61,7 +61,7 @@ export function ErrorFallbackScreen() {
           backgroundColor: Colors.primary.DEFAULT,
           paddingHorizontal: 24,
           paddingVertical: 12,
-          borderRadius: 8,
+          borderRadius: BORDER_RADIUS_MD,
         }}
       >
         <Text style={{ color: Colors.primary.foreground, fontWeight: '600', fontSize: 16 }}>

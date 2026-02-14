@@ -54,7 +54,14 @@
 import { Image, ImageSource, ImageErrorEventData } from 'expo-image';
 import { useState } from 'react';
 import { StyleSheet, StyleProp, ImageStyle } from 'react-native';
-import { DURATION_MODERATE, THUMBNAIL_MD, THUMBNAIL_LG, THUMBNAIL_XL } from '@/constants';
+import {
+  BORDER_RADIUS_LG,
+  BORDER_RADIUS_MD,
+  DURATION_MODERATE,
+  THUMBNAIL_MD,
+  THUMBNAIL_LG,
+  THUMBNAIL_XL,
+} from '@/constants';
 
 /**
  * Props for CachedImage component
@@ -193,27 +200,27 @@ export const CachedImageStyles = StyleSheet.create({
   thumbnailSmall: {
     width: 60,
     height: 60,
-    borderRadius: 8,
+    borderRadius: BORDER_RADIUS_MD,
   },
 
   /** Medium thumbnail (100x100) */
   thumbnailMedium: {
     width: THUMBNAIL_LG,
     height: THUMBNAIL_LG,
-    borderRadius: 8,
+    borderRadius: BORDER_RADIUS_MD,
   },
 
   /** Exercise preview (120x120) */
   exercisePreview: {
     width: THUMBNAIL_XL,
     height: THUMBNAIL_XL,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS_LG,
   },
 
   /** Full width banner (maintain aspect ratio) */
   banner: {
     width: '100%',
     aspectRatio: 16 / 9,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS_LG,
   },
 });
