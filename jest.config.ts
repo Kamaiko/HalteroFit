@@ -1,14 +1,48 @@
 import type { Config } from 'jest';
 
-const config: Config = {
+// Shared config between unit and integration test projects
+const sharedConfig = {
   preset: 'jest-expo',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/__tests__/integration/setup.ts'],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@nozbe/watermelondb|msw|@mswjs|until-async)',
   ],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@test-helpers/(.*)$': '<rootDir>/__tests__/__helpers__/$1',
+    '^@tests/(.*)$': '<rootDir>/__tests__/$1',
+    // msw v2 uses conditional exports - point Jest to the correct Node.js entry
+    '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
+  },
+  testPathIgnorePatterns: ['/node_modules/'],
+  cacheDirectory: '.jest-cache',
+};
 
-  // Timeout for sync/network tests (msw integration)
+const config: Config = {
+  projects: [
+    {
+      ...sharedConfig,
+      displayName: 'unit',
+      testMatch: ['<rootDir>/__tests__/unit/**/*.test.{ts,tsx}'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+    },
+    {
+      ...sharedConfig,
+      displayName: 'integration',
+      testMatch: ['<rootDir>/__tests__/integration/**/*.test.{ts,tsx}'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/__tests__/integration/setup.ts'],
+    },
+  ],
+
+  // Root-level options (not valid inside projects)
   testTimeout: 30000,
+  maxWorkers: '50%',
+  verbose: process.env.CI === 'true',
+
+  // Force exit after tests complete
+  // Required for WatermelonDB/LokiJS which keeps worker threads open
+  // See: docs/TESTING.md#known-issues for details
+  forceExit: true,
+
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '__tests__/__helpers__/network/**/*.{ts,tsx}',
@@ -16,51 +50,22 @@ const config: Config = {
     '!src/**/__tests__/**',
     '!src/**/__mocks__/**',
   ],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^@test-helpers/(.*)$': '<rootDir>/__tests__/__helpers__/$1', // Test helpers (factories, queries, time, assertions)
-    '^@tests/(.*)$': '<rootDir>/__tests__/$1', // General tests infrastructure (fixtures, e2e)
-    // msw v2 uses conditional exports - point Jest to the correct Node.js entry
-    '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
-  },
-  testMatch: ['**/__tests__/**/*.test.{ts,tsx}', '**/?(*.)+(spec|test).{ts,tsx}'],
-
-  // Exclude only node_modules (integration tests now run with unit tests)
-  testPathIgnorePatterns: ['/node_modules/'],
 
   // Coverage thresholds (see TESTING.md for strategy)
   coverageThreshold: {
     global: {
-      // Global thresholds DISABLED - Current coverage: 0%
-      // Will be re-enabled when coverage improves (target: 1%→2%→5%→10%)
-      // Incremental strategy: Phase 1 (1%→2%→5%→10%), Phase 2 (10%→20%→40%)
       branches: 0,
       functions: 0,
       lines: 0,
       statements: 0,
     },
     './src/services/database/': {
-      branches: 0, // 0% actual coverage (no branch testing yet)
+      branches: 0,
       functions: 1,
       lines: 1,
       statements: 1,
     },
   },
-
-  // Performance optimizations
-  cacheDirectory: '.jest-cache',
-  maxWorkers: '50%', // Use 50% of CPU cores for parallel test execution
-
-  // Verbose output in CI for better debugging
-  verbose: process.env.CI === 'true',
-
-  // Force exit after tests complete
-  // Required for WatermelonDB/LokiJS which keeps worker threads open
-  // FIXME: LokiJS creates internal workers that don't close cleanly.
-  // The warning "worker process has failed to exit gracefully" is expected.
-  // This does NOT affect test results - all tests pass correctly.
-  // See: docs/TESTING.md#known-issues for details
-  forceExit: true,
 };
 
 export default config;

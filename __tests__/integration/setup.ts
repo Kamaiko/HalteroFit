@@ -16,6 +16,7 @@ import {
   cleanupMockSupabase,
 } from '@test-helpers/network/mock-supabase';
 import { networkSimulator } from '@test-helpers/network/network-simulator';
+import { wait } from '@test-helpers/database/time';
 
 // ============================================================================
 // msw Server Setup
@@ -73,12 +74,17 @@ jest.setTimeout(30000); // 30 seconds
  * Example: expect(record).toHaveSyncMetadata()
  */
 expect.extend({
-  toHaveSyncMetadata(received: any) {
+  toHaveSyncMetadata(received: unknown) {
     const hasMetadata =
-      received &&
-      typeof received._changed === 'number' &&
-      typeof received._status === 'string' &&
-      ['synced', 'created', 'updated', 'deleted'].includes(received._status);
+      received !== null &&
+      typeof received === 'object' &&
+      '_changed' in received &&
+      typeof (received as Record<string, unknown>)._changed === 'number' &&
+      '_status' in received &&
+      typeof (received as Record<string, unknown>)._status === 'string' &&
+      ['synced', 'created', 'updated', 'deleted'].includes(
+        (received as Record<string, unknown>)._status as string
+      );
 
     return {
       pass: hasMetadata,
@@ -89,7 +95,7 @@ expect.extend({
     };
   },
 
-  toBeValidTimestamp(received: any) {
+  toBeValidTimestamp(received: unknown) {
     const isValid =
       typeof received === 'number' &&
       received >= 0 && // Allow epoch (0) as valid timestamp
@@ -99,8 +105,8 @@ expect.extend({
       pass: isValid,
       message: () =>
         isValid
-          ? `Expected ${received} NOT to be a valid timestamp`
-          : `Expected ${received} to be a valid timestamp (non-negative number <= now + 1min)`,
+          ? `Expected ${String(received)} NOT to be a valid timestamp`
+          : `Expected ${String(received)} to be a valid timestamp (non-negative number <= now + 1min)`,
     };
   },
 });
@@ -143,8 +149,6 @@ export async function waitForCondition(
 }
 
 /**
- * Sleep utility for tests
+ * Sleep utility for tests (re-export from time helpers for convenience)
  */
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+export const sleep = wait;

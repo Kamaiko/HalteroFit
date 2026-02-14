@@ -24,15 +24,17 @@ This document outlines the complete testing strategy for Halterofit. Use this as
 | **Jest**      | <30s    | Node.js + LokiJS + msw | All business logic: CRUD, queries, sync logic, network scenarios |
 | **E2E Tests** | 5-10min | Real Device + SQLite   | Sync protocol, complete user flows, real backend validation      |
 
-**Test Suite:** ~69 tests (unit + integration combined)
+**Test Suite:** 173 tests (unit + integration combined)
 
 ### Quick Commands
 
 ```bash
-# Jest (unit + integration)
-npm test                  # Run all tests
-npm test -- --coverage    # Coverage report
-npm test -- filename.test # Run specific file
+# Jest (unit + integration — uses Jest projects)
+npm test                                  # Run all tests (both projects)
+npm test -- --selectProjects unit         # Run unit tests only
+npm test -- --selectProjects integration  # Run integration tests only
+npm test -- --coverage                    # Coverage report
+npm test -- filename.test                 # Run specific file
 
 # E2E (Maestro)
 maestro test .maestro/              # Run all E2E flows
