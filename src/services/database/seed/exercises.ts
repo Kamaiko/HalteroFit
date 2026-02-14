@@ -14,7 +14,7 @@ import { mmkvStorage } from '@/services/storage';
 // Storage key for tracking seed version
 const EXERCISE_SEED_VERSION_KEY = 'exercise_seed_version';
 
-const SEED_VERSION = 2; // Increment to force re-seed on app update (v2: Dec 2025 dataset)
+const SEED_VERSION = 3; // Increment to force re-seed on app update (v3: pre-processed dataset)
 
 interface ExerciseData {
   exerciseId: string;

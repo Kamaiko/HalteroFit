@@ -327,7 +327,6 @@ Shared types will be added here when needed (e.g., types used across 3+ modules)
 utils/
 ├── errors.ts              # Error hierarchy (AppError → Database/Auth/Validation/SyncError)
 ├── sentry.ts              # Sentry initialization and helpers
-├── strings.ts             # capitalizeWords, stripStepPrefix
 ├── calculations/          # Placeholder (Phase 5+: 1RM, volume, plates)
 │   └── index.ts
 ├── formatters/            # Placeholder (Phase 2+: weight, date, duration)
@@ -341,7 +340,7 @@ utils/
 **Import Convention:**
 
 ```typescript
-import { capitalizeWords } from '@/utils'; // Generic utilities via barrel
+import { AppError } from '@/utils'; // Generic utilities via barrel
 import { DatabaseError } from '@/utils/errors'; // Domain-specific via direct import
 import { validatePlanName } from '@/utils/validators'; // Domain-specific via direct import
 ```

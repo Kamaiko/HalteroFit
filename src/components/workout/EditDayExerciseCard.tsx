@@ -9,7 +9,6 @@ import { Colors, CARD_ACTIVE_STYLE, DURATION_STANDARD } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { DayExercise } from './DayExerciseCard';
-import { capitalizeWords } from '@/utils';
 import { memo, useCallback } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
@@ -62,7 +61,7 @@ export const EditDayExerciseCard = memo(function EditDayExerciseCard({
         {/* Info */}
         <View className="flex-1">
           <Text className="font-medium text-foreground" numberOfLines={1}>
-            {capitalizeWords(exercise.exercise.name)}
+            {exercise.exercise.name}
           </Text>
           <Text className="mt-0.5 text-sm text-primary">
             {exercise.target_sets} sets × {exercise.target_reps} reps

@@ -26,7 +26,6 @@ import { ExerciseGifHeader, MuscleHighlighter } from '@/components/exercises';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors, ICON_SIZE_MD, ICON_SIZE_2XL, SCROLL_THROTTLE_60FPS } from '@/constants';
 import { useExerciseDetail } from '@/hooks/exercises';
-import { capitalizeWords, stripStepPrefix } from '@/utils';
 
 // ============================================================================
 // Constants
@@ -148,9 +147,7 @@ export default function ExerciseDetailScreen() {
 
         {/* Exercise Title - Below GIF */}
         <View className="px-4 pt-6 pb-6">
-          <Text className="text-xl font-bold text-foreground">
-            {capitalizeWords(exercise.name)}
-          </Text>
+          <Text className="text-xl font-bold text-foreground">{exercise.name}</Text>
         </View>
 
         {/* Tabs */}
@@ -188,13 +185,11 @@ export default function ExerciseDetailScreen() {
               Target Muscles
             </Text>
             {exercise.target_muscles[0] && (
-              <Text className="text-foreground">
-                {capitalizeWords(exercise.target_muscles[0])} (primary)
-              </Text>
+              <Text className="text-foreground">{exercise.target_muscles[0]} (primary)</Text>
             )}
             {exercise.secondary_muscles.length > 0 && (
               <Text className="mt-1 text-foreground-secondary">
-                {exercise.secondary_muscles.map(capitalizeWords).join(', ')}
+                {exercise.secondary_muscles.join(', ')}
               </Text>
             )}
             {exercise.target_muscles.length === 0 && exercise.secondary_muscles.length === 0 && (
@@ -215,7 +210,7 @@ export default function ExerciseDetailScreen() {
               <View className="flex-row flex-wrap" style={{ gap: 8 }}>
                 {exercise.equipments.map((equipment, index) => (
                   <View key={index} className="rounded-full border border-primary px-3 py-1">
-                    <Text className="text-sm text-primary">{capitalizeWords(equipment)}</Text>
+                    <Text className="text-sm text-primary">{equipment}</Text>
                   </View>
                 ))}
               </View>
@@ -232,7 +227,7 @@ export default function ExerciseDetailScreen() {
                 {exercise.instructions.map((instruction, index) => (
                   <View key={index} className="mb-4 flex-row">
                     <Text className="mr-2 text-foreground-secondary">{index + 1}.</Text>
-                    <Text className="flex-1 text-foreground">{stripStepPrefix(instruction)}</Text>
+                    <Text className="flex-1 text-foreground">{instruction}</Text>
                   </View>
                 ))}
               </View>

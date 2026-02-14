@@ -21,6 +21,3 @@ export * from './formatters';
 
 // Validators
 export * from './validators';
-
-// String utilities
-export * from './strings';

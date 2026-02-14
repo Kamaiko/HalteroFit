@@ -13,7 +13,6 @@ import {
   DURATION_STANDARD,
 } from '@/constants';
 import type { Exercise } from '@/services/database/operations';
-import { capitalizeWords } from '@/utils';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Image } from 'expo-image';
@@ -57,12 +56,8 @@ export const ExerciseCard = memo(function ExerciseCard({
     onImagePress?.(exercise);
   }, [exercise, onImagePress]);
 
-  // Memoize computed values to avoid re-calculation on re-render
-  const displayName = useMemo(() => capitalizeWords(exercise.name), [exercise.name]);
-  const muscleText = useMemo(
-    () => exercise.target_muscles.map(capitalizeWords).join(', ') || 'No muscle info',
-    [exercise.target_muscles]
-  );
+  const displayName = exercise.name;
+  const muscleText = exercise.target_muscles.join(', ') || 'No muscle info';
   const showPlaceholder = !exercise.gif_url || imageError;
 
   // Memoize checkbox style to avoid object recreation

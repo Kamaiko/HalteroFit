@@ -19,7 +19,6 @@ import {
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { PlanDayWithExercises } from '@/services/database/operations/plans';
-import { capitalizeWords } from '@/utils';
 import React, { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { type LayoutChangeEvent, Pressable, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
@@ -156,8 +155,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     );
   }, [handleEdit, handleDelete]);
 
-  const muscleText =
-    exercise.exercise.target_muscles.map(capitalizeWords).join(', ') || 'No muscle info';
+  const muscleText = exercise.exercise.target_muscles.join(', ') || 'No muscle info';
 
   return (
     <Animated.View style={deletingStyle} onLayout={handleLayout}>
@@ -202,7 +200,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
           {/* Info */}
           <View className="flex-1">
             <Text className="font-medium text-foreground" numberOfLines={1}>
-              {capitalizeWords(exercise.exercise.name)}
+              {exercise.exercise.name}
             </Text>
             <Text className="mt-0.5 text-sm text-foreground-secondary" numberOfLines={1}>
               {muscleText}
