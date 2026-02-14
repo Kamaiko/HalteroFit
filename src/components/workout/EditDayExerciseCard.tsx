@@ -5,7 +5,7 @@
  * Supports drag-to-reorder and thumbnail tap to view exercise detail.
  */
 
-import { Colors, CARD_ACTIVE_STYLE } from '@/constants';
+import { Colors, CARD_ACTIVE_STYLE, DURATION_STANDARD } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { DayExercise } from './DayExerciseCard';
@@ -42,9 +42,9 @@ export const EditDayExerciseCard = memo(function EditDayExerciseCard({
 
   return (
     <Animated.View
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(200)}
-      layout={LinearTransition.duration(200)}
+      entering={FadeIn.duration(DURATION_STANDARD)}
+      exiting={FadeOut.duration(DURATION_STANDARD)}
+      layout={LinearTransition.duration(DURATION_STANDARD)}
       className="mx-4 mb-2"
     >
       <View

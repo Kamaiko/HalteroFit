@@ -35,10 +35,9 @@
 
 ### Header Patterns
 
-- **Logo + Notifications:** Discover (Home)
+- **Summary + Profile Icon:** Home (profile icon → Settings)
 - **Titre + Back Arrow:** Pages de détail
 - **Titre + Action Button:** Listes (ex: "+ Create Plan")
-- **Profile Avatar + Gear:** Progress tab
 
 ---
 
@@ -427,13 +426,13 @@ X Exercises
 
 **UI Elements:**
 
-- Header: [Avatar] Username [Refresh] [Gear/Settings]
+- Header: [Avatar] Username [Refresh]
 - Sub-tabs: **Overview** | Body | Activity
 - Cards: Volume | Workout Time (avec mini-graphes)
 - Calendrier mensuel (jours avec workout = cercle bleu)
 - Stats: Total Sessions | Current Streak
 
-**Halterofit MVP:** Simplifié - Seulement accès aux Settings via gear icon
+**Halterofit MVP:** Simplifié - Settings accessible via Home screen profile icon
 
 **Screenshot:** `screenshots/05-progress/01-overview.png`
 

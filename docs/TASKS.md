@@ -495,7 +495,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Profile card (avatar, name, email) → tap to Profile page.
       Sections: Unit System (kg/lbs), Rest Timer → RestTimerSettingsPage.
       Account: Logout button with confirm dialog.
-      Accessible from Progress tab gear icon.
+      Accessible from Home screen profile icon (already wired).
       Files: src/app/settings/index.tsx
       Deps: 4.2.2
 
@@ -528,7 +528,6 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 
 - [ ] **4.4.1** Create Progress tab with sub-tabs `[M]` 🔴
       Replace stats.tsx placeholder with Overview | Body sub-tabs.
-      Gear icon in header → navigate to Settings.
       Files: src/app/(tabs)/stats.tsx
       Deps: 4.3.1
 
@@ -594,8 +593,8 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       "Browse Exercises" → Exercises tab. "View Progress" → Progress tab.
       Files: src/app/(tabs)/index.tsx
 
-- [ ] **5.1.5** Personalize welcome header `[XS]`
-      User's display name + time-of-day greeting.
+- [ ] **5.1.5** Display user name next to profile icon `[XS]`
+      Show user's display name beside the profile icon in the Summary header.
       Files: src/app/(tabs)/index.tsx
       Deps: 4.3.3
 
