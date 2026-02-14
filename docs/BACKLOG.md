@@ -252,15 +252,19 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - **Files:** src/hooks/workout/useWorkoutScreen.ts (lines 87-90, 236-238)
   - **Estimated effort:** ~2-3h (refactoring with testing)
   - **Risk:** Medium - requires careful testing of reactive updates
-- **Auto-Sync ExerciseDB Updates** (Supabase Edge Function)
-  - Automated weekly check for new ExerciseDB exercises
-  - Supabase Edge Function calls ExerciseDB API
-  - Upserts new exercises into PostgreSQL
-  - Users receive updates via WatermelonDB sync (automatic)
-  - Eliminates manual quarterly re-imports
-  - Rate limit management (free tier: 10,000 req/month)
-  - **Estimated effort:** ~6-8h (serverless architecture)
-  - **Dependencies:** MVP complete, validated user adoption
+- **Exercise Dataset Ownership & CDN Reliability** (HIGH - Evaluate post-MVP)
+  - Current state: 1,500 exercises from ExerciseDB (bundled JSON + CDN-hosted GIFs)
+  - **Data quality issues identified:**
+    - Muscle misclassifications (e.g., obliques never listed as primary target, 18+ exercises affected)
+    - LLM batch correction planned (~$2 via Claude Batch API for all 1,500 exercises)
+  - **CDN dependency risk:** GIFs rely on `static.exercisedb.dev` (Cloudflare R2)
+    - If CDN goes down, all exercise GIFs break app-wide
+    - Self-hosting options: R2 (~$0.01/month) or own CDN, but AGPL license complicates commercial use
+  - **Industry benchmark:** Jefit (1,400), Strong (200), Hevy (400) all own their exercise data — none depend on external APIs
+  - ExerciseDB API docs state "not recommended for production integration"
+  - **Evaluation criteria:** data quality, GIF availability, license, CDN stability, maintenance cost
+  - **Estimated effort:** ~8-16h (research + migration script + validation)
+  - **Dependencies:** LLM muscle correction sprint complete first
 - **Task ID Validation Script** (CI Automation)
   - Lightweight bash script to validate task ID format in CI
   - Check regex compliance: `^[0-9]+\.[0-9]+\.[0-9]+$`
