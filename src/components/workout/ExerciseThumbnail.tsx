@@ -6,7 +6,7 @@
  * Optionally wraps in a Pressable for tap-to-view behavior.
  */
 
-import { Colors } from '@/constants';
+import { Colors, DURATION_STANDARD, THUMBNAIL_SM } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Image } from 'expo-image';
 import { memo, useCallback, useState } from 'react';
@@ -16,8 +16,6 @@ export interface ExerciseThumbnailProps {
   imageUrl: string | null | undefined;
   onPress?: () => void;
 }
-
-const THUMBNAIL_SIZE = 56; // 14 * 4 = h-14 w-14
 
 export const ExerciseThumbnail = memo(function ExerciseThumbnail({
   imageUrl,
@@ -43,11 +41,11 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
       ) : (
         <Image
           source={{ uri: imageUrl }}
-          style={{ width: THUMBNAIL_SIZE, height: THUMBNAIL_SIZE }}
+          style={{ width: THUMBNAIL_SM, height: THUMBNAIL_SM }}
           contentFit="cover"
           autoplay={false}
           cachePolicy="memory-disk"
-          transition={200}
+          transition={DURATION_STANDARD}
           onError={handleImageError}
         />
       )}
