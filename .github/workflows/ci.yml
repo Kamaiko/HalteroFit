@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   # ============================================================================
-  # Job 1: Lint (TypeScript + ESLint + Prettier)
+  # Job 1: Lint (TypeScript + ESLint + Prettier + Audit + Expo Doctor)
   # ============================================================================
   code-quality:
     name: Lint
@@ -68,32 +68,11 @@ jobs:
         # Rationale: glob (HIGH) is CLI-only, doesn't affect React Native runtime
         run: npm audit --audit-level=critical
 
-  # ============================================================================
-  # Job 2: Expo SDK Compatibility
-  # ============================================================================
-  expo-doctor:
-    name: Expo Doctor
-    runs-on: ubuntu-latest
-    timeout-minutes: 3
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Check Expo SDK compatibility
+      - name: Expo SDK compatibility
         run: npx expo-doctor
 
   # ============================================================================
-  # Job 3: Test (Jest with Coverage)
+  # Job 2: Test (Jest with Coverage)
   # ============================================================================
   unit-tests:
     name: Test
@@ -125,29 +104,8 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:ci
 
-      # Coverage threshold check - see docs/TESTING.md for implementation timeline
-      # - name: Check coverage threshold
-      #   run: |
-      #     node -e "
-      #     const coverage = require('./coverage/coverage-summary.json');
-      #     const lines = coverage.total.lines.pct;
-      #     if (lines < 40) {
-      #       console.error(\`Coverage ${lines}% is below 40% threshold\`);
-      #       process.exit(1);
-      #     }
-      #     console.log(\`Coverage: ${lines}% ✅\`);
-      #     "
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4.6.0
-        if: always()
-        with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 7
-
   # ============================================================================
-  # Job 4: Secrets (TruffleHog)
+  # Job 3: Secrets (TruffleHog) - Informational only, not a required check
   # ============================================================================
   secrets-scan:
     name: Secrets

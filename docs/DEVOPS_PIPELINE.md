@@ -17,12 +17,11 @@ This document defines the CI/CD pipeline configuration, including git hooks, Git
 
 ## Quick Reference
 
-**CI Jobs (4 parallel):**
+**CI Jobs (3 parallel):**
 
-1. `Lint` - TypeScript, ESLint, Prettier, npm audit
+1. `Lint` - TypeScript, ESLint, Prettier, npm audit, Expo Doctor
 2. `Test` - Jest with coverage
-3. `Expo Doctor` - SDK compatibility
-4. `Secrets` - TruffleHog
+3. `Secrets` - TruffleHog (informational, not a required check)
 
 **Git Hook:** pre-commit only (lint-staged + schema version check)
 
@@ -45,20 +44,22 @@ Developer Workflow
        │
        ▼
 ┌─────────────────────────────────────────────┐
-│          GITHUB ACTIONS CI (4 Jobs)          │
+│          GITHUB ACTIONS CI (3 Jobs)          │
 ├─────────────────────────────────────────────┤
 │                                              │
-│  ┌────────┐ ┌────────┐ ┌──────────────┐     │
-│  │  Lint  │ │  Test  │ │ Expo Doctor  │     │
-│  │ TS     │ │ Jest   │ │ SDK compat   │     │
-│  │ ESLint │ │ Cov    │ │              │     │
-│  │ Fmt    │ │        │ │              │     │
-│  │ Audit  │ │        │ │              │     │
-│  └────────┘ └────────┘ └──────────────┘     │
+│  Required for merge:                         │
+│  ┌──────────────┐  ┌────────┐                │
+│  │     Lint     │  │  Test  │                │
+│  │ TypeScript   │  │ Jest   │                │
+│  │ ESLint       │  │        │                │
+│  │ Prettier     │  │        │                │
+│  │ npm audit    │  │        │                │
+│  │ Expo Doctor  │  │        │                │
+│  └──────────────┘  └────────┘                │
 │                                              │
+│  Informational:                              │
 │  ┌──────────┐                                │
-│  │ Secrets  │  (independent, informational)  │
-│  │TruffleHog│                                │
+│  │ Secrets  │  (TruffleHog, not required)    │
 │  └──────────┘                                │
 └─────────────────────────────────────────────┘
        │
@@ -133,31 +134,30 @@ git commit -m "message"
 ```
 ┌──────────────────────────────────────────────────────┐
 │                 PARALLEL JOBS (Independent)           │
-│  ┌────────┐  ┌────────┐  ┌──────────────┐            │
-│  │  Lint  │  │  Test  │  │ Expo Doctor  │            │
-│  └────────┘  └────────┘  └──────────────┘            │
 │                                                       │
+│  Required:                                            │
+│  ┌────────────┐  ┌────────┐                           │
+│  │    Lint    │  │  Test  │                           │
+│  └────────────┘  └────────┘                           │
+│                                                       │
+│  Informational:                                       │
 │  ┌──────────┐                                         │
-│  │ Secrets  │  (informational only)                   │
+│  │ Secrets  │                                         │
 │  └──────────┘                                         │
 └──────────────────────────────────────────────────────┘
 ```
 
 #### Job 1: Code Quality (Lint)
 
-TypeScript type-check, ESLint, Prettier validation, and npm audit (critical only) with intelligent caching.
+TypeScript type-check, ESLint, Prettier validation, npm audit (critical only), and Expo SDK compatibility check. Uses intelligent caching for TypeScript and ESLint.
 
 #### Job 2: Unit Tests (Test)
 
-Jest tests with coverage reporting. Coverage threshold (40%) will be enforced in Phase 1+.
+Jest tests with coverage reporting.
 
-#### Job 3: Expo Doctor
+#### Job 3: Secrets Scanning (informational)
 
-Checks Expo SDK compatibility with installed packages. Catches native module mismatches before they cause crashes.
-
-#### Job 4: Secrets Scanning
-
-TruffleHog OSS scans for API keys, credentials, private keys, and tokens. Uses `--only-verified` flag to reduce false positives. Lightweight job (no npm ci needed).
+TruffleHog OSS scans for API keys, credentials, private keys, and tokens. Uses `--only-verified` flag to reduce false positives. Lightweight job (no npm ci needed). Does not block pushes.
 
 ---
 
