@@ -3,7 +3,6 @@ const tseslint = require('@typescript-eslint/eslint-plugin');
 const tsparser = require('@typescript-eslint/parser');
 const react = require('eslint-plugin-react');
 const reactHooks = require('eslint-plugin-react-hooks');
-const prettier = require('eslint-plugin-prettier');
 const prettierConfig = require('eslint-config-prettier');
 
 module.exports = [
@@ -84,7 +83,6 @@ module.exports = [
       '@typescript-eslint': tseslint,
       react: react,
       'react-hooks': reactHooks,
-      prettier: prettier,
     },
     settings: {
       react: {
@@ -101,9 +99,8 @@ module.exports = [
       // React Hooks rules
       ...reactHooks.configs.recommended.rules,
 
-      // Prettier integration
+      // Disable ESLint rules that conflict with Prettier
       ...prettierConfig.rules,
-      'prettier/prettier': 'warn',
 
       // React
       'react/react-in-jsx-scope': 'off', // Not needed with React 19
