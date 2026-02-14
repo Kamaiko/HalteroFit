@@ -34,18 +34,22 @@ export interface MuscleHighlighterData {
  * Maps ExerciseDB muscle names (lowercase) to body-highlighter slugs.
  *
  * Coverage:
- * - 19 target muscles from ExerciseDB (15 mapped, 4 unmappable)
- * - 41 secondary muscles from ExerciseDB (31 mapped, 10 unmappable)
+ * - 19 target muscles from ExerciseDB (17 mapped, 2 unmappable)
+ * - 41 secondary muscles from ExerciseDB (41 mapped, 0 unmappable)
  *
- * Unmappable muscles are silently skipped with __DEV__ warnings.
+ * Unmappable targets: "cardiovascular system", "spine" (not muscles).
+ * Unmapped muscles are silently skipped with __DEV__ warnings.
  */
 const MUSCLE_MAPPING: Record<string, Slug> = {
   // --- Direct matches ---
   abs: 'abs',
+  ankles: 'ankles',
   biceps: 'biceps',
   calves: 'calves',
-  triceps: 'triceps',
+  feet: 'feet',
+  hands: 'hands',
   obliques: 'obliques',
+  triceps: 'triceps',
 
   // --- Target muscles (name differences) ---
   pectorals: 'chest',
@@ -59,13 +63,17 @@ const MUSCLE_MAPPING: Record<string, Slug> = {
   adductors: 'adductors',
   abductors: 'gluteal', // hip abductors ≈ glute medius
   'upper back': 'upper-back',
+  'serratus anterior': 'obliques', // lateral rib cage ≈ obliques visually
+  'levator scapulae': 'neck', // neck/upper trap region
 
   // --- Secondary muscles (aliases) ---
   chest: 'chest',
   deltoids: 'deltoids',
   shoulders: 'deltoids',
   'rear deltoids': 'deltoids',
+  'rotator cuff': 'deltoids', // deep shoulder ≈ deltoids visually
   quadriceps: 'quadriceps',
+  'hip flexors': 'quadriceps', // psoas/iliaque ≈ quad region visually
   trapezius: 'trapezius',
   'lower back': 'lower-back',
   back: 'upper-back',
@@ -81,6 +89,11 @@ const MUSCLE_MAPPING: Record<string, Slug> = {
   brachialis: 'biceps', // under biceps
   soleus: 'calves', // calf muscle
   sternocleidomastoid: 'neck',
+  'ankle stabilizers': 'ankles',
+  'wrist extensors': 'forearm',
+  'wrist flexors': 'forearm',
+  wrists: 'forearm',
+  'grip muscles': 'forearm',
 };
 
 // ============================================================================

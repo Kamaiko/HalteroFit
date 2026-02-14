@@ -83,13 +83,52 @@ describe('getMuscleHighlighterData', () => {
       'triceps',
       'upper back',
       'abductors',
+      'serratus anterior',
+      'levator scapulae',
     ];
 
     const result = getMuscleHighlighterData(mappableTargets, []);
-    // 15 inputs but 13 unique slugs (lats/upper back both → upper-back, glutes/abductors both → gluteal)
-    expect(result.data.length).toBe(13);
+    // 17 inputs but 15 unique slugs (lats/upper back → upper-back, glutes/abductors → gluteal)
+    expect(result.data.length).toBe(15);
     expect(result.data.every((d) => d.intensity === 1)).toBe(true);
     expect(result.hasAnyMuscle).toBe(true);
+  });
+
+  // ── Direct matches for ankles, feet, hands ────────────────────────
+
+  it('maps ankles, feet, and hands (direct slug matches)', () => {
+    const result = getMuscleHighlighterData([], ['ankles', 'feet', 'hands']);
+    expect(result.data).toEqual([
+      { slug: 'ankles', intensity: 2 },
+      { slug: 'feet', intensity: 2 },
+      { slug: 'hands', intensity: 2 },
+    ]);
+  });
+
+  // ── Approximation mappings ────────────────────────────────────────
+
+  it('maps wrist/grip muscles to forearm', () => {
+    const result = getMuscleHighlighterData(
+      [],
+      ['wrist extensors', 'wrist flexors', 'wrists', 'grip muscles']
+    );
+    const forearmEntries = result.data.filter((d) => d.slug === 'forearm');
+    expect(forearmEntries).toHaveLength(1);
+  });
+
+  it('maps hip flexors to quadriceps', () => {
+    const result = getMuscleHighlighterData([], ['hip flexors']);
+    expect(result.data).toEqual([{ slug: 'quadriceps', intensity: 2 }]);
+  });
+
+  it('maps rotator cuff to deltoids', () => {
+    const result = getMuscleHighlighterData([], ['rotator cuff']);
+    expect(result.data).toEqual([{ slug: 'deltoids', intensity: 2 }]);
+  });
+
+  it('maps ankle stabilizers to ankles', () => {
+    const result = getMuscleHighlighterData([], ['ankle stabilizers']);
+    expect(result.data).toEqual([{ slug: 'ankles', intensity: 2 }]);
   });
 
   // ── Case insensitivity ──────────────────────────────────────────────

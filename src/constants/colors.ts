@@ -22,6 +22,7 @@ export const Colors = {
     DEFAULT: '#0EA5E9', // sky-500
     dark: '#0284C7', // sky-600 (pressed states)
     light: '#38BDF8', // sky-400 (highlights)
+    muted: '#2768A3', // muted sky (secondary muscle highlights)
     foreground: '#FFFFFF',
   },
 

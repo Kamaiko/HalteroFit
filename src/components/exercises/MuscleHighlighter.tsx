@@ -28,11 +28,8 @@ export interface MuscleHighlighterProps {
 // Constants
 // ============================================================================
 
-// Derived from primary sky palette — update when brand primary changes
-const SECONDARY_MUSCLE_COLOR = '#2768A3';
-
 // Intensity 1 = target (primary), Intensity 2 = secondary (muted)
-const HIGHLIGHT_COLORS = [Colors.primary.DEFAULT, SECONDARY_MUSCLE_COLOR];
+const HIGHLIGHT_COLORS = [Colors.primary.DEFAULT, Colors.primary.muted];
 
 const BODY_SCALE = 0.85;
 
