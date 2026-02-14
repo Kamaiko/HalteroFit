@@ -82,18 +82,21 @@ export async function seedExercises(): Promise<{ success: boolean; count: number
 
         for (const exercise of batch) {
           await exercisesCollection.create((record) => {
-            record._raw.id = exercise.exerciseId; // Use exerciseId as primary key
+            // Cast _raw once to set fields not exposed by the typed model
+            // (WatermelonDB _raw is the official way to set fields during create)
+            const raw = record._raw as Record<string, unknown>;
+            raw.id = exercise.exerciseId;
             record.exercisedbId = exercise.exerciseId;
             record.name = exercise.name;
             record.gifUrl = exercise.gifUrl;
             // Store arrays as JSON strings (WatermelonDB @json decorator will parse them)
-            (record as any)._raw.body_parts = JSON.stringify(exercise.bodyParts);
-            (record as any)._raw.target_muscles = JSON.stringify(exercise.targetMuscles);
-            (record as any)._raw.secondary_muscles = JSON.stringify(exercise.secondaryMuscles);
-            (record as any)._raw.equipments = JSON.stringify(exercise.equipments);
-            (record as any)._raw.instructions = JSON.stringify(exercise.instructions);
-            (record as any)._raw.created_at = now;
-            (record as any)._raw.updated_at = now;
+            raw.body_parts = JSON.stringify(exercise.bodyParts);
+            raw.target_muscles = JSON.stringify(exercise.targetMuscles);
+            raw.secondary_muscles = JSON.stringify(exercise.secondaryMuscles);
+            raw.equipments = JSON.stringify(exercise.equipments);
+            raw.instructions = JSON.stringify(exercise.instructions);
+            raw.created_at = now;
+            raw.updated_at = now;
           });
         }
       });

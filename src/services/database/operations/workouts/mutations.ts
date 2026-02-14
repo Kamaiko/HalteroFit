@@ -241,23 +241,3 @@ export async function getUnsyncedWorkouts(): Promise<WorkoutWithDetails[]> {
     'Failed to get unsynced workouts'
   );
 }
-
-/**
- * Mark workout as synced
- *
- * @throws {DatabaseError} If workout not found or database operation fails
- */
-export async function markWorkoutAsSynced(id: string): Promise<void> {
-  return withDatabaseError(
-    async () => {
-      await database.write(async () => {
-        const workout = await database.get<WorkoutModel>('workouts').find(id);
-        await workout.update((_w) => {
-          // Sync tracking handled by WatermelonDB _changed/_status
-        });
-      });
-    },
-    'Unable to mark workout as synced. Please try again.',
-    `Failed to mark workout ${id} as synced`
-  );
-}

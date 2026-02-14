@@ -4,6 +4,7 @@
  * Shows user progress summary and quick actions.
  */
 
+import type { ComponentProps } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/layout';
@@ -77,7 +78,7 @@ export default function HomeScreen() {
 // ============================================================================
 
 interface StatCardProps {
-  icon: string;
+  icon: ComponentProps<typeof MaterialIcons>['name'];
   value: number;
   label: string;
 }
@@ -86,7 +87,7 @@ function StatCard({ icon, value, label }: StatCardProps) {
   return (
     <View className="flex-1 bg-background-surface rounded-2xl p-4 items-center border border-background-elevated shadow-sm">
       <View className="w-16 h-16 rounded-full items-center justify-center mb-3 bg-background-elevated">
-        <MaterialIcons name={icon as any} size={ICON_SIZE_LG} color={Colors.primary.DEFAULT} />
+        <MaterialIcons name={icon} size={ICON_SIZE_LG} color={Colors.primary.DEFAULT} />
       </View>
       <Text className="text-2xl font-bold text-foreground mb-1">{value}</Text>
       <Text className="text-xs text-foreground-secondary uppercase tracking-wide">{label}</Text>

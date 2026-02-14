@@ -13,6 +13,7 @@
  */
 
 import { synchronize, hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
+import type { RawRecord } from '@nozbe/watermelondb/RawRecord';
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import { database } from '../local';
 import { supabase } from '@/services/supabase';
@@ -101,8 +102,8 @@ export async function sync(): Promise<SyncResult> {
         let pushCount = 0;
         for (const table of Object.keys(changes)) {
           const tableChanges = changes[table as keyof typeof changes] as {
-            created?: any[];
-            updated?: any[];
+            created?: RawRecord[];
+            updated?: RawRecord[];
             deleted?: string[];
           };
           pushCount +=
