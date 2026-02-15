@@ -4,6 +4,7 @@ This document tracks completed development milestones and major changes across a
 
 ## 📑 Table of Contents
 
+- [2026-02-15 - SVG Muscle Icons & Implied Secondaries](#2026-02-15---svg-muscle-icons--implied-secondaries-)
 - [2026-01-27 - Exercise Detail Screen Polish](#2026-01-27---exercise-detail-screen-polish-)
 - [2026-01-27 - DayDetailsScreen Complete](#2026-01-27---daydetailsscreen-complete-)
 - [2026-01-26 - Exercise Architecture Refactor](#2026-01-26---exercise-architecture-refactor-)
@@ -12,6 +13,41 @@ This document tracks completed development milestones and major changes across a
 - [2026-01-12 - SDK 53 Stabilization](#2026-01-12---sdk-53-stabilization-)
 - [2025-11-06 - Phase 0.6 Complete](#2025-11-06---phase-06-complete-)
 - [2025-11-04 - Phase 0.5 Complete](#2025-11-04---phase-05-complete-)
+
+---
+
+## 2026-02-15 - SVG Muscle Icons & Implied Secondaries ✅
+
+**Status**: Complete
+**Scope**: MuscleGroupIcon SVG system, muscle mapping intelligence
+
+### SVG Muscle Group Icons
+
+- **Split "Back" into "Lats" + "Upper Back"**: Two distinct categories with dedicated SVG crop regions
+- **Renamed "Shoulders" to "Delts"**: Consistent with ExerciseDB naming
+- **Reordered 5x3 grid**: Logical body-region grouping (upper → core → lower)
+- **ViewBox fine-tuning**: Iterative positioning for abs, lats, chest, hamstrings, traps, show-all icons
+- **Traps icon**: Added neck region to highlightSlugs for anatomically complete trapezius rendering
+
+### Muscle Mapping Intelligence
+
+- **Multi-slug mapping**: Generic "Back" secondary now highlights both upper-back AND lats (11 exercises)
+- **Cardio group icon**: Cardiovascular-dominant workout days show heart icon instead of dumbbell placeholder
+- **Implied secondary slugs** (declarative, no vendored data changes):
+  - Upper Back ↔ Lats (bidirectional): Compensates for 0% ExerciseDB cross-reference
+  - Upper Back → Trapezius: Traps auto-injected as secondary for upper-back exercises
+  - Trapezius → Neck: Neck region auto-injected when traps is primary target
+  - Chain prevention: Snapshot iteration ensures upper-back → traps does NOT cascade to neck
+
+### Tests
+
+- 39 muscle mapping tests (was 29), covering multi-slug, implied secondaries, chain prevention, dedup
+
+**Files Changed:**
+
+- Modified: src/utils/muscles.ts, src/components/exercises/muscleGroupIconConfig.ts
+- Modified: src/components/exercises/MuscleGroupIcon.tsx, MuscleHighlighter.tsx
+- Modified: **tests**/unit/utils/muscles.test.ts
 
 ---
 

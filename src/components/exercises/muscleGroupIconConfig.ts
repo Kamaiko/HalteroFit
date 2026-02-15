@@ -107,7 +107,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   'show-all': {
     side: 'front',
-    viewBox: '80 80 480 1320',
+    viewBox: '60 80 480 1320',
     highlightSlugs: [
       'chest',
       'obliques',
