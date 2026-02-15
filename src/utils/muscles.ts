@@ -106,12 +106,17 @@ const MUSCLE_MAPPING: Record<string, Slug | Slug[]> = {
  * When a target muscle resolves to one of these slugs, the paired slugs
  * are auto-injected as secondary (intensity 2) if not already present.
  *
- * Upper Back ↔ Lats: 0% cross-reference in ExerciseDB (vs 90%+ for
- * other related pairs like Chest→Shoulders, Biceps→Forearms).
+ * Only fires for TARGET muscles (intensity 1). Secondaries injected via
+ * this table do NOT trigger further chained injection (snapshot iteration).
+ *
+ * - Upper Back ↔ Lats: 0% cross-reference in ExerciseDB
+ * - Upper Back → Trapezius: traps rarely listed as secondary for upper-back exercises
+ * - Trapezius → Neck: upper trapezius region mapped to separate SVG slug
  */
 const IMPLIED_SECONDARY_SLUGS: Partial<Record<Slug, Slug[]>> = {
-  'upper-back': ['lats'],
+  'upper-back': ['lats', 'trapezius'],
   lats: ['upper-back'],
+  trapezius: ['neck'],
 };
 
 // ============================================================================

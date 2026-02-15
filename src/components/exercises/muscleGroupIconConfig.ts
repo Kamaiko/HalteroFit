@@ -62,8 +62,8 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   traps: {
     side: 'back',
-    viewBox: '959 242 254 237',
-    highlightSlugs: ['trapezius'],
+    viewBox: '945 220 254 259',
+    highlightSlugs: ['trapezius', 'neck'],
   },
   biceps: {
     side: 'front',
