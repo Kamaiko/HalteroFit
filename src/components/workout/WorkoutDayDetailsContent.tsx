@@ -15,6 +15,7 @@ import DraggableFlatList, {
 import { memo, useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
+import { EmptyState } from '@/components/ui';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Colors } from '@/constants';
@@ -85,13 +86,11 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   const keyExtractor = useCallback((item: DayExercise) => item.id, []);
   if (!selectedDay) {
     return (
-      <View className="flex-1 items-center justify-center p-8">
-        <Ionicons name="list-outline" size={48} color={Colors.foreground.tertiary} />
-        <Text className="text-lg font-semibold text-foreground mt-4">Select a workout day</Text>
-        <Text className="text-sm text-foreground-secondary text-center mt-2">
-          Tap on a day in Overview to see its exercises
-        </Text>
-      </View>
+      <EmptyState
+        icon="list-outline"
+        title="Select a workout day"
+        subtitle="Tap on a day in Overview to see its exercises"
+      />
     );
   }
 

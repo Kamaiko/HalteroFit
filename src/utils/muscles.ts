@@ -222,7 +222,9 @@ export function getMuscleHighlighterData(
     }
   }
 
-  // Auto-inject implied secondary slugs for known data gaps
+  // Auto-inject implied secondary slugs for known data gaps.
+  // Snapshot ([...result]) prevents chaining: slugs added here won't trigger
+  // further injection (e.g. upper-back → trapezius, but that trapezius won't → neck).
   for (const { slug } of [...result]) {
     const implied = IMPLIED_SECONDARY_SLUGS[slug];
     if (implied) {

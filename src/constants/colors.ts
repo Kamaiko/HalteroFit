@@ -72,6 +72,16 @@ export const Colors = {
     white: '#FFFFFF',
   },
 
+  // Overlay/translucent colors
+  overlay: {
+    light: 'rgba(255, 255, 255, 0.3)', // Handles, placeholder icons on dark bg
+  },
+
+  // Dev mode
+  dev: {
+    banner: '#ff6b35', // Orange dev mode indicator
+  },
+
   // Muscle diagram colors (body-highlighter SVG icons)
   muscle: {
     dimBody: '#4f4f4f', // Silhouette context layer (dark variant)

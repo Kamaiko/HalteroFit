@@ -75,12 +75,18 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
+    <GestureHandlerRootView className="flex-1 bg-background">
       <Sentry.ErrorBoundary fallback={ErrorFallbackScreen}>
         <SafeAreaProvider>
           <StatusBar style="light" backgroundColor={Colors.background.DEFAULT} />
           {__DEV__ && (
-            <View style={{ backgroundColor: '#ff6b35', paddingVertical: 4, paddingHorizontal: 12 }}>
+            <View
+              style={{
+                backgroundColor: Colors.dev.banner,
+                paddingVertical: 4,
+                paddingHorizontal: 12,
+              }}
+            >
               <Text
                 style={{ color: 'white', fontSize: 11, textAlign: 'center', fontWeight: '600' }}
               >

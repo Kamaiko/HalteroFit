@@ -27,8 +27,8 @@
 import { useCallback } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_2XL } from '@/constants';
+import { EmptyState } from '@/components/ui';
+import { Colors } from '@/constants';
 import type { Workout } from '@/services/database/operations';
 import { WorkoutListItem } from './WorkoutListItem';
 
@@ -54,26 +54,6 @@ interface WorkoutListProps {
    * Default: "No workouts yet. Start your first workout!"
    */
   emptyMessage?: string;
-}
-
-/**
- * Empty state component
- */
-function EmptyState({ message }: { message: string }) {
-  return (
-    <View className="flex-1 items-center justify-center p-8 min-h-[400px]">
-      <Ionicons
-        name="barbell-outline"
-        size={ICON_SIZE_2XL}
-        color={Colors.foreground.secondary}
-        className="mb-4"
-      />
-      <Text className="text-lg font-semibold text-foreground text-center mb-2">{message}</Text>
-      <Text className="text-sm text-foreground-secondary text-center">
-        Track your progress and reach your goals
-      </Text>
-    </View>
-  );
 }
 
 /**
@@ -124,7 +104,14 @@ export function WorkoutList({
 
   // Empty state
   if (workouts.length === 0) {
-    return <EmptyState message={emptyMessage} />;
+    return (
+      <EmptyState
+        icon="barbell-outline"
+        title={emptyMessage}
+        subtitle="Track your progress and reach your goals"
+        className="min-h-[400px]"
+      />
+    );
   }
 
   return (

@@ -22,12 +22,12 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { Text } from '@/components/ui/text';
+import { Chip } from '@/components/ui';
 import { ExerciseGifHeader, MuscleHighlighter } from '@/components/exercises';
 import { Ionicons } from '@/components/ui/icon';
 import {
   Colors,
   BORDER_RADIUS_LG,
-  BORDER_RADIUS_PILL,
   ICON_SIZE_MD,
   ICON_SIZE_2XL,
   SCROLL_THROTTLE_60FPS,
@@ -158,13 +158,14 @@ export default function ExerciseDetailScreen() {
         </View>
 
         {/* Tabs */}
-        <View className="flex-row border-b border-background-elevated px-4">
-          {TABS.map((tab, index) => (
+        <View className="flex-row gap-8 border-b border-background-elevated px-4">
+          {TABS.map((tab) => (
             <Pressable
               key={tab.key}
-              style={{ marginRight: index < TABS.length - 1 ? 32 : 0 }}
               className="relative pb-3"
               disabled={tab.disabled}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: tab.key === ACTIVE_TAB, disabled: tab.disabled }}
             >
               <Text
                 className={
@@ -188,13 +189,11 @@ export default function ExerciseDetailScreen() {
         <View className="px-4 pt-4">
           {/* Target Muscles Section */}
           <View className="mb-6">
-            <Text className="mb-2 text-sm font-medium text-foreground-secondary">
-              Target Muscles
-            </Text>
+            <Text variant="sectionLabel">Target Muscles</Text>
             {exercise.target_muscles.length > 0 || exercise.secondary_muscles.length > 0 ? (
               <View className="flex-row flex-wrap gap-y-2">
-                {exercise.target_muscles.map((muscle, i) => (
-                  <View key={i} className="w-1/2 flex-row items-center">
+                {exercise.target_muscles.map((muscle) => (
+                  <View key={muscle} className="w-1/2 flex-row items-center">
                     <View
                       className="mr-2 h-4 w-[3px] rounded-full"
                       style={{ backgroundColor: Colors.primary.DEFAULT }}
@@ -202,8 +201,8 @@ export default function ExerciseDetailScreen() {
                     <Text className="text-sm text-foreground">{muscle}</Text>
                   </View>
                 ))}
-                {exercise.secondary_muscles.map((muscle, i) => (
-                  <View key={`s-${i}`} className="w-1/2 flex-row items-center">
+                {exercise.secondary_muscles.map((muscle) => (
+                  <View key={`s-${muscle}`} className="w-1/2 flex-row items-center">
                     <View
                       className="mr-2 h-4 w-[3px] rounded-full"
                       style={{ backgroundColor: Colors.primary.muted }}
@@ -225,17 +224,11 @@ export default function ExerciseDetailScreen() {
 
           {/* Equipment Section */}
           <View className="mb-6">
-            <Text className="mb-2 text-sm font-medium text-foreground-secondary">Equipment</Text>
+            <Text variant="sectionLabel">Equipment</Text>
             {exercise.equipments.length > 0 ? (
               <View className="flex-row flex-wrap gap-2">
-                {exercise.equipments.map((equipment, index) => (
-                  <View
-                    key={index}
-                    className="bg-primary/15 px-3 py-1"
-                    style={{ borderRadius: BORDER_RADIUS_PILL }}
-                  >
-                    <Text className="text-sm text-primary">{equipment}</Text>
-                  </View>
+                {exercise.equipments.map((equipment) => (
+                  <Chip key={equipment} label={equipment} />
                 ))}
               </View>
             ) : (
@@ -245,7 +238,9 @@ export default function ExerciseDetailScreen() {
 
           {/* Instructions Section */}
           <View className="mb-4 rounded-xl bg-background-surface p-4">
-            <Text className="mb-3 text-sm font-medium text-foreground-secondary">Instructions</Text>
+            <Text variant="sectionLabel" className="mb-3">
+              Instructions
+            </Text>
             {exercise.instructions.length > 0 ? (
               <View>
                 {exercise.instructions.map((instruction, index) => (

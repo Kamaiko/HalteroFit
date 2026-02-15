@@ -6,6 +6,7 @@
  * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 2.1 (Muscle Selector)
  */
 
+import { memo, useCallback } from 'react';
 import { Text } from '@/components/ui/text';
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
 import { ScreenContainer } from '@/components/layout';
@@ -54,7 +55,7 @@ const MUSCLE_GROUPS: MuscleGroup[] = [
 // ============================================================================
 
 export default function ExerciseSelectorScreen() {
-  const handleMusclePress = (muscle: MuscleGroup) => {
+  const handleMusclePress = useCallback((muscle: MuscleGroup) => {
     if (muscle.id === 'show-all') {
       router.push('/exercise/browser');
     } else if (muscle.filterType && muscle.filterValue) {
@@ -67,7 +68,7 @@ export default function ExerciseSelectorScreen() {
         },
       });
     }
-  };
+  }, []);
 
   return (
     <ScreenContainer>
@@ -108,7 +109,7 @@ interface MuscleCardProps {
   onPress: () => void;
 }
 
-function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
+const MuscleCard = memo(function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
   return (
     <Pressable
       className="mb-3 w-[31%] items-center rounded-xl bg-background-surface py-3"
@@ -120,4 +121,4 @@ function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
       <Text className="text-center text-sm font-medium text-foreground">{label}</Text>
     </Pressable>
   );
-}
+});

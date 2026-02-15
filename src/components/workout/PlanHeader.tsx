@@ -84,7 +84,7 @@ export const PlanHeader = memo(function PlanHeader({ planName, coverImageUrl }: 
           className="absolute top-1/2 left-1/2"
           style={{ transform: [{ translateX: -20 }, { translateY: -40 }] }}
         >
-          <Ionicons name="barbell-outline" size={ICON_SIZE_XL} color="rgba(255,255,255,0.3)" />
+          <Ionicons name="barbell-outline" size={ICON_SIZE_XL} color={Colors.overlay.light} />
         </View>
       )}
     </View>

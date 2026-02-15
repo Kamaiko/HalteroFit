@@ -11,7 +11,7 @@ import DraggableFlatList, {
 import { memo, useCallback } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Colors } from '@/constants';
@@ -62,16 +62,12 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
 
   if (planDays.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center p-8">
-        <Ionicons name="calendar-outline" size={48} color={Colors.foreground.tertiary} />
-        <Text className="text-lg font-semibold text-foreground mt-4">No workout days yet</Text>
-        <Text className="text-sm text-foreground-secondary text-center mt-2">
-          Add your first workout day to get started
-        </Text>
-        <Button className="mt-6" onPress={onAddDayPress}>
-          <Text className="text-white font-medium">+ Add a day</Text>
-        </Button>
-      </View>
+      <EmptyState
+        icon="calendar-outline"
+        title="No workout days yet"
+        subtitle="Add your first workout day to get started"
+        action={{ label: '+ Add a day', onPress: onAddDayPress }}
+      />
     );
   }
 

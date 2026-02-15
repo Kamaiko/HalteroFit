@@ -108,7 +108,7 @@ export const ExerciseGifHeader = memo(function ExerciseGifHeader({
       ) : (
         <Image
           source={{ uri: gifUrl }}
-          style={{ width: '100%', height: '100%' }}
+          className="h-full w-full"
           contentFit="contain"
           contentPosition="center"
           autoplay={true}

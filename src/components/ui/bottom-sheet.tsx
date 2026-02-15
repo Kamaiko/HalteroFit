@@ -118,6 +118,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background.surface,
   },
   handleIndicator: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: Colors.overlay.light,
   },
 });

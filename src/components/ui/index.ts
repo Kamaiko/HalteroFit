@@ -20,8 +20,14 @@ export type { TabsProps, Route as TabRoute } from './tabs';
 export { BottomSheet } from './bottom-sheet';
 export type { BottomSheetProps, BottomSheetRef } from './bottom-sheet';
 
+export { Chip } from './chip';
+export type { ChipProps } from './chip';
+
 export { ConfirmDialog } from './confirm-dialog';
 export type { ConfirmDialogProps } from './confirm-dialog';
+
+export { EmptyState } from './empty-state';
+export type { EmptyStateProps } from './empty-state';
 
 export { Dialog } from './dialog';
 export type { DialogProps } from './dialog';
