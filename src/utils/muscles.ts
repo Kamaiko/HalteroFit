@@ -97,15 +97,33 @@ const MUSCLE_MAPPING: Record<string, Slug | Slug[]> = {
 };
 
 // ============================================================================
+// Implied Secondary Slugs
+// ============================================================================
+
+/**
+ * Compensates for known ExerciseDB data gaps.
+ *
+ * When a target muscle resolves to one of these slugs, the paired slugs
+ * are auto-injected as secondary (intensity 2) if not already present.
+ *
+ * Upper Back ↔ Lats: 0% cross-reference in ExerciseDB (vs 90%+ for
+ * other related pairs like Chest→Shoulders, Biceps→Forearms).
+ */
+const IMPLIED_SECONDARY_SLUGS: Partial<Record<Slug, Slug[]>> = {
+  'upper-back': ['lats'],
+  lats: ['upper-back'],
+};
+
+// ============================================================================
 // Target Muscle → Muscle Group ID Mapping
 // ============================================================================
 
 /**
- * Maps ExerciseDB target muscle names to the 13 muscle group IDs
+ * Maps ExerciseDB target muscle names to the 14 muscle group IDs
  * used by MuscleGroupIcon / muscleGroupIconConfig.
  *
- * Covers 17 mappable ExerciseDB target muscles.
- * "cardiovascular system" and "spine" have no SVG representation.
+ * Covers 18 mappable ExerciseDB target muscles.
+ * "spine" has no SVG representation and remains unmapped.
  */
 const TARGET_MUSCLE_TO_GROUP_ID: Record<string, string> = {
   pectorals: 'chest',
@@ -125,13 +143,14 @@ const TARGET_MUSCLE_TO_GROUP_ID: Record<string, string> = {
   calves: 'calves',
   'serratus anterior': 'abs',
   'levator scapulae': 'traps',
+  'cardiovascular system': 'cardio',
 };
 
 /**
  * Convert an ExerciseDB target muscle name to a muscle group ID
  * for MuscleGroupIcon rendering.
  *
- * Returns null for unmappable targets (cardio, spine).
+ * Returns null for unmappable targets (spine).
  */
 export function getTargetMuscleGroupId(targetMuscle: string): string | null {
   return TARGET_MUSCLE_TO_GROUP_ID[targetMuscle.toLowerCase().trim()] ?? null;
@@ -194,6 +213,19 @@ export function getMuscleHighlighterData(
       if (!slugSet.has(slug)) {
         slugSet.add(slug);
         result.push({ slug, intensity: 1 });
+      }
+    }
+  }
+
+  // Auto-inject implied secondary slugs for known data gaps
+  for (const { slug } of [...result]) {
+    const implied = IMPLIED_SECONDARY_SLUGS[slug];
+    if (implied) {
+      for (const impliedSlug of implied) {
+        if (!slugSet.has(impliedSlug)) {
+          slugSet.add(impliedSlug);
+          result.push({ slug: impliedSlug, intensity: 2 });
+        }
       }
     }
   }

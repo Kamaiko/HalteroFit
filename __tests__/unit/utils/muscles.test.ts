@@ -161,6 +161,39 @@ describe('getMuscleHighlighterData', () => {
     expect(latsEntries).toHaveLength(1);
   });
 
+  // ── Implied secondary slugs ────────────────────────────────────────
+
+  it('auto-injects lats as secondary when upper-back is target', () => {
+    const result = getMuscleHighlighterData(['upper back'], []);
+    expect(result.data).toEqual([
+      { slug: 'upper-back', intensity: 1 },
+      { slug: 'lats', intensity: 2 },
+    ]);
+  });
+
+  it('auto-injects upper-back as secondary when lats is target', () => {
+    const result = getMuscleHighlighterData(['lats'], []);
+    expect(result.data).toEqual([
+      { slug: 'lats', intensity: 1 },
+      { slug: 'upper-back', intensity: 2 },
+    ]);
+  });
+
+  it('does not duplicate when implied slug already in secondaries', () => {
+    const result = getMuscleHighlighterData(['upper back'], ['latissimus dorsi']);
+    const latsEntries = result.data.filter((d) => d.slug === 'lats');
+    expect(latsEntries).toHaveLength(1);
+    expect(latsEntries[0]!.intensity).toBe(2);
+  });
+
+  it('skips implied injection when both are already targets', () => {
+    const result = getMuscleHighlighterData(['upper back', 'lats'], []);
+    expect(result.data).toEqual([
+      { slug: 'upper-back', intensity: 1 },
+      { slug: 'lats', intensity: 1 },
+    ]);
+  });
+
   // ── Case insensitivity ──────────────────────────────────────────────
 
   it('handles case-insensitive muscle names', () => {
@@ -177,7 +210,7 @@ describe('getMuscleHighlighterData', () => {
 // ── getTargetMuscleGroupId ──────────────────────────────────────────────
 
 describe('getTargetMuscleGroupId', () => {
-  it('maps all 13 muscle group IDs from ExerciseDB target muscles', () => {
+  it('maps all 14 muscle group IDs from ExerciseDB target muscles', () => {
     expect(getTargetMuscleGroupId('pectorals')).toBe('chest');
     expect(getTargetMuscleGroupId('lats')).toBe('lats');
     expect(getTargetMuscleGroupId('upper back')).toBe('upper-back');
@@ -191,6 +224,7 @@ describe('getTargetMuscleGroupId', () => {
     expect(getTargetMuscleGroupId('hamstrings')).toBe('hamstrings');
     expect(getTargetMuscleGroupId('glutes')).toBe('glutes');
     expect(getTargetMuscleGroupId('calves')).toBe('calves');
+    expect(getTargetMuscleGroupId('cardiovascular system')).toBe('cardio');
   });
 
   it('maps secondary ExerciseDB targets to correct groups', () => {
@@ -205,7 +239,6 @@ describe('getTargetMuscleGroupId', () => {
   });
 
   it('returns null for unmappable muscles', () => {
-    expect(getTargetMuscleGroupId('cardiovascular system')).toBeNull();
     expect(getTargetMuscleGroupId('spine')).toBeNull();
   });
 });
@@ -215,12 +248,17 @@ describe('getTargetMuscleGroupId', () => {
 describe('getFirstMuscleGroupId', () => {
   it('returns the first mappable group, skipping unmappable entries', () => {
     expect(getFirstMuscleGroupId(['pectorals', 'biceps'])).toBe('chest');
-    expect(getFirstMuscleGroupId(['cardiovascular system', 'biceps'])).toBe('biceps');
+    expect(getFirstMuscleGroupId(['spine', 'biceps'])).toBe('biceps');
+  });
+
+  it('returns cardio for cardiovascular system exercises', () => {
+    expect(getFirstMuscleGroupId(['cardiovascular system'])).toBe('cardio');
+    expect(getFirstMuscleGroupId(['cardiovascular system', 'biceps'])).toBe('cardio');
   });
 
   it('returns null when no group can be resolved', () => {
     expect(getFirstMuscleGroupId([])).toBeNull();
-    expect(getFirstMuscleGroupId(['cardiovascular system', 'spine'])).toBeNull();
+    expect(getFirstMuscleGroupId(['spine'])).toBeNull();
   });
 });
 
@@ -247,8 +285,16 @@ describe('computeDominantMuscleGroup', () => {
     expect(computeDominantMuscleGroup(['pectorals', 'lats', 'upper back'])).toBe('chest');
   });
 
+  it('returns cardio for cardiovascular-dominant days', () => {
+    expect(computeDominantMuscleGroup(['cardiovascular system'])).toBe('cardio');
+    // 2x cardio vs 1x chest → cardio
+    expect(
+      computeDominantMuscleGroup(['cardiovascular system', 'pectorals', 'cardiovascular system'])
+    ).toBe('cardio');
+  });
+
   it('returns null when no group can be resolved', () => {
     expect(computeDominantMuscleGroup([])).toBeNull();
-    expect(computeDominantMuscleGroup(['cardiovascular system', 'spine'])).toBeNull();
+    expect(computeDominantMuscleGroup(['spine'])).toBeNull();
   });
 });
