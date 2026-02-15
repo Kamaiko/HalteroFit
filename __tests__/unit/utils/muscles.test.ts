@@ -94,10 +94,18 @@ describe('getMuscleHighlighterData', () => {
     ];
 
     const result = getMuscleHighlighterData(mappableTargets, []);
-    // 17 inputs but 16 unique slugs (lats → lats, upper back → upper-back, glutes/abductors → gluteal)
+    // 17 inputs but 16 unique slugs (glutes/abductors both → gluteal)
     expect(result.data.length).toBe(16);
     expect(result.data.every((d) => d.intensity === 1)).toBe(true);
     expect(result.hasAnyMuscle).toBe(true);
+  });
+
+  it('maps lats and upper back to separate slugs', () => {
+    const result = getMuscleHighlighterData(['lats', 'upper back'], []);
+    expect(result.data).toEqual([
+      { slug: 'lats', intensity: 1 },
+      { slug: 'upper-back', intensity: 1 },
+    ]);
   });
 
   // ── Direct matches for ankles, feet, hands ────────────────────────
@@ -153,16 +161,34 @@ describe('getMuscleHighlighterData', () => {
 // ── getTargetMuscleGroupId ──────────────────────────────────────────────
 
 describe('getTargetMuscleGroupId', () => {
-  it('maps ExerciseDB muscles to group IDs (case-insensitive, trimmed)', () => {
+  it('maps all 13 muscle group IDs from ExerciseDB target muscles', () => {
     expect(getTargetMuscleGroupId('pectorals')).toBe('chest');
-    expect(getTargetMuscleGroupId('delts')).toBe('shoulder');
     expect(getTargetMuscleGroupId('lats')).toBe('lats');
     expect(getTargetMuscleGroupId('upper back')).toBe('upper-back');
+    expect(getTargetMuscleGroupId('delts')).toBe('shoulder');
+    expect(getTargetMuscleGroupId('traps')).toBe('traps');
+    expect(getTargetMuscleGroupId('biceps')).toBe('biceps');
+    expect(getTargetMuscleGroupId('triceps')).toBe('triceps');
+    expect(getTargetMuscleGroupId('forearms')).toBe('forearms');
+    expect(getTargetMuscleGroupId('abs')).toBe('abs');
+    expect(getTargetMuscleGroupId('quads')).toBe('quads');
+    expect(getTargetMuscleGroupId('hamstrings')).toBe('hamstrings');
+    expect(getTargetMuscleGroupId('glutes')).toBe('glutes');
+    expect(getTargetMuscleGroupId('calves')).toBe('calves');
+  });
+
+  it('maps secondary ExerciseDB targets to correct groups', () => {
     expect(getTargetMuscleGroupId('adductors')).toBe('quads');
     expect(getTargetMuscleGroupId('abductors')).toBe('glutes');
-    // Case-insensitive + whitespace
+    expect(getTargetMuscleGroupId('serratus anterior')).toBe('abs');
+    expect(getTargetMuscleGroupId('levator scapulae')).toBe('traps');
+  });
+
+  it('is case-insensitive and trims whitespace', () => {
     expect(getTargetMuscleGroupId(' DELTS ')).toBe('shoulder');
-    // Unmappable
+  });
+
+  it('returns null for unmappable muscles', () => {
     expect(getTargetMuscleGroupId('cardiovascular system')).toBeNull();
     expect(getTargetMuscleGroupId('spine')).toBeNull();
   });
@@ -198,8 +224,10 @@ describe('computeDominantMuscleGroup', () => {
     expect(computeDominantMuscleGroup(['biceps', 'pectorals'])).toBe('biceps');
   });
 
-  it('resolves tie by first-occurring group (lats and upper-back are now separate)', () => {
-    // lats → 'lats', upper back → 'upper-back', pectorals → 'chest' — all 1x, first wins
+  it('treats lats and upper-back as separate groups (not merged)', () => {
+    // Each maps to its own group (1x each) — first-occurring wins
+    expect(computeDominantMuscleGroup(['lats', 'upper back', 'pectorals'])).toBe('lats');
+    expect(computeDominantMuscleGroup(['upper back', 'lats', 'pectorals'])).toBe('upper-back');
     expect(computeDominantMuscleGroup(['pectorals', 'lats', 'upper back'])).toBe('chest');
   });
 

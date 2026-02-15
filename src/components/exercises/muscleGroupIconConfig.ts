@@ -42,12 +42,12 @@ export interface MuscleIconRenderData {
 const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   chest: {
     side: 'front',
-    viewBox: '235 240 260 200',
+    viewBox: '233 240 260 200',
     highlightSlugs: ['chest'],
   },
   lats: {
     side: 'back',
-    viewBox: '815 314 267 313',
+    viewBox: '811 314 267 313',
     highlightSlugs: ['lats', 'lower-back'],
   },
   'upper-back': {
@@ -82,7 +82,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   abs: {
     side: 'front',
-    viewBox: '219 325 292 195',
+    viewBox: '219 310 292 195',
     highlightSlugs: ['abs', 'obliques'],
   },
   quads: {
@@ -92,7 +92,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   hamstrings: {
     side: 'back',
-    viewBox: '910 710 246 262',
+    viewBox: '912 710 246 262',
     highlightSlugs: ['hamstring'],
   },
   glutes: {
@@ -182,7 +182,7 @@ for (const [id, config] of Object.entries(MUSCLE_ICON_CONFIGS)) {
 
 /**
  * Get pre-computed render data for a muscle group icon.
- * Returns null for muscle groups without SVG representation (cardio, show-all).
+ * Returns null for muscle groups without SVG representation (cardio).
  */
 export function getMuscleIconData(muscleGroupId: string): MuscleIconRenderData | null {
   return precomputedData.get(muscleGroupId) ?? null;
