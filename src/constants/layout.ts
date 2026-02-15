@@ -27,14 +27,14 @@ export const ICON_SIZE_LG = 32;
 /** Extra-large icon: header placeholders, decorative (40px) */
 export const ICON_SIZE_XL = 40;
 
-/** Muscle group icon: fits in 64px rounded rectangle container (56px) */
-export const ICON_SIZE_MUSCLE = 56;
-
 /** 2X-large icon: error states, loading states (48px) */
 export const ICON_SIZE_2XL = 48;
 
 /** 3X-large icon: full-screen placeholders, GIF fallbacks (64px) */
 export const ICON_SIZE_3XL = 64;
+
+/** Muscle group icon: fits in 80px rounded rectangle container (72px) */
+export const ICON_SIZE_MUSCLE = 72;
 
 /** Banner icon: exercise detail header placeholder (160px) */
 export const ICON_SIZE_BANNER = 160;

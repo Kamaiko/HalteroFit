@@ -111,10 +111,10 @@ interface MuscleCardProps {
 function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
   return (
     <Pressable
-      className="mb-3 aspect-square w-[31%] items-center justify-center rounded-xl bg-background-surface"
+      className="mb-3 w-[31%] items-center rounded-xl bg-background-surface py-3"
       onPress={onPress}
     >
-      <View className="mb-2 h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-background-elevated">
+      <View className="mb-2 h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-background-elevated">
         <MuscleGroupIcon muscleGroupId={muscleGroupId} />
       </View>
       <Text className="text-center text-sm font-medium text-foreground">{label}</Text>
