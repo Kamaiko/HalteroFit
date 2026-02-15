@@ -72,6 +72,11 @@ export const Colors = {
     white: '#FFFFFF',
   },
 
+  // Muscle diagram colors (body-highlighter SVG icons)
+  muscle: {
+    dimBody: '#3f3f3f', // Silhouette context layer (dark variant)
+  },
+
   // RPE Colors (Rate of Perceived Exertion)
   rpe: {
     low: '#38a169',

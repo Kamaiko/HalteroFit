@@ -25,19 +25,26 @@ interface MuscleGroup {
   filterValue?: string;
 }
 
-/** Muscle groups mapped to ExerciseDB dataset values */
+/** Muscle groups mapped to ExerciseDB dataset values, ordered by body region */
 const MUSCLE_GROUPS: MuscleGroup[] = [
-  { id: 'triceps', label: 'Triceps', filterType: 'targetMuscle', filterValue: 'triceps' },
+  // Row 1: Upper body (torso)
   { id: 'chest', label: 'Chest', filterType: 'bodyPart', filterValue: 'chest' },
-  { id: 'shoulder', label: 'Shoulders', filterType: 'bodyPart', filterValue: 'shoulders' },
-  { id: 'biceps', label: 'Biceps', filterType: 'targetMuscle', filterValue: 'biceps' },
-  { id: 'abs', label: 'Abs', filterType: 'targetMuscle', filterValue: 'abs' },
   { id: 'back', label: 'Back', filterType: 'bodyPart', filterValue: 'back' },
+  { id: 'shoulder', label: 'Shoulders', filterType: 'bodyPart', filterValue: 'shoulders' },
+  // Row 2: Upper body (neck + arms)
+  { id: 'traps', label: 'Traps', filterType: 'targetMuscle', filterValue: 'traps' },
+  { id: 'biceps', label: 'Biceps', filterType: 'targetMuscle', filterValue: 'biceps' },
+  { id: 'triceps', label: 'Triceps', filterType: 'targetMuscle', filterValue: 'triceps' },
+  // Row 3: Arms + core
   { id: 'forearms', label: 'Forearms', filterType: 'targetMuscle', filterValue: 'forearms' },
-  { id: 'upper-leg', label: 'Upper Leg', filterType: 'bodyPart', filterValue: 'upper legs' },
+  { id: 'abs', label: 'Abs', filterType: 'targetMuscle', filterValue: 'abs' },
+  { id: 'quads', label: 'Quads', filterType: 'targetMuscle', filterValue: 'quads' },
+  // Row 4: Lower body
+  { id: 'hamstrings', label: 'Hamstrings', filterType: 'targetMuscle', filterValue: 'hamstrings' },
   { id: 'glutes', label: 'Glutes', filterType: 'targetMuscle', filterValue: 'glutes' },
+  { id: 'calves', label: 'Calves', filterType: 'targetMuscle', filterValue: 'calves' },
+  // Row 5: Other + action
   { id: 'cardio', label: 'Cardio', filterType: 'bodyPart', filterValue: 'cardio' },
-  { id: 'lower-leg', label: 'Lower Leg', filterType: 'bodyPart', filterValue: 'lower legs' },
   { id: 'show-all', label: 'Show All' },
 ];
 
@@ -108,7 +115,7 @@ function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
       className={`mb-3 aspect-square w-[31%] items-center justify-center rounded-xl ${isShowAll ? 'bg-primary' : 'bg-background-surface'}`}
       onPress={onPress}
     >
-      <View className="mb-2 h-12 w-12 items-center justify-center rounded-full bg-background-elevated">
+      <View className="mb-2 h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-background-elevated">
         <MuscleGroupIcon muscleGroupId={muscleGroupId} />
       </View>
       <Text

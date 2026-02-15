@@ -12,7 +12,7 @@ import { memo } from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
 
 import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_MD } from '@/constants';
+import { Colors, ICON_SIZE_MUSCLE } from '@/constants';
 
 import { getMuscleIconData } from './muscleGroupIconConfig';
 
@@ -23,7 +23,7 @@ import { getMuscleIconData } from './muscleGroupIconConfig';
 export interface MuscleGroupIconProps {
   /** Muscle group identifier matching MUSCLE_GROUPS[].id */
   muscleGroupId: string;
-  /** Icon size in pixels (default: 36, fits in 48px circle container) */
+  /** Icon size in pixels (default: ICON_SIZE_MUSCLE) */
   size?: number;
   /** Color variant: 'dark' for dark backgrounds (default), 'light' for white backgrounds */
   variant?: 'dark' | 'light';
@@ -33,9 +33,10 @@ export interface MuscleGroupIconProps {
 // Constants
 // ============================================================================
 
-const DEFAULT_ICON_SIZE = 36;
-const DIM_BODY_COLOR_DARK = '#3f3f3f';
+const DIM_BODY_COLOR_DARK = Colors.muscle.dimBody;
 const DIM_BODY_COLOR_LIGHT = Colors.border.input;
+/** Padding ratio applied to viewBox to prevent silhouette edge bleed (5% per side) */
+const VIEWBOX_PADDING_RATIO = 0.08;
 
 // ============================================================================
 // Component
@@ -43,7 +44,7 @@ const DIM_BODY_COLOR_LIGHT = Colors.border.input;
 
 export const MuscleGroupIcon = memo(function MuscleGroupIcon({
   muscleGroupId,
-  size = DEFAULT_ICON_SIZE,
+  size = ICON_SIZE_MUSCLE,
   variant = 'dark',
 }: MuscleGroupIconProps) {
   const iconData = getMuscleIconData(muscleGroupId);
@@ -54,15 +55,29 @@ export const MuscleGroupIcon = memo(function MuscleGroupIcon({
     const color =
       muscleGroupId === 'show-all' ? Colors.foreground.DEFAULT : Colors.foreground.secondary;
 
-    return <Ionicons name={iconName} size={ICON_SIZE_MD} color={color} />;
+    return <Ionicons name={iconName} size={size} color={color} />;
   }
 
   const isLight = variant === 'light';
   const dimColor = isLight ? DIM_BODY_COLOR_LIGHT : DIM_BODY_COLOR_DARK;
-  const [vx, vy, vw, vh] = iconData.viewBox.split(' ');
+
+  // Apply uniform padding to prevent silhouette from touching icon edges
+  const [rawX, rawY, rawW, rawH] = iconData.viewBox.split(' ').map(Number) as [
+    number,
+    number,
+    number,
+    number,
+  ];
+  const px = Math.round(rawW * VIEWBOX_PADDING_RATIO);
+  const py = Math.round(rawH * VIEWBOX_PADDING_RATIO);
+  const vx = rawX - px;
+  const vy = rawY - py;
+  const vw = rawW + 2 * px;
+  const vh = rawH + 2 * py;
+  const viewBox = `${vx} ${vy} ${vw} ${vh}`;
 
   return (
-    <Svg viewBox={iconData.viewBox} width={size} height={size}>
+    <Svg viewBox={viewBox} width={size} height={size}>
       {/* Layer 0: Background fill for light variant */}
       {isLight && <Rect x={vx} y={vy} width={vw} height={vh} fill={Colors.surface.white} />}
 

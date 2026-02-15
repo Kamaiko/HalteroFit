@@ -27,6 +27,9 @@ export const ICON_SIZE_LG = 32;
 /** Extra-large icon: header placeholders, decorative (40px) */
 export const ICON_SIZE_XL = 40;
 
+/** Muscle group icon: fits in 48px circle container (36px) */
+export const ICON_SIZE_MUSCLE = 36;
+
 /** 2X-large icon: error states, loading states (48px) */
 export const ICON_SIZE_2XL = 48;
 

@@ -40,55 +40,65 @@ export interface MuscleIconRenderData {
  * Back view coordinate space: 724-1448 x, 0-1448 y
  */
 const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
-  triceps: {
-    side: 'back',
-    viewBox: '1130 320 230 330',
-    highlightSlugs: ['triceps'],
-  },
   chest: {
     side: 'front',
-    viewBox: '230 290 270 210',
+    viewBox: '235 240 260 200',
     highlightSlugs: ['chest'],
-  },
-  shoulder: {
-    side: 'front',
-    viewBox: '160 240 410 220',
-    highlightSlugs: ['deltoids'],
-  },
-  biceps: {
-    side: 'front',
-    viewBox: '100 290 230 310',
-    highlightSlugs: ['biceps'],
-  },
-  abs: {
-    side: 'front',
-    viewBox: '290 390 150 310',
-    highlightSlugs: ['abs'],
   },
   back: {
     side: 'back',
-    viewBox: '960 280 250 310',
-    highlightSlugs: ['upper-back', 'trapezius'],
+    viewBox: '870 280 290 315',
+    highlightSlugs: ['upper-back', 'lower-back'],
+  },
+  shoulder: {
+    side: 'front',
+    viewBox: '125 273 180 248',
+    highlightSlugs: ['deltoids'],
+  },
+  traps: {
+    side: 'back',
+    viewBox: '940 220 300 280',
+    highlightSlugs: ['trapezius'],
+  },
+  biceps: {
+    side: 'front',
+    viewBox: '125 318 180 248',
+    highlightSlugs: ['biceps'],
+  },
+  triceps: {
+    side: 'back',
+    viewBox: '842 334 180 248',
+    highlightSlugs: ['triceps'],
   },
   forearms: {
     side: 'front',
-    viewBox: '50 420 260 380',
+    viewBox: '70 448 219 318',
     highlightSlugs: ['forearm'],
   },
-  'upper-leg': {
+  abs: {
+    side: 'front',
+    viewBox: '177 309 376 250',
+    highlightSlugs: ['abs', 'obliques'],
+  },
+  quads: {
     side: 'front',
     viewBox: '210 650 310 310',
-    highlightSlugs: ['quadriceps', 'adductors'],
+    highlightSlugs: ['quadriceps'],
+  },
+  hamstrings: {
+    side: 'back',
+    viewBox: '887 700 290 310',
+    highlightSlugs: ['hamstring'],
   },
   glutes: {
     side: 'back',
-    viewBox: '940 560 290 260',
+    viewBox: '940 575 290 290',
     highlightSlugs: ['gluteal'],
   },
-  'lower-leg': {
-    side: 'front',
-    viewBox: '220 940 290 310',
-    highlightSlugs: ['calves', 'tibialis'],
+  calves: {
+    side: 'back',
+    viewBox: '943 965 290 270',
+    highlightSlugs: ['calves'],
   },
 };
 
