@@ -93,3 +93,6 @@ export const BORDER_RADIUS_MD = 8;
 
 /** Large border radius: cards, previews, banners (12px) */
 export const BORDER_RADIUS_LG = 12;
+
+/** Pill border radius: chips, tags, badges (9999px) */
+export const BORDER_RADIUS_PILL = 9999;

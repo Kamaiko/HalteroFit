@@ -24,14 +24,21 @@ import Animated, {
 import { Text } from '@/components/ui/text';
 import { ExerciseGifHeader, MuscleHighlighter } from '@/components/exercises';
 import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_MD, ICON_SIZE_2XL, SCROLL_THROTTLE_60FPS } from '@/constants';
+import {
+  Colors,
+  BORDER_RADIUS_LG,
+  BORDER_RADIUS_PILL,
+  ICON_SIZE_MD,
+  ICON_SIZE_2XL,
+  SCROLL_THROTTLE_60FPS,
+} from '@/constants';
 import { useExerciseDetail } from '@/hooks/exercises';
 
 // ============================================================================
 // Constants
 // ============================================================================
 
-// Tab configuration (History/Chart tabs disabled until analytics implemented)
+// Tab configuration — only Guide tab is active
 const TABS = [
   { key: 'history', label: 'History', disabled: true },
   { key: 'chart', label: 'Chart', disabled: true },
@@ -178,21 +185,34 @@ export default function ExerciseDetailScreen() {
         </View>
 
         {/* Guide Content */}
-        <View className="p-4">
+        <View className="px-4 pt-4">
           {/* Target Muscles Section */}
           <View className="mb-6">
             <Text className="mb-2 text-sm font-medium text-foreground-secondary">
               Target Muscles
             </Text>
-            {exercise.target_muscles[0] && (
-              <Text className="text-foreground">{exercise.target_muscles[0]} (primary)</Text>
-            )}
-            {exercise.secondary_muscles.length > 0 && (
-              <Text className="mt-1 text-foreground-secondary">
-                {exercise.secondary_muscles.join(', ')}
-              </Text>
-            )}
-            {exercise.target_muscles.length === 0 && exercise.secondary_muscles.length === 0 && (
+            {exercise.target_muscles.length > 0 || exercise.secondary_muscles.length > 0 ? (
+              <View className="flex-row flex-wrap gap-y-2">
+                {exercise.target_muscles.map((muscle, i) => (
+                  <View key={i} className="w-1/2 flex-row items-center">
+                    <View
+                      className="mr-2 h-4 w-[3px] rounded-full"
+                      style={{ backgroundColor: Colors.primary.DEFAULT }}
+                    />
+                    <Text className="text-sm text-foreground">{muscle}</Text>
+                  </View>
+                ))}
+                {exercise.secondary_muscles.map((muscle, i) => (
+                  <View key={`s-${i}`} className="w-1/2 flex-row items-center">
+                    <View
+                      className="mr-2 h-4 w-[3px] rounded-full"
+                      style={{ backgroundColor: Colors.primary.muted }}
+                    />
+                    <Text className="text-sm text-foreground-secondary">{muscle}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
               <Text className="text-foreground-tertiary">No muscle information available</Text>
             )}
           </View>
@@ -207,9 +227,13 @@ export default function ExerciseDetailScreen() {
           <View className="mb-6">
             <Text className="mb-2 text-sm font-medium text-foreground-secondary">Equipment</Text>
             {exercise.equipments.length > 0 ? (
-              <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+              <View className="flex-row flex-wrap gap-2">
                 {exercise.equipments.map((equipment, index) => (
-                  <View key={index} className="rounded-full border border-primary px-3 py-1">
+                  <View
+                    key={index}
+                    className="bg-primary/15 px-3 py-1"
+                    style={{ borderRadius: BORDER_RADIUS_PILL }}
+                  >
                     <Text className="text-sm text-primary">{equipment}</Text>
                   </View>
                 ))}
@@ -220,14 +244,19 @@ export default function ExerciseDetailScreen() {
           </View>
 
           {/* Instructions Section */}
-          <View className="mb-6">
-            <Text className="mb-2 text-sm font-medium text-foreground-secondary">Instructions</Text>
+          <View className="mb-4 rounded-xl bg-background-surface p-4">
+            <Text className="mb-3 text-sm font-medium text-foreground-secondary">Instructions</Text>
             {exercise.instructions.length > 0 ? (
               <View>
                 {exercise.instructions.map((instruction, index) => (
                   <View key={index} className="mb-4 flex-row">
-                    <Text className="mr-2 text-foreground-secondary">{index + 1}.</Text>
-                    <Text className="flex-1 text-foreground">{instruction}</Text>
+                    <View
+                      className="mr-3 h-6 w-6 items-center justify-center bg-primary/20"
+                      style={{ borderRadius: BORDER_RADIUS_LG }}
+                    >
+                      <Text className="text-xs font-semibold text-primary">{index + 1}</Text>
+                    </View>
+                    <Text className="flex-1 pt-0.5 text-foreground">{instruction}</Text>
                   </View>
                 ))}
               </View>

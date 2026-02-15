@@ -31,7 +31,7 @@ export interface MuscleHighlighterProps {
 // Intensity 1 = target (primary), Intensity 2 = secondary (muted)
 const HIGHLIGHT_COLORS = [Colors.primary.DEFAULT, Colors.primary.muted];
 
-const BODY_SCALE = 0.85;
+const BODY_SCALE = 0.7;
 
 // ============================================================================
 // Component
@@ -51,7 +51,7 @@ export const MuscleHighlighter = memo(function MuscleHighlighter({
   }
 
   return (
-    <View className="mb-6 flex-row items-center justify-center gap-4 px-4">
+    <View className="mb-6 flex-row items-center justify-center gap-4 px-8">
       <Body
         data={data}
         gender="male"
