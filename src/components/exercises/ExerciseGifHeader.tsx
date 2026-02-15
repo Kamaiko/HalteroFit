@@ -16,10 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_3XL, ICON_SIZE_BANNER } from '@/constants';
-import { getFirstMuscleGroupId } from '@/utils/muscles';
-
-import { MuscleGroupIcon } from './MuscleGroupIcon';
+import { Colors, ICON_SIZE_3XL } from '@/constants';
 
 // ============================================================================
 // Constants
@@ -55,8 +52,6 @@ const GRADIENT_LOCATIONS = [0, 0.25, 0.45, 0.65, 0.85, 1] as const;
 export interface ExerciseGifHeaderProps {
   /** URL of the exercise GIF */
   gifUrl: string | null | undefined;
-  /** Target muscles for SVG placeholder when no GIF available */
-  targetMuscles?: string[];
 }
 
 // ============================================================================
@@ -65,7 +60,6 @@ export interface ExerciseGifHeaderProps {
 
 export const ExerciseGifHeader = memo(function ExerciseGifHeader({
   gifUrl,
-  targetMuscles,
 }: ExerciseGifHeaderProps) {
   const insets = useSafeAreaInsets();
   const [imageError, setImageError] = useState(false);
@@ -75,8 +69,6 @@ export const ExerciseGifHeader = memo(function ExerciseGifHeader({
   }, []);
 
   const showPlaceholder = !gifUrl || imageError;
-  const muscleGroupId =
-    showPlaceholder && targetMuscles ? getFirstMuscleGroupId(targetMuscles) : null;
   const containerHeight = GIF_CONTAINER_HEIGHT + insets.top;
 
   return (
@@ -91,24 +83,16 @@ export const ExerciseGifHeader = memo(function ExerciseGifHeader({
     >
       {showPlaceholder ? (
         <View className="items-center justify-center">
-          {muscleGroupId ? (
-            <MuscleGroupIcon
-              muscleGroupId={muscleGroupId}
-              size={ICON_SIZE_BANNER}
-              variant="light"
-            />
-          ) : (
-            <Ionicons
-              name="barbell-outline"
-              size={ICON_SIZE_3XL}
-              color={Colors.foreground.secondary}
-            />
-          )}
+          <Ionicons
+            name="barbell-outline"
+            size={ICON_SIZE_3XL}
+            color={Colors.foreground.secondary}
+          />
         </View>
       ) : (
         <Image
           source={{ uri: gifUrl }}
-          className="h-full w-full"
+          style={{ width: '100%', height: '100%' }}
           contentFit="contain"
           contentPosition="center"
           autoplay={true}

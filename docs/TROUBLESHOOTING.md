@@ -464,6 +464,46 @@ module.exports = {
 
 **Reference:** [DESIGN_SYSTEM.md § Color System](DESIGN_SYSTEM.md)
 
+### Components Render at 0 Size (NativeWind CSS Interop)
+
+**Symptoms:**
+
+- Component renders but is invisible (0×0 size)
+- GIFs, images, or entire layout sections disappear
+- Works with inline `style` but breaks with `className`
+
+**Cause:**
+
+Not all React Native components support NativeWind v4 CSS interop. Using `className` on these components silently fails — the styles are ignored and the component renders with no dimensions.
+
+**Known non-interop components:**
+
+| Component                | Package                        | Use `style` for               |
+| ------------------------ | ------------------------------ | ----------------------------- |
+| `Image`                  | `expo-image`                   | `width`, `height`, all layout |
+| `GestureHandlerRootView` | `react-native-gesture-handler` | `flex`, `backgroundColor`     |
+| `LinearGradient`         | `expo-linear-gradient`         | All props (uses `style`)      |
+
+**Example:**
+
+```tsx
+// ❌ Wrong: expo-image Image has no CSS interop — renders at 0×0
+<Image source={{ uri: gifUrl }} className="h-full w-full" />
+
+// ✅ Right: Use inline style
+<Image source={{ uri: gifUrl }} style={{ width: '100%', height: '100%' }} />
+
+// ❌ Wrong: GestureHandlerRootView has no CSS interop
+<GestureHandlerRootView className="flex-1 bg-background">
+
+// ✅ Right: Use inline style
+<GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
+```
+
+**Rule of thumb:** Before converting an inline `style` to NativeWind `className`, verify the component supports CSS interop. Standard React Native components (`View`, `Text`, `Pressable`, `ScrollView`) and Reanimated's `Animated.View` all support it. Third-party components generally do not unless explicitly documented.
+
+**Reference:** [NativeWind v4 — CSS Interop](https://www.nativewind.dev/v4/core-concepts/css-interop)
+
 ---
 
 ## Authentication Issues (Supabase)

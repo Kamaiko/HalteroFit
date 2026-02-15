@@ -75,7 +75,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView className="flex-1 bg-background">
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
       <Sentry.ErrorBoundary fallback={ErrorFallbackScreen}>
         <SafeAreaProvider>
           <StatusBar style="light" backgroundColor={Colors.background.DEFAULT} />

@@ -134,7 +134,7 @@ export default function ExerciseDetailScreen() {
       >
         {/* GIF Section - edge-to-edge with overlay fade */}
         <View className="relative">
-          <ExerciseGifHeader gifUrl={exercise.gif_url} targetMuscles={exercise.target_muscles} />
+          <ExerciseGifHeader gifUrl={exercise.gif_url} />
           {/* Overlay that fades in to cover GIF uniformly */}
           <Animated.View
             pointerEvents="none"
