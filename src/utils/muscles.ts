@@ -40,7 +40,7 @@ export interface MuscleHighlighterData {
  * Unmappable targets: "cardiovascular system", "spine" (not muscles).
  * Unmapped muscles are silently skipped with __DEV__ warnings.
  */
-const MUSCLE_MAPPING: Record<string, Slug> = {
+const MUSCLE_MAPPING: Record<string, Slug | Slug[]> = {
   // --- Direct matches ---
   abs: 'abs',
   ankles: 'ankles',
@@ -76,7 +76,7 @@ const MUSCLE_MAPPING: Record<string, Slug> = {
   'hip flexors': 'quadriceps', // psoas/iliaque ≈ quad region visually
   trapezius: 'trapezius',
   'lower back': 'lower-back',
-  back: 'upper-back',
+  back: ['upper-back', 'lats'],
   rhomboids: 'upper-back',
   'latissimus dorsi': 'lats',
   'inner thighs': 'adductors',
@@ -182,31 +182,37 @@ export function getMuscleHighlighterData(
 
   // Map target muscles first (intensity 1 = primary color)
   for (const muscle of targetMuscles) {
-    const slug = MUSCLE_MAPPING[muscle.toLowerCase().trim()];
-    if (!slug) {
+    const mapped = MUSCLE_MAPPING[muscle.toLowerCase().trim()];
+    if (!mapped) {
       if (__DEV__) {
         console.warn(`[MuscleHighlighter] Unmapped target muscle: "${muscle}"`);
       }
       continue;
     }
-    if (!slugSet.has(slug)) {
-      slugSet.add(slug);
-      result.push({ slug, intensity: 1 });
+    const slugs = Array.isArray(mapped) ? mapped : [mapped];
+    for (const slug of slugs) {
+      if (!slugSet.has(slug)) {
+        slugSet.add(slug);
+        result.push({ slug, intensity: 1 });
+      }
     }
   }
 
   // Map secondary muscles (intensity 2 = lighter color, skip if already target)
   for (const muscle of secondaryMuscles) {
-    const slug = MUSCLE_MAPPING[muscle.toLowerCase().trim()];
-    if (!slug) {
+    const mapped = MUSCLE_MAPPING[muscle.toLowerCase().trim()];
+    if (!mapped) {
       if (__DEV__) {
         console.warn(`[MuscleHighlighter] Unmapped secondary muscle: "${muscle}"`);
       }
       continue;
     }
-    if (!slugSet.has(slug)) {
-      slugSet.add(slug);
-      result.push({ slug, intensity: 2 });
+    const slugs = Array.isArray(mapped) ? mapped : [mapped];
+    for (const slug of slugs) {
+      if (!slugSet.has(slug)) {
+        slugSet.add(slug);
+        result.push({ slug, intensity: 2 });
+      }
     }
   }
 

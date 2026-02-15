@@ -145,6 +145,22 @@ describe('getMuscleHighlighterData', () => {
     expect(result.data).toEqual([{ slug: 'ankles', intensity: 2 }]);
   });
 
+  // ── Multi-slug mapping ─────────────────────────────────────────────
+
+  it('maps generic "back" secondary to both upper-back and lats', () => {
+    const result = getMuscleHighlighterData([], ['back']);
+    expect(result.data).toEqual([
+      { slug: 'upper-back', intensity: 2 },
+      { slug: 'lats', intensity: 2 },
+    ]);
+  });
+
+  it('deduplicates multi-slug "back" with explicit "latissimus dorsi"', () => {
+    const result = getMuscleHighlighterData([], ['back', 'latissimus dorsi']);
+    const latsEntries = result.data.filter((d) => d.slug === 'lats');
+    expect(latsEntries).toHaveLength(1);
+  });
+
   // ── Case insensitivity ──────────────────────────────────────────────
 
   it('handles case-insensitive muscle names', () => {
