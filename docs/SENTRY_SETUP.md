@@ -32,13 +32,6 @@ Quick reference for Sentry error monitoring configuration and usage.
 tracesSampleRate: 1.0, // 100% (default) - reduce for high traffic
 ```
 
-**Custom breadcrumbs:**
-
-```typescript
-import { addSentryBreadcrumb } from '@/utils/sentry';
-addSentryBreadcrumb('User started workout', 'user', 'info');
-```
-
 **Manual exception capture:**
 
 ```typescript
