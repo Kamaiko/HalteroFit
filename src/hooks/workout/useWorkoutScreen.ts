@@ -78,9 +78,6 @@ export interface UseWorkoutScreenReturn {
     reorderedExercises: PlanDayWithExercises['exercises']
   ) => Promise<void>;
   reorderDaysOptimistic: (reorderedDays: PlanDay[]) => Promise<void>;
-
-  // Render helpers
-  keyExtractor: (item: PlanDay) => string;
 }
 
 export function useWorkoutScreen(): UseWorkoutScreenReturn {
@@ -310,8 +307,6 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     return count > 0;
   }, [selectedDay, exerciseCounts]);
 
-  const keyExtractor = useCallback((item: PlanDay) => item.id, []);
-
   // ── Return composed state ───────────────────────────────────────────
   return {
     user,
@@ -345,8 +340,5 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
 
     // Day reorder
     reorderDaysOptimistic,
-
-    // Render helpers
-    keyExtractor,
   };
 }

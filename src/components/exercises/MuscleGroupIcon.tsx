@@ -12,7 +12,7 @@ import { memo } from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
 
 import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_MUSCLE } from '@/constants';
+import { Colors, ICON_SIZE_MD, ICON_SIZE_MUSCLE } from '@/constants';
 
 import { getMuscleIconData } from './muscleGroupIconConfig';
 
@@ -35,7 +35,7 @@ export interface MuscleGroupIconProps {
 
 const DIM_BODY_COLOR_DARK = Colors.muscle.dimBody;
 const DIM_BODY_COLOR_LIGHT = Colors.border.input;
-/** Padding ratio applied to viewBox to prevent silhouette edge bleed (5% per side) */
+/** Padding ratio applied to viewBox to prevent silhouette edge bleed (8% per side) */
 const VIEWBOX_PADDING_RATIO = 0.08;
 
 // ============================================================================
@@ -49,13 +49,9 @@ export const MuscleGroupIcon = memo(function MuscleGroupIcon({
 }: MuscleGroupIconProps) {
   const iconData = getMuscleIconData(muscleGroupId);
 
-  // Fallback icons for non-anatomical categories
+  // Fallback icon for cardio (only non-SVG category remaining)
   if (!iconData) {
-    const iconName = muscleGroupId === 'cardio' ? 'heart' : 'list';
-    const color =
-      muscleGroupId === 'show-all' ? Colors.foreground.DEFAULT : Colors.foreground.secondary;
-
-    return <Ionicons name={iconName} size={size} color={color} />;
+    return <Ionicons name="heart" size={ICON_SIZE_MD} color={Colors.primary.DEFAULT} />;
   }
 
   const isLight = variant === 'light';

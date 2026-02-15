@@ -108,21 +108,15 @@ interface MuscleCardProps {
 }
 
 function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
-  const isShowAll = muscleGroupId === 'show-all';
-
   return (
     <Pressable
-      className={`mb-3 aspect-square w-[31%] items-center justify-center rounded-xl ${isShowAll ? 'bg-primary' : 'bg-background-surface'}`}
+      className="mb-3 aspect-square w-[31%] items-center justify-center rounded-xl bg-background-surface"
       onPress={onPress}
     >
       <View className="mb-2 h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-background-elevated">
         <MuscleGroupIcon muscleGroupId={muscleGroupId} />
       </View>
-      <Text
-        className={`text-center text-sm font-medium ${isShowAll ? 'text-white' : 'text-foreground'}`}
-      >
-        {label}
-      </Text>
+      <Text className="text-center text-sm font-medium text-foreground">{label}</Text>
     </Pressable>
   );
 }

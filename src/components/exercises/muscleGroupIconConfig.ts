@@ -52,7 +52,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   shoulder: {
     side: 'front',
-    viewBox: '125 273 180 248',
+    viewBox: '133 247 158 220',
     highlightSlugs: ['deltoids'],
   },
   traps: {
@@ -62,7 +62,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   biceps: {
     side: 'front',
-    viewBox: '125 318 180 248',
+    viewBox: '111 318 180 248',
     highlightSlugs: ['biceps'],
   },
   triceps: {
@@ -72,7 +72,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   forearms: {
     side: 'front',
-    viewBox: '70 448 219 318',
+    viewBox: '60 448 200 290',
     highlightSlugs: ['forearm'],
   },
   abs: {
@@ -97,8 +97,32 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   calves: {
     side: 'back',
-    viewBox: '943 965 290 270',
+    viewBox: '927 878 310 290',
     highlightSlugs: ['calves'],
+  },
+  'show-all': {
+    side: 'front',
+    viewBox: '75 80 480 1320',
+    highlightSlugs: [
+      'chest',
+      'obliques',
+      'abs',
+      'biceps',
+      'neck',
+      'trapezius',
+      'deltoids',
+      'adductors',
+      'quadriceps',
+      'knees',
+      'tibialis',
+      'calves',
+      'forearm',
+      'hands',
+      'ankles',
+      'feet',
+      'head',
+      'hair',
+    ],
   },
 };
 

@@ -5,6 +5,9 @@
  * (when target muscles are known), or a barbell icon fallback.
  * Handles image loading errors internally.
  * Optionally wraps in a Pressable for tap-to-view behavior.
+ *
+ * Supports FlashList recycling via exerciseId prop: when a component is
+ * recycled for a different exercise, the error state auto-resets.
  */
 
 import { Colors, DURATION_STANDARD, ICON_SIZE_MD, THUMBNAIL_SM } from '@/constants';
@@ -19,19 +22,29 @@ export interface ExerciseThumbnailProps {
   imageUrl: string | null | undefined;
   /** Target muscles for SVG placeholder when no GIF available */
   targetMuscles?: string[];
+  /** Exercise ID for recycling-aware error handling (FlashList) */
+  exerciseId?: string;
   onPress?: () => void;
+  /** Accessibility label for the thumbnail tap target */
+  accessibilityLabel?: string;
 }
 
 export const ExerciseThumbnail = memo(function ExerciseThumbnail({
   imageUrl,
   targetMuscles,
+  exerciseId,
   onPress,
+  accessibilityLabel,
 }: ExerciseThumbnailProps) {
-  const [imageError, setImageError] = useState(false);
+  // When exerciseId is provided (FlashList context), track which ID had the error.
+  // On recycle, errorId !== new exerciseId → imageError auto-resets to false.
+  // Without exerciseId, falls back to simple boolean error tracking.
+  const [errorId, setErrorId] = useState<string | null>(null);
+  const imageError = exerciseId ? errorId === exerciseId : !!errorId;
 
   const handleImageError = useCallback(() => {
-    setImageError(true);
-  }, []);
+    setErrorId(exerciseId ?? 'error');
+  }, [exerciseId]);
 
   const showPlaceholder = !imageUrl || imageError;
   const muscleGroupId =
@@ -62,6 +75,7 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
           autoplay={false}
           cachePolicy="memory-disk"
           transition={DURATION_STANDARD}
+          recyclingKey={exerciseId}
           onError={handleImageError}
         />
       )}
@@ -69,7 +83,15 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
   );
 
   if (onPress) {
-    return <Pressable onPress={onPress}>{content}</Pressable>;
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+      >
+        {content}
+      </Pressable>
+    );
   }
 
   return content;
