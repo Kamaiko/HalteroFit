@@ -27,7 +27,7 @@ export function formatWorkoutDate(timestamp: number): string {
  * @example formatDuration(undefined) // "Not completed"
  */
 export function formatDuration(seconds?: number): string {
-  if (!seconds) return 'Not completed';
+  if (seconds == null) return 'Not completed';
 
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);

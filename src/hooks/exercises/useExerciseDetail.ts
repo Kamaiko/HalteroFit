@@ -8,7 +8,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { router } from 'expo-router';
 
+import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { getExerciseById, type Exercise } from '@/services/database/operations';
+import { isOperationalError } from '@/utils/errors';
 
 export interface UseExerciseDetailReturn {
   exercise: Exercise | null;
@@ -21,8 +23,11 @@ export function useExerciseDetail(id?: string): UseExerciseDetailReturn {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadExercise() {
       if (!id) {
         setError('Exercise ID not provided');
@@ -34,17 +39,25 @@ export function useExerciseDetail(id?: string): UseExerciseDetailReturn {
         setLoading(true);
         setError(null);
         const data = await getExerciseById(id);
+        if (cancelled) return;
         setExercise(data);
       } catch (err) {
-        console.error('Failed to load exercise:', err);
-        setError('Unable to load exercise details');
+        if (cancelled) return;
+        const message = isOperationalError(err)
+          ? err.userMessage
+          : 'Unable to load exercise details';
+        setError(message);
+        handleError(err, 'loadExerciseDetail');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     loadExercise();
-  }, [id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [id, handleError]);
 
   const handleBack = useCallback(() => {
     router.back();

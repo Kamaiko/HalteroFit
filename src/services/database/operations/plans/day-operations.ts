@@ -5,12 +5,7 @@
  * Includes the batch savePlanDayEdits transaction.
  */
 
-import {
-  DEFAULT_TARGET_SETS,
-  DEFAULT_TARGET_REPS,
-  MAX_EXERCISES_PER_DAY,
-  MAX_DAYS_PER_PLAN,
-} from '@/constants';
+import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS, MAX_DAYS_PER_PLAN } from '@/constants';
 import { validateDayName } from '@/utils/validators';
 import { ValidationError } from '@/utils/errors';
 import { type Model, Q } from '@nozbe/watermelondb';
@@ -26,11 +21,11 @@ import { withDatabaseError } from '../../utils/withDatabaseError';
 import type { PlanDay, PlanDayWithExercises, CreatePlanDay, UpdatePlanDay } from './types';
 import {
   planDayToPlain,
-  planDayExerciseToPlain,
   planDayExerciseWithDetailToPlain,
   countExercisesByDay,
   computeDominantMuscleGroup,
 } from './mappers';
+import { validateExerciseAdditions } from './exercise-operations';
 
 // ============================================================================
 // CREATE
@@ -138,7 +133,7 @@ export async function savePlanDayEdits(data: {
         );
         allOperations.push(...preparedDeletions);
 
-        // 3. Prepare additions (with duplicate + limit check)
+        // 3. Prepare additions (with duplicate + limit check via shared validator)
         if (data.addedExercises.length > 0) {
           // Get current exercises (accounting for prepared deletions)
           const currentExercises = await database
@@ -146,32 +141,15 @@ export async function savePlanDayEdits(data: {
             .query(Q.where('plan_day_id', data.dayId))
             .fetch();
 
-          // Subtract the ones we're about to delete
           const deletedIds = new Set(data.removedExerciseIds);
           const remainingExercises = currentExercises.filter((e) => !deletedIds.has(e.id));
-          const currentCount = remainingExercises.length;
-          const existingExerciseIds = new Set(remainingExercises.map((e) => e.exerciseId));
 
-          // Check limit
-          if (currentCount + data.addedExercises.length > MAX_EXERCISES_PER_DAY) {
-            const available = MAX_EXERCISES_PER_DAY - currentCount;
-            throw new ValidationError(
-              available <= 0
-                ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
-                : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
-              `Day ${data.dayId} has ${currentCount} exercises after removals, tried to add ${data.addedExercises.length}`
-            );
-          }
-
-          // Check duplicates
-          for (const ex of data.addedExercises) {
-            if (existingExerciseIds.has(ex.exercise_id)) {
-              throw new ValidationError(
-                'One or more exercises are already in this workout day',
-                `Duplicate exercise ${ex.exercise_id} in day ${data.dayId}`
-              );
-            }
-          }
+          validateExerciseAdditions({
+            currentCount: remainingExercises.length,
+            existingExerciseIds: new Set(remainingExercises.map((e) => e.exerciseId)),
+            newExerciseIds: data.addedExercises.map((e) => e.exercise_id),
+            dayId: data.dayId,
+          });
 
           // Prepare creates
           const preparedCreates = data.addedExercises.map((ex) =>

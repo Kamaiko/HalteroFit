@@ -7,6 +7,7 @@
 import { getExercises, getExerciseCount, type Exercise } from '@/services/database/operations';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants';
+import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 
 const BATCH_SIZE = DEFAULT_PAGE_SIZE;
 
@@ -34,6 +35,7 @@ export interface UseExerciseSearchReturn {
 
 export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseExerciseSearchReturn {
   const { initialFilters } = options;
+  const { handleError } = useErrorHandler();
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [search, setSearch] = useState('');
@@ -67,9 +69,9 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
       });
       setTotalCount(count);
     } catch (err) {
-      console.error('Failed to load exercise count:', err);
+      handleError(err, 'loadExerciseCount');
     }
-  }, [search, filterOptions]);
+  }, [search, filterOptions, handleError]);
 
   const loadExercises = useCallback(
     async (reset = false) => {
@@ -101,13 +103,13 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to load exercises';
         setError(message);
-        console.error('Failed to load exercises:', err);
+        handleError(err, 'loadExercises');
       } finally {
         setLoading(false);
         setLoadingMore(false);
       }
     },
-    [search, filterOptions] // No exercises.length - using ref instead
+    [search, filterOptions, handleError] // No exercises.length - using ref instead
   );
 
   // Keep refs updated with latest function versions

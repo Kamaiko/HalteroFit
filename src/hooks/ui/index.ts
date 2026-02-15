@@ -7,3 +7,4 @@
 
 export * from './useAlertState';
 export * from './useErrorHandler';
+export * from './useObservable';

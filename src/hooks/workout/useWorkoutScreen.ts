@@ -15,6 +15,7 @@ import { type RefObject, useCallback, useEffect, useMemo, useState } from 'react
 import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
 import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
+import { useObservable } from '@/hooks/ui/useObservable';
 import {
   createPlan,
   createPlanDay,
@@ -141,71 +142,37 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
   }, [user?.id, creatingDefaultPlan, handleError, createDefaultPlanFn]);
 
   // ── Plan days observation (reactive) ────────────────────────────────
-  const [planDays, setPlanDays] = useState<PlanDay[]>([]);
-
-  useEffect(() => {
-    if (!activePlan?.id) {
-      setPlanDays([]);
-      return;
-    }
-
-    const subscription = observePlanDays(activePlan.id).subscribe({
-      next: (days) => {
-        setPlanDays(days);
-      },
-      error: (error) => {
-        handleError(error, 'observePlanDays');
-      },
-    });
-
-    return () => subscription.unsubscribe();
-  }, [activePlan?.id, handleError]);
-
-  // ── Exercise counts observation (reactive) ──────────────────────────
-  const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    const dayIds = planDays.map((d) => d.id);
-    if (dayIds.length === 0) {
-      setExerciseCounts({});
-      return;
-    }
-
-    const subscription = observeExerciseCountsByDays(dayIds).subscribe({
-      next: (counts) => {
-        setExerciseCounts(counts);
-      },
-      error: (error) => {
-        handleError(error, 'observeExerciseCountsByDays');
-      },
-    });
-
-    return () => subscription.unsubscribe();
-  }, [planDays, handleError]);
-
-  // ── Dominant muscle groups observation (reactive) ──────────────────
-  const [dominantMuscleGroups, setDominantMuscleGroups] = useState<Record<string, string | null>>(
-    {}
+  const planDaysObs = useMemo(
+    () => (activePlan?.id ? observePlanDays(activePlan.id) : undefined),
+    [activePlan?.id]
+  );
+  const planDays = useObservable(planDaysObs, [] as PlanDay[], (err) =>
+    handleError(err, 'observePlanDays')
   );
 
-  useEffect(() => {
-    const dayIds = planDays.map((d) => d.id);
-    if (dayIds.length === 0) {
-      setDominantMuscleGroups({});
-      return;
-    }
+  // Stable day IDs key — prevents cascading re-subscriptions when planDays
+  // emits a new array reference but the actual IDs haven't changed
+  const dayIdsKey = useMemo(() => planDays.map((d) => d.id).join(','), [planDays]);
 
-    const subscription = observeDominantMuscleByDays(dayIds).subscribe({
-      next: (groups) => {
-        setDominantMuscleGroups(groups);
-      },
-      error: (error) => {
-        handleError(error, 'observeDominantMuscleByDays');
-      },
-    });
+  // ── Exercise counts observation (reactive) ──────────────────────────
+  const countsObs = useMemo(() => {
+    if (!dayIdsKey) return undefined;
+    return observeExerciseCountsByDays(dayIdsKey.split(','));
+  }, [dayIdsKey]);
+  const exerciseCounts = useObservable(countsObs, {} as Record<string, number>, (err) =>
+    handleError(err, 'observeExerciseCountsByDays')
+  );
 
-    return () => subscription.unsubscribe();
-  }, [planDays, handleError]);
+  // ── Dominant muscle groups observation (reactive) ──────────────────
+  const musclesObs = useMemo(() => {
+    if (!dayIdsKey) return undefined;
+    return observeDominantMuscleByDays(dayIdsKey.split(','));
+  }, [dayIdsKey]);
+  const dominantMuscleGroups = useObservable(
+    musclesObs,
+    {} as Record<string, string | null>,
+    (err) => handleError(err, 'observeDominantMuscleByDays')
+  );
 
   // ── Day selection ───────────────────────────────────────────────────
   const [selectedDay, setSelectedDay] = useState<PlanDay | null>(null);

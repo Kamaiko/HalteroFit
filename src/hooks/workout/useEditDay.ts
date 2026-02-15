@@ -12,7 +12,8 @@ import type { PickedExercise } from '@/stores/exercises/exercisePickerStore';
 import { useExercisePickerStore } from '@/stores/exercises/exercisePickerStore';
 import { MAX_EXERCISES_PER_DAY, MAX_DAY_NAME_LENGTH } from '@/constants';
 import { useAlertState, type AlertState } from '@/hooks/ui/useAlertState';
-import { ValidationError } from '@/utils/errors';
+import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
+import { isOperationalError } from '@/utils/errors';
 import {
   getPlanDayWithExercises,
   savePlanDayEdits,
@@ -85,6 +86,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const { alert, setAlert, clearAlert } = useAlertState();
+  const { handleError } = useErrorHandler();
 
   // Track initial state for dirty detection
   const initialNameRef = useRef('');
@@ -108,7 +110,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
         initialNameRef.current = data.name;
         initialExerciseIdsRef.current = data.exercises.map((e) => e.id);
       } catch (error) {
-        console.error('Failed to load day data:', error);
+        if (!cancelled) handleError(error, 'loadDayData');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -118,7 +120,7 @@ export function useEditDay(dayId: string): UseEditDayReturn {
     return () => {
       cancelled = true;
     };
-  }, [dayId]);
+  }, [dayId, handleError]);
 
   // ── Dirty detection ────────────────────────────────────────────────────
   const isDirty = useMemo(() => {
@@ -219,16 +221,15 @@ export function useEditDay(dayId: string): UseEditDayReturn {
       await savePlanDayEdits(payload);
       router.back();
     } catch (error) {
-      if (error instanceof ValidationError) {
+      if (isOperationalError(error)) {
         setAlert({ title: 'Error', description: error.userMessage });
       } else {
-        console.error('Failed to save day changes:', error);
-        setAlert({ title: 'Error', description: 'Failed to save changes. Please try again.' });
+        handleError(error, 'saveDayEdits');
       }
     } finally {
       setIsSaving(false);
     }
-  }, [dayId, dayName, exercises, isSaving, setAlert]);
+  }, [dayId, dayName, exercises, isSaving, setAlert, handleError]);
 
   // ── Delete day ─────────────────────────────────────────────────────────
   const handleDeleteDay = useCallback(async () => {
@@ -239,17 +240,16 @@ export function useEditDay(dayId: string): UseEditDayReturn {
       await deletePlanDay(dayId);
       router.back();
     } catch (error) {
-      if (error instanceof ValidationError) {
+      if (isOperationalError(error)) {
         setAlert({ title: 'Error', description: error.userMessage });
       } else {
-        console.error('Failed to delete day:', error);
-        setAlert({ title: 'Error', description: 'Failed to delete day. Please try again.' });
+        handleError(error, 'deleteDay');
       }
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
-  }, [dayId, isDeleting, setAlert]);
+  }, [dayId, isDeleting, setAlert, handleError]);
 
   // ── Discard ────────────────────────────────────────────────────────────
   const handleConfirmDiscard = useCallback(() => {

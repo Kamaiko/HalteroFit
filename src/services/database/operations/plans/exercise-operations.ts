@@ -17,6 +17,59 @@ import type { PlanDayExercise, AddExerciseToPlanDay } from './types';
 import { planDayExerciseToPlain } from './mappers';
 
 // ============================================================================
+// VALIDATION
+// ============================================================================
+
+/**
+ * Validate that exercises can be added to a plan day.
+ *
+ * Checks max exercise limit and duplicates (against existing + within batch).
+ * Designed to be called inside a database.write() transaction — does not
+ * perform any database queries itself.
+ *
+ * @throws {ValidationError} If limit exceeded or duplicates found
+ */
+export function validateExerciseAdditions(params: {
+  currentCount: number;
+  existingExerciseIds: Set<string>;
+  newExerciseIds: string[];
+  dayId: string;
+}): void {
+  const { currentCount, existingExerciseIds, newExerciseIds, dayId } = params;
+
+  // Check limit
+  if (currentCount + newExerciseIds.length > MAX_EXERCISES_PER_DAY) {
+    const available = MAX_EXERCISES_PER_DAY - currentCount;
+    throw new ValidationError(
+      available <= 0
+        ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
+        : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
+      `Day ${dayId} has ${currentCount} exercises, tried to add ${newExerciseIds.length} (max: ${MAX_EXERCISES_PER_DAY})`
+    );
+  }
+
+  // Check duplicates (against existing + within batch)
+  const seen = new Set<string>();
+  const duplicates: string[] = [];
+
+  for (const exerciseId of newExerciseIds) {
+    if (existingExerciseIds.has(exerciseId) || seen.has(exerciseId)) {
+      duplicates.push(exerciseId);
+    }
+    seen.add(exerciseId);
+  }
+
+  if (duplicates.length > 0) {
+    throw new ValidationError(
+      duplicates.length === 1
+        ? 'This exercise is already in this workout day'
+        : `${duplicates.length} exercises are already in this workout day`,
+      `Duplicate exercise IDs in day ${dayId}: ${duplicates.join(', ')}`
+    );
+  }
+}
+
+// ============================================================================
 // CREATE
 // ============================================================================
 
@@ -38,31 +91,18 @@ export async function addExerciseToPlanDay(data: AddExerciseToPlanDay): Promise<
 
         validateOwnership(plan.userId, currentUser.id, 'modify this plan');
 
-        // Check max exercises limit
-        const exerciseCount = await database
+        // Fetch existing exercises (one query for both limit + duplicate checks)
+        const existingExercises = await database
           .get<PlanDayExerciseModel>('plan_day_exercises')
           .query(Q.where('plan_day_id', data.plan_day_id))
-          .fetchCount();
+          .fetch();
 
-        if (exerciseCount >= MAX_EXERCISES_PER_DAY) {
-          throw new ValidationError(
-            `Cannot add more than ${MAX_EXERCISES_PER_DAY} exercises to a workout day`,
-            `Day ${data.plan_day_id} already has ${exerciseCount} exercises (max: ${MAX_EXERCISES_PER_DAY})`
-          );
-        }
-
-        // Check for duplicate exercise in same day
-        const duplicate = await database
-          .get<PlanDayExerciseModel>('plan_day_exercises')
-          .query(Q.where('plan_day_id', data.plan_day_id), Q.where('exercise_id', data.exercise_id))
-          .fetchCount();
-
-        if (duplicate > 0) {
-          throw new ValidationError(
-            'This exercise is already in this workout day',
-            `Exercise ${data.exercise_id} already exists in day ${data.plan_day_id}`
-          );
-        }
+        validateExerciseAdditions({
+          currentCount: existingExercises.length,
+          existingExerciseIds: new Set(existingExercises.map((e) => e.exerciseId)),
+          newExerciseIds: [data.exercise_id],
+          dayId: data.plan_day_id,
+        });
 
         return await database.get<PlanDayExerciseModel>('plan_day_exercises').create((pde) => {
           pde.planDayId = data.plan_day_id;
@@ -116,46 +156,18 @@ export async function addExercisesToPlanDay(
 
         validateOwnership(plan.userId, currentUser.id, 'modify this plan');
 
-        // Check max exercises limit
-        const currentCount = await database
-          .get<PlanDayExerciseModel>('plan_day_exercises')
-          .query(Q.where('plan_day_id', planDayId))
-          .fetchCount();
-
-        if (currentCount + exercises.length > MAX_EXERCISES_PER_DAY) {
-          const available = MAX_EXERCISES_PER_DAY - currentCount;
-          throw new ValidationError(
-            available <= 0
-              ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
-              : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
-            `Day ${planDayId} has ${currentCount} exercises, tried to add ${exercises.length} (max: ${MAX_EXERCISES_PER_DAY})`
-          );
-        }
-
-        // Check for duplicates against existing exercises
+        // Fetch existing exercises (one query for both limit + duplicate checks)
         const existingExercises = await database
           .get<PlanDayExerciseModel>('plan_day_exercises')
           .query(Q.where('plan_day_id', planDayId))
           .fetch();
-        const existingExerciseIds = new Set(existingExercises.map((e) => e.exerciseId));
 
-        // Also check for duplicates within the batch itself
-        const batchIds = new Set<string>();
-        const duplicateNames: string[] = [];
-
-        for (const ex of exercises) {
-          if (existingExerciseIds.has(ex.exercise_id) || batchIds.has(ex.exercise_id)) {
-            duplicateNames.push(ex.exercise_id);
-          }
-          batchIds.add(ex.exercise_id);
-        }
-
-        if (duplicateNames.length > 0) {
-          throw new ValidationError(
-            `${duplicateNames.length} exercise${duplicateNames.length !== 1 ? 's are' : ' is'} already in this workout day`,
-            `Duplicate exercise IDs in day ${planDayId}: ${duplicateNames.join(', ')}`
-          );
-        }
+        validateExerciseAdditions({
+          currentCount: existingExercises.length,
+          existingExerciseIds: new Set(existingExercises.map((e) => e.exerciseId)),
+          newExerciseIds: exercises.map((e) => e.exercise_id),
+          dayId: planDayId,
+        });
 
         // Prepare all creates, then execute in a single batch (1 adapter op, 1 emission)
         const created = exercises.map((ex) =>

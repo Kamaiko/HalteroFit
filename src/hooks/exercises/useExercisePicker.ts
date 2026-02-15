@@ -12,6 +12,8 @@ import { useCallback, useState } from 'react';
 import { router } from 'expo-router';
 
 import { MAX_EXERCISES_PER_DAY } from '@/constants';
+import { useAlertState } from '@/hooks/ui/useAlertState';
+import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { useExerciseSearch } from '@/hooks/exercises/useExerciseSearch';
 import type { Exercise } from '@/services/database/operations';
 import {
@@ -22,7 +24,7 @@ import {
   useExercisePickerStore,
   type PickedExercise,
 } from '@/stores/exercises/exercisePickerStore';
-import { ValidationError } from '@/utils/errors';
+import { isOperationalError } from '@/utils/errors';
 
 // ============================================================================
 // Types
@@ -74,7 +76,8 @@ export function useExercisePicker({
 }: UseExercisePickerOptions): UseExercisePickerReturn {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAdding, setIsAdding] = useState(false);
-  const [alert, setAlert] = useState<{ title: string; description?: string } | null>(null);
+  const { alert, setAlert, clearAlert } = useAlertState();
+  const { handleError } = useErrorHandler();
 
   const { exercises, search, setSearch, loading, loadingMore, totalCount, loadMore } =
     useExerciseSearch();
@@ -186,16 +189,24 @@ export function useExercisePicker({
 
       router.back();
     } catch (error) {
-      if (error instanceof ValidationError) {
+      if (isOperationalError(error)) {
         setAlert({ title: 'Error', description: error.userMessage });
       } else {
-        console.error('Failed to add exercises:', error);
-        setAlert({ title: 'Error', description: 'Please try again.' });
+        handleError(error, 'addExercises');
       }
     } finally {
       setIsAdding(false);
     }
-  }, [selectedIds, dayId, isAdding, mode, exercises, existingExerciseIdsParam]);
+  }, [
+    selectedIds,
+    dayId,
+    isAdding,
+    mode,
+    exercises,
+    existingExerciseIdsParam,
+    setAlert,
+    handleError,
+  ]);
 
   // ── Derived state ──────────────────────────────────────────────────────
 
@@ -205,8 +216,6 @@ export function useExercisePicker({
   const buttonText = isAdding
     ? 'Adding...'
     : `Add ${selectedCount} exercise${selectedCount !== 1 ? 's' : ''}`;
-
-  const clearAlert = useCallback(() => setAlert(null), []);
 
   return {
     exercises,

@@ -121,28 +121,6 @@ export function setSentryUser(userId: string | null) {
 }
 
 /**
- * Add breadcrumb (event trail for debugging)
- *
- * @param message - Breadcrumb message
- * @param category - Category (navigation, user, http, etc.)
- * @param level - Severity level
- */
-export function addSentryBreadcrumb(
-  message: string,
-  category: string = 'user',
-  level: Sentry.SeverityLevel = 'info'
-) {
-  if (!__DEV__) {
-    Sentry.addBreadcrumb({
-      message,
-      category,
-      level,
-      timestamp: Date.now() / 1000,
-    });
-  }
-}
-
-/**
  * Capture exception manually
  *
  * Use this for caught errors you want to report
@@ -156,34 +134,6 @@ export function captureSentryException(error: Error, context?: Record<string, un
       extra: context,
     });
   }
-}
-
-/**
- * Capture message manually
- *
- * Use for non-error events you want to track
- *
- * @param message - Message string
- * @param level - Severity level
- */
-export function captureSentryMessage(message: string, level: Sentry.SeverityLevel = 'info') {
-  if (!__DEV__) {
-    Sentry.captureMessage(message, level);
-  }
-}
-
-/**
- * Start a performance span (replaces deprecated startTransaction)
- *
- * @param name - Span name
- * @param op - Operation type
- * @returns Span object or null
- */
-export function startSentrySpan(name: string, op: string = 'navigation') {
-  if (!__DEV__) {
-    return Sentry.startSpan({ name, op }, (span) => span);
-  }
-  return null;
 }
 
 /**
