@@ -13,7 +13,7 @@
 import { Colors, DURATION_STANDARD, ICON_SIZE_MD, THUMBNAIL_SM } from '@/constants';
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
 import { Ionicons } from '@/components/ui/icon';
-import { getDominantMuscleGroupId } from '@/utils/muscles';
+import { getFirstMuscleGroupId } from '@/utils/muscles';
 import { Image } from 'expo-image';
 import { memo, useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -48,7 +48,7 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
 
   const showPlaceholder = !imageUrl || imageError;
   const muscleGroupId =
-    showPlaceholder && targetMuscles ? getDominantMuscleGroupId(targetMuscles) : null;
+    showPlaceholder && targetMuscles ? getFirstMuscleGroupId(targetMuscles) : null;
 
   const content = (
     <View

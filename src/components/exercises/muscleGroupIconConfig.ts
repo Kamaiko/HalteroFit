@@ -52,7 +52,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   shoulder: {
     side: 'front',
-    viewBox: '133 247 158 220',
+    viewBox: '128 240 170 236',
     highlightSlugs: ['deltoids'],
   },
   traps: {

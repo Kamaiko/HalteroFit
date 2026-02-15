@@ -143,7 +143,7 @@ export function getTargetMuscleGroupId(targetMuscle: string): string | null {
  *
  * Returns null if no target muscle maps to a group ID.
  */
-export function getDominantMuscleGroupId(targetMuscles: string[]): string | null {
+export function getFirstMuscleGroupId(targetMuscles: string[]): string | null {
   for (const muscle of targetMuscles) {
     const groupId = getTargetMuscleGroupId(muscle);
     if (groupId) return groupId;

@@ -16,8 +16,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_3XL } from '@/constants';
-import { getDominantMuscleGroupId } from '@/utils/muscles';
+import { Colors, ICON_SIZE_3XL, ICON_SIZE_BANNER } from '@/constants';
+import { getFirstMuscleGroupId } from '@/utils/muscles';
 
 import { MuscleGroupIcon } from './MuscleGroupIcon';
 
@@ -76,7 +76,7 @@ export const ExerciseGifHeader = memo(function ExerciseGifHeader({
 
   const showPlaceholder = !gifUrl || imageError;
   const muscleGroupId =
-    showPlaceholder && targetMuscles ? getDominantMuscleGroupId(targetMuscles) : null;
+    showPlaceholder && targetMuscles ? getFirstMuscleGroupId(targetMuscles) : null;
   const containerHeight = GIF_CONTAINER_HEIGHT + insets.top;
 
   return (
@@ -92,7 +92,11 @@ export const ExerciseGifHeader = memo(function ExerciseGifHeader({
       {showPlaceholder ? (
         <View className="items-center justify-center">
           {muscleGroupId ? (
-            <MuscleGroupIcon muscleGroupId={muscleGroupId} size={ICON_SIZE_3XL} variant="light" />
+            <MuscleGroupIcon
+              muscleGroupId={muscleGroupId}
+              size={ICON_SIZE_BANNER}
+              variant="light"
+            />
           ) : (
             <Ionicons
               name="barbell-outline"

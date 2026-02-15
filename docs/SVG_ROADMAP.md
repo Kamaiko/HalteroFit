@@ -7,7 +7,7 @@
 
 ## ~~1. Exercise GIF Placeholder~~ — Done
 
-Replaced barbell-outline placeholders with `MuscleGroupIcon` (light variant) in `ExerciseCard`, `ExerciseThumbnail`, and `ExerciseGifHeader`. Added `getDominantMuscleGroupId()` mapping in `src/utils/muscles.ts`.
+Replaced barbell-outline placeholders with `MuscleGroupIcon` (light variant) in `ExerciseCard`, `ExerciseThumbnail`, and `ExerciseGifHeader`. Added `getFirstMuscleGroupId()` mapping in `src/utils/muscles.ts`.
 
 ## ~~2. Workout Day Icon~~ — Done
 

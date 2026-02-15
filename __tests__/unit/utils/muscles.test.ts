@@ -1,10 +1,16 @@
 /**
  * Muscle mapping utilities - Unit tests
  *
- * Tests getMuscleHighlighterData from src/utils/muscles.ts
+ * Tests getMuscleHighlighterData, getTargetMuscleGroupId, and
+ * getFirstMuscleGroupId from src/utils/muscles.ts
  */
 
-import { getMuscleHighlighterData } from '@/utils/muscles';
+import {
+  getMuscleHighlighterData,
+  getTargetMuscleGroupId,
+  getFirstMuscleGroupId,
+} from '@/utils/muscles';
+import { computeDominantMuscleGroup } from '@/services/database/operations/plans/mappers';
 
 // ── Basic mapping ───────────────────────────────────────────────────────
 
@@ -141,5 +147,64 @@ describe('getMuscleHighlighterData', () => {
   it('handles whitespace in muscle names', () => {
     const result = getMuscleHighlighterData([' pectorals '], []);
     expect(result.data).toEqual([{ slug: 'chest', intensity: 1 }]);
+  });
+});
+
+// ── getTargetMuscleGroupId ──────────────────────────────────────────────
+
+describe('getTargetMuscleGroupId', () => {
+  it('maps ExerciseDB muscles to group IDs (case-insensitive, trimmed)', () => {
+    expect(getTargetMuscleGroupId('pectorals')).toBe('chest');
+    expect(getTargetMuscleGroupId('delts')).toBe('shoulder');
+    expect(getTargetMuscleGroupId('lats')).toBe('back');
+    expect(getTargetMuscleGroupId('upper back')).toBe('back');
+    expect(getTargetMuscleGroupId('adductors')).toBe('quads');
+    expect(getTargetMuscleGroupId('abductors')).toBe('glutes');
+    // Case-insensitive + whitespace
+    expect(getTargetMuscleGroupId(' DELTS ')).toBe('shoulder');
+    // Unmappable
+    expect(getTargetMuscleGroupId('cardiovascular system')).toBeNull();
+    expect(getTargetMuscleGroupId('spine')).toBeNull();
+  });
+});
+
+// ── getFirstMuscleGroupId ───────────────────────────────────────────────
+
+describe('getFirstMuscleGroupId', () => {
+  it('returns the first mappable group, skipping unmappable entries', () => {
+    expect(getFirstMuscleGroupId(['pectorals', 'biceps'])).toBe('chest');
+    expect(getFirstMuscleGroupId(['cardiovascular system', 'biceps'])).toBe('biceps');
+  });
+
+  it('returns null when no group can be resolved', () => {
+    expect(getFirstMuscleGroupId([])).toBeNull();
+    expect(getFirstMuscleGroupId(['cardiovascular system', 'spine'])).toBeNull();
+  });
+});
+
+// ── computeDominantMuscleGroup ──────────────────────────────────────────
+
+describe('computeDominantMuscleGroup', () => {
+  it('returns the most frequent group, skipping unmappable muscles', () => {
+    expect(computeDominantMuscleGroup(['pectorals'])).toBe('chest');
+    // 2x chest vs 1x biceps → chest
+    expect(computeDominantMuscleGroup(['pectorals', 'biceps', 'pectorals'])).toBe('chest');
+    // spine unmappable, 2x biceps vs 1x chest → biceps
+    expect(computeDominantMuscleGroup(['pectorals', 'spine', 'biceps', 'biceps'])).toBe('biceps');
+  });
+
+  it('on tie, first-occurring group wins (Map insertion order)', () => {
+    expect(computeDominantMuscleGroup(['pectorals', 'biceps'])).toBe('chest');
+    expect(computeDominantMuscleGroup(['biceps', 'pectorals'])).toBe('biceps');
+  });
+
+  it('consolidates different muscles mapping to the same group', () => {
+    // lats + upper back both → 'back' (2x) vs pectorals → 'chest' (1x)
+    expect(computeDominantMuscleGroup(['pectorals', 'lats', 'upper back'])).toBe('back');
+  });
+
+  it('returns null when no group can be resolved', () => {
+    expect(computeDominantMuscleGroup([])).toBeNull();
+    expect(computeDominantMuscleGroup(['cardiovascular system', 'spine'])).toBeNull();
   });
 });

@@ -36,6 +36,9 @@ export const ICON_SIZE_2XL = 48;
 /** 3X-large icon: full-screen placeholders, GIF fallbacks (64px) */
 export const ICON_SIZE_3XL = 64;
 
+/** Banner icon: exercise detail header placeholder (160px) */
+export const ICON_SIZE_BANNER = 160;
+
 // ============================================================================
 // Thumbnail Sizes
 // ============================================================================

@@ -79,12 +79,26 @@ export const MuscleGroupIcon = memo(function MuscleGroupIcon({
 
       {/* Layer 1: All body parts dimmed (anatomical silhouette context) */}
       {iconData.allPaths.map((d, i) => (
-        <Path key={i} d={d} fill={dimColor} />
+        <Path
+          key={i}
+          d={d}
+          fill={dimColor}
+          stroke={dimColor}
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+        />
       ))}
 
       {/* Layer 2: Highlighted muscle (overwrites dim paths underneath) */}
       {iconData.highlightPaths.map((d, i) => (
-        <Path key={`h${i}`} d={d} fill={Colors.primary.DEFAULT} />
+        <Path
+          key={`h${i}`}
+          d={d}
+          fill={Colors.primary.DEFAULT}
+          stroke={Colors.primary.DEFAULT}
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+        />
       ))}
     </Svg>
   );
