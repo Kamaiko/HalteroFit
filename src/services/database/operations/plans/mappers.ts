@@ -2,8 +2,10 @@
  * Workout Plans - Model-to-Plain Mappers
  *
  * Convert WatermelonDB model instances to plain serializable objects.
+ * Includes pure helper functions for aggregating exercise data.
  */
 
+import { getTargetMuscleGroupId } from '@/utils/muscles';
 import type WorkoutPlanModel from '../../local/models/WorkoutPlan';
 import type PlanDayModel from '../../local/models/PlanDay';
 import type PlanDayExerciseModel from '../../local/models/PlanDayExercise';
@@ -76,4 +78,32 @@ export function countExercisesByDay(
   for (const id of planDayIds) counts[id] = 0;
   for (const e of exercises) counts[e.planDayId] = (counts[e.planDayId] ?? 0) + 1;
   return counts;
+}
+
+/**
+ * Find the dominant muscle group ID from a flat list of target muscle names.
+ *
+ * Counts occurrences of each muscle group ID. On a tie, the group whose
+ * first occurrence appears earliest in the array wins (preserves exercise
+ * order_index priority via Map insertion order).
+ *
+ * Returns null if no muscles map to a group ID.
+ */
+export function computeDominantMuscleGroup(targetMuscles: string[]): string | null {
+  const counts = new Map<string, number>();
+  for (const muscle of targetMuscles) {
+    const groupId = getTargetMuscleGroupId(muscle);
+    if (groupId) counts.set(groupId, (counts.get(groupId) ?? 0) + 1);
+  }
+  if (counts.size === 0) return null;
+
+  let maxGroup: string | null = null;
+  let maxCount = 0;
+  for (const [group, count] of counts) {
+    if (count > maxCount) {
+      maxCount = count;
+      maxGroup = group;
+    }
+  }
+  return maxGroup;
 }

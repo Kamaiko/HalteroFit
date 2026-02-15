@@ -22,6 +22,7 @@ import { DayCard } from './DayCard';
 export interface WorkoutOverviewContentProps {
   planDays: PlanDay[];
   exerciseCounts: Record<string, number>;
+  dominantMuscleGroups: Record<string, string | null>;
   selectedDayId?: string;
   onDayPress: (day: PlanDay) => void;
   onDayMenuPress: (day: PlanDay) => void;
@@ -32,6 +33,7 @@ export interface WorkoutOverviewContentProps {
 export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
   planDays,
   exerciseCounts,
+  dominantMuscleGroups,
   selectedDayId,
   onDayPress,
   onDayMenuPress,
@@ -44,6 +46,7 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
         <DayCard
           day={item}
           exerciseCount={exerciseCounts[item.id] ?? 0}
+          dominantMuscleGroupId={dominantMuscleGroups[item.id] ?? null}
           isSelected={selectedDayId === item.id}
           onPress={onDayPress}
           onMenuPress={onDayMenuPress}
@@ -52,7 +55,7 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
         />
       </ScaleDecorator>
     ),
-    [exerciseCounts, selectedDayId, onDayPress, onDayMenuPress]
+    [exerciseCounts, dominantMuscleGroups, selectedDayId, onDayPress, onDayMenuPress]
   );
 
   const keyExtractor = useCallback((item: PlanDay) => item.id, []);

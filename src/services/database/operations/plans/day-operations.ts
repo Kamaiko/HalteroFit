@@ -29,6 +29,7 @@ import {
   planDayExerciseToPlain,
   planDayExerciseWithDetailToPlain,
   countExercisesByDay,
+  computeDominantMuscleGroup,
 } from './mappers';
 
 // ============================================================================
@@ -237,6 +238,60 @@ export function observeExerciseCountsByDays(
     .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
     .observe()
     .pipe(map((exercises) => countExercisesByDay(exercises, planDayIds)));
+}
+
+/**
+ * Observe the dominant muscle group for multiple plan days (Observable).
+ * Returns the most frequently targeted muscle group ID per day.
+ *
+ * Exercises are sorted by order_index, so on a tie the muscle group
+ * whose first exercise appears earliest in the day wins.
+ */
+export function observeDominantMuscleByDays(
+  planDayIds: string[]
+): Observable<Record<string, string | null>> {
+  if (planDayIds.length === 0) return of({});
+
+  return database
+    .get<PlanDayExerciseModel>('plan_day_exercises')
+    .query(Q.where('plan_day_id', Q.oneOf(planDayIds)), Q.sortBy('order_index', Q.asc))
+    .observe()
+    .pipe(
+      switchMap((dayExercises) => {
+        if (dayExercises.length === 0) {
+          const empty: Record<string, string | null> = {};
+          for (const id of planDayIds) empty[id] = null;
+          return of(empty);
+        }
+
+        // Collect unique exercise IDs and fetch their target muscles
+        const exerciseIds = [...new Set(dayExercises.map((de) => de.exerciseId))];
+
+        return from(
+          Promise.all(exerciseIds.map((id) => database.get<ExerciseModel>('exercises').find(id)))
+        ).pipe(
+          map((exercises) => {
+            const exerciseMap = new Map(exercises.map((e) => [e.id, e.targetMuscles]));
+
+            // Accumulate target muscles per day (in order_index order)
+            const musclesByDay = new Map<string, string[]>();
+            for (const id of planDayIds) musclesByDay.set(id, []);
+
+            for (const de of dayExercises) {
+              const targets = exerciseMap.get(de.exerciseId) ?? [];
+              musclesByDay.get(de.planDayId)?.push(...targets);
+            }
+
+            // Compute dominant group per day
+            const result: Record<string, string | null> = {};
+            for (const [dayId, muscles] of musclesByDay) {
+              result[dayId] = computeDominantMuscleGroup(muscles);
+            }
+            return result;
+          })
+        );
+      })
+    );
 }
 
 /**

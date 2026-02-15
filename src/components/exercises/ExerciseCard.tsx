@@ -14,11 +14,14 @@ import {
   DURATION_STANDARD,
 } from '@/constants';
 import type { Exercise } from '@/services/database/operations';
+import { getDominantMuscleGroupId } from '@/utils/muscles';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Image } from 'expo-image';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
+
+import { MuscleGroupIcon } from './MuscleGroupIcon';
 
 export type ExerciseCardMode = 'browse' | 'select';
 
@@ -60,6 +63,7 @@ export const ExerciseCard = memo(function ExerciseCard({
   const displayName = exercise.name;
   const muscleText = exercise.target_muscles.join(', ') || 'No muscle info';
   const showPlaceholder = !exercise.gif_url || imageError;
+  const muscleGroupId = showPlaceholder ? getDominantMuscleGroupId(exercise.target_muscles) : null;
 
   // Memoize checkbox style to avoid object recreation
   const checkboxStyle = useMemo(
@@ -98,11 +102,15 @@ export const ExerciseCard = memo(function ExerciseCard({
       >
         {showPlaceholder ? (
           <View className="h-14 w-14 items-center justify-center bg-white">
-            <Ionicons
-              name="barbell-outline"
-              size={ICON_SIZE_MD}
-              color={Colors.foreground.secondary}
-            />
+            {muscleGroupId ? (
+              <MuscleGroupIcon muscleGroupId={muscleGroupId} size={THUMBNAIL_SM} variant="light" />
+            ) : (
+              <Ionicons
+                name="barbell-outline"
+                size={ICON_SIZE_MD}
+                color={Colors.foreground.secondary}
+              />
+            )}
           </View>
         ) : (
           <Image

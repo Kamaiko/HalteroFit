@@ -1,9 +1,9 @@
 /**
  * Muscle Mapping Utilities
  *
- * Maps ExerciseDB muscle names to body-highlighter SVG slugs.
- * Used by MuscleHighlighter component to convert exercise data
- * into visual body diagram highlights.
+ * Two mapping systems:
+ * 1. MUSCLE_MAPPING: ExerciseDB names → body-highlighter Slugs (for MuscleHighlighter)
+ * 2. TARGET_MUSCLE_TO_GROUP_ID: ExerciseDB names → muscle group IDs (for MuscleGroupIcon)
  *
  * The body-highlighter renders both front and back views independently.
  * Slugs that exist on a given view are highlighted; others are ignored.
@@ -97,7 +97,62 @@ const MUSCLE_MAPPING: Record<string, Slug> = {
 };
 
 // ============================================================================
-// Helper Function
+// Target Muscle → Muscle Group ID Mapping
+// ============================================================================
+
+/**
+ * Maps ExerciseDB target muscle names to the 12 muscle group IDs
+ * used by MuscleGroupIcon / muscleGroupIconConfig.
+ *
+ * Covers 17 mappable ExerciseDB target muscles.
+ * "cardiovascular system" and "spine" have no SVG representation.
+ */
+const TARGET_MUSCLE_TO_GROUP_ID: Record<string, string> = {
+  pectorals: 'chest',
+  lats: 'back',
+  'upper back': 'back',
+  delts: 'shoulder',
+  traps: 'traps',
+  biceps: 'biceps',
+  triceps: 'triceps',
+  forearms: 'forearms',
+  abs: 'abs',
+  quads: 'quads',
+  hamstrings: 'hamstrings',
+  glutes: 'glutes',
+  adductors: 'quads',
+  abductors: 'glutes',
+  calves: 'calves',
+  'serratus anterior': 'abs',
+  'levator scapulae': 'traps',
+};
+
+/**
+ * Convert an ExerciseDB target muscle name to a muscle group ID
+ * for MuscleGroupIcon rendering.
+ *
+ * Returns null for unmappable targets (cardio, spine).
+ */
+export function getTargetMuscleGroupId(targetMuscle: string): string | null {
+  return TARGET_MUSCLE_TO_GROUP_ID[targetMuscle.toLowerCase().trim()] ?? null;
+}
+
+/**
+ * Get the muscle group ID from the first mappable target muscle in an array.
+ * Used for exercise placeholder icons (single exercise → single icon).
+ *
+ * Returns null if no target muscle maps to a group ID.
+ */
+export function getDominantMuscleGroupId(targetMuscles: string[]): string | null {
+  for (const muscle of targetMuscles) {
+    const groupId = getTargetMuscleGroupId(muscle);
+    if (groupId) return groupId;
+  }
+  return null;
+}
+
+// ============================================================================
+// Body Highlighter Data
 // ============================================================================
 
 /**

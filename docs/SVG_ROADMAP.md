@@ -5,30 +5,19 @@
 
 ---
 
-## 1. Exercise GIF Placeholder
+## ~~1. Exercise GIF Placeholder~~ — Done
 
-Replace the current exercise GIF loading placeholder with the light variant SVG icon matching the exercise's primary target muscle.
+Replaced barbell-outline placeholders with `MuscleGroupIcon` (light variant) in `ExerciseCard`, `ExerciseThumbnail`, and `ExerciseGifHeader`. Added `getDominantMuscleGroupId()` mapping in `src/utils/muscles.ts`.
 
-```tsx
-<MuscleGroupIcon muscleGroupId={targetMuscleId} variant="light" />
-```
+## ~~2. Workout Day Icon~~ — Done
 
-- Requires mapping from exercise `targetMuscle` to `muscleGroupId`
-- See `MuscleGroupIcon` variant prop (already implemented)
+Added `observeDominantMuscleByDays()` Observable in `day-operations.ts` that computes the most frequent muscle group per day. Wired through `useWorkoutScreen` → `WorkoutOverviewContent` → `DayCard` with `MuscleGroupIcon` (dark variant). Tie-breaking: first-listed exercise's muscle wins (by `order_index`).
 
-## 2. Workout Day Icon
+## ~~3. Code Cleanup Audit~~ — Done
 
-Replace workout day icons with the SVG of the primary muscle group most frequently targeted during that day's exercises.
-
-- Requires aggregating target muscles across all exercises in a day
-- Pick the most common one as the icon
-
-## 3. Code Cleanup Audit
-
-- Scan for hardcoded values (colors, sizes, durations)
-- Ensure constants are in proper files under `src/constants/`
-- Extract hooks where applicable
-- Analyze logic improvement opportunities (even if it implies a larger refactor)
+- Replaced hardcoded `size={24}` with `ICON_SIZE_MD` in `ExerciseThumbnail`, `DayCard`, `EditDayExerciseCard`
+- Replaced hardcoded `'#3f3f3f'` with `Colors.muscle.dimBody` in `body-highlighter/index.tsx`
+- Added `TARGET_MUSCLE_TO_GROUP_ID` mapping for ExerciseDB muscles → muscle group IDs
 
 ## 4. Abductors / Adductors
 

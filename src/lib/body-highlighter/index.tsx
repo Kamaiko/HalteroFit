@@ -8,12 +8,14 @@
  * - Removed ramda dependency (replaced differenceWith with native filter)
  * - Fixed duplicate Slug type entry
  * - Updated import paths for vendored location
+ * - Replaced hardcoded '#3f3f3f' fills with Colors.muscle.dimBody
  *
  * @see https://github.com/HichamELBSI/react-native-body-highlighter
  */
 
 import React, { memo, useCallback } from 'react';
 import { Path } from 'react-native-svg';
+import { Colors } from '@/constants/colors';
 
 import { bodyFront } from './assets/bodyFront';
 import { bodyBack } from './assets/bodyBack';
@@ -146,7 +148,7 @@ const Body = ({
                 key={path}
                 onPress={() => onBodyPartPress?.(bodyPart, 'left')}
                 id={bodyPart.slug}
-                fill={isOnlyRight ? '#3f3f3f' : getColorToFill(bodyPart)}
+                fill={isOnlyRight ? Colors.muscle.dimBody : getColorToFill(bodyPart)}
                 d={path}
               />
             );
@@ -160,7 +162,7 @@ const Body = ({
                 key={path}
                 onPress={() => onBodyPartPress?.(bodyPart, 'right')}
                 id={bodyPart.slug}
-                fill={isOnlyLeft ? '#3f3f3f' : getColorToFill(bodyPart)}
+                fill={isOnlyLeft ? Colors.muscle.dimBody : getColorToFill(bodyPart)}
                 d={path}
               />
             );

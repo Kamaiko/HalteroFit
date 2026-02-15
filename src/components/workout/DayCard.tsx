@@ -15,9 +15,16 @@
 import { memo, useCallback } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
 import { Ionicons, MaterialIcons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors, CARD_ACTIVE_STYLE, MINUTES_PER_EXERCISE } from '@/constants';
+import {
+  Colors,
+  CARD_ACTIVE_STYLE,
+  ICON_SIZE_MD,
+  THUMBNAIL_SM,
+  MINUTES_PER_EXERCISE,
+} from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DragHandle } from './DragHandle';
@@ -25,6 +32,7 @@ import { DragHandle } from './DragHandle';
 interface DayCardProps {
   day: PlanDay;
   exerciseCount: number;
+  dominantMuscleGroupId?: string | null;
   isSelected: boolean;
   onPress: (day: PlanDay) => void;
   onMenuPress: (day: PlanDay) => void;
@@ -49,6 +57,7 @@ function estimateTime(exerciseCount: number): string {
 export const DayCard = memo(function DayCard({
   day,
   exerciseCount,
+  dominantMuscleGroupId,
   isSelected,
   onPress,
   onMenuPress,
@@ -93,10 +102,22 @@ export const DayCard = memo(function DayCard({
 
       {/* Icon placeholder */}
       <View
-        className="w-14 h-14 items-center justify-center rounded-lg"
+        className="w-14 h-14 items-center justify-center rounded-lg overflow-hidden"
         style={{ backgroundColor: Colors.background.elevated }}
       >
-        <MaterialIcons name="fitness-center" size={24} color={Colors.foreground.secondary} />
+        {dominantMuscleGroupId ? (
+          <MuscleGroupIcon
+            muscleGroupId={dominantMuscleGroupId}
+            size={THUMBNAIL_SM}
+            variant="dark"
+          />
+        ) : (
+          <MaterialIcons
+            name="fitness-center"
+            size={ICON_SIZE_MD}
+            color={Colors.foreground.secondary}
+          />
+        )}
       </View>
 
       {/* Content - vertically centered */}
@@ -126,7 +147,7 @@ export const DayCard = memo(function DayCard({
         accessibilityRole="button"
         accessibilityLabel="Day options menu"
       >
-        <MaterialIcons name="more-horiz" size={24} color={Colors.foreground.secondary} />
+        <MaterialIcons name="more-horiz" size={ICON_SIZE_MD} color={Colors.foreground.secondary} />
       </Pressable>
     </Pressable>
   );

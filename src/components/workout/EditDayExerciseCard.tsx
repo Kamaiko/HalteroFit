@@ -5,7 +5,7 @@
  * Supports drag-to-reorder and thumbnail tap to view exercise detail.
  */
 
-import { Colors, CARD_ACTIVE_STYLE, DURATION_STANDARD } from '@/constants';
+import { Colors, CARD_ACTIVE_STYLE, DURATION_STANDARD, ICON_SIZE_MD } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { DayExercise } from './DayExerciseCard';
@@ -56,7 +56,11 @@ export const EditDayExerciseCard = memo(function EditDayExerciseCard({
           </View>
         )}
 
-        <ExerciseThumbnail imageUrl={exercise.exercise.gif_url} onPress={handleImagePress} />
+        <ExerciseThumbnail
+          imageUrl={exercise.exercise.gif_url}
+          targetMuscles={exercise.exercise.target_muscles}
+          onPress={handleImagePress}
+        />
 
         {/* Info */}
         <View className="flex-1">
@@ -70,7 +74,11 @@ export const EditDayExerciseCard = memo(function EditDayExerciseCard({
 
         {/* Remove button */}
         <Pressable onPress={handleRemove} hitSlop={8} className="ml-2 active:opacity-60">
-          <Ionicons name="close-circle-outline" size={24} color={Colors.foreground.secondary} />
+          <Ionicons
+            name="close-circle-outline"
+            size={ICON_SIZE_MD}
+            color={Colors.foreground.secondary}
+          />
         </Pressable>
       </View>
     </Animated.View>

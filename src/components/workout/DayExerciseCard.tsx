@@ -195,7 +195,11 @@ export const DayExerciseCard = memo(function DayExerciseCard({
             </View>
           )}
 
-          <ExerciseThumbnail imageUrl={exercise.exercise.gif_url} onPress={handleImagePress} />
+          <ExerciseThumbnail
+            imageUrl={exercise.exercise.gif_url}
+            targetMuscles={exercise.exercise.target_muscles}
+            onPress={handleImagePress}
+          />
 
           {/* Info */}
           <View className="flex-1">

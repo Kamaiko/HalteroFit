@@ -37,6 +37,7 @@ export default function WorkoutScreen() {
     loading,
     activeTabIndex,
     exerciseCounts,
+    dominantMuscleGroups,
     canStartWorkout,
     menuDay,
     showDeleteConfirm,
@@ -103,6 +104,7 @@ export default function WorkoutScreen() {
           <WorkoutOverviewContent
             planDays={planDays}
             exerciseCounts={exerciseCounts}
+            dominantMuscleGroups={dominantMuscleGroups}
             selectedDayId={selectedDay?.id}
             onDayPress={handleDayPress}
             onDayMenuPress={handleDayMenuPress}
@@ -135,6 +137,7 @@ export default function WorkoutScreen() {
     [
       planDays,
       exerciseCounts,
+      dominantMuscleGroups,
       selectedDay,
       handleDayPress,
       handleDayMenuPress,

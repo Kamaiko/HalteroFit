@@ -17,6 +17,9 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors, ICON_SIZE_3XL } from '@/constants';
+import { getDominantMuscleGroupId } from '@/utils/muscles';
+
+import { MuscleGroupIcon } from './MuscleGroupIcon';
 
 // ============================================================================
 // Constants
@@ -52,6 +55,8 @@ const GRADIENT_LOCATIONS = [0, 0.25, 0.45, 0.65, 0.85, 1] as const;
 export interface ExerciseGifHeaderProps {
   /** URL of the exercise GIF */
   gifUrl: string | null | undefined;
+  /** Target muscles for SVG placeholder when no GIF available */
+  targetMuscles?: string[];
 }
 
 // ============================================================================
@@ -60,6 +65,7 @@ export interface ExerciseGifHeaderProps {
 
 export const ExerciseGifHeader = memo(function ExerciseGifHeader({
   gifUrl,
+  targetMuscles,
 }: ExerciseGifHeaderProps) {
   const insets = useSafeAreaInsets();
   const [imageError, setImageError] = useState(false);
@@ -69,6 +75,8 @@ export const ExerciseGifHeader = memo(function ExerciseGifHeader({
   }, []);
 
   const showPlaceholder = !gifUrl || imageError;
+  const muscleGroupId =
+    showPlaceholder && targetMuscles ? getDominantMuscleGroupId(targetMuscles) : null;
   const containerHeight = GIF_CONTAINER_HEIGHT + insets.top;
 
   return (
@@ -83,11 +91,15 @@ export const ExerciseGifHeader = memo(function ExerciseGifHeader({
     >
       {showPlaceholder ? (
         <View className="items-center justify-center">
-          <Ionicons
-            name="barbell-outline"
-            size={ICON_SIZE_3XL}
-            color={Colors.foreground.secondary}
-          />
+          {muscleGroupId ? (
+            <MuscleGroupIcon muscleGroupId={muscleGroupId} size={ICON_SIZE_3XL} variant="light" />
+          ) : (
+            <Ionicons
+              name="barbell-outline"
+              size={ICON_SIZE_3XL}
+              color={Colors.foreground.secondary}
+            />
+          )}
         </View>
       ) : (
         <Image

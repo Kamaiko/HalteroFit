@@ -19,6 +19,7 @@ import {
   createPlan,
   createPlanDay,
   observeActivePlan,
+  observeDominantMuscleByDays,
   observeExerciseCountsByDays,
   observePlanDayWithExercises,
   observePlanDays,
@@ -44,6 +45,7 @@ export interface UseWorkoutScreenReturn {
   loading: boolean;
   activeTabIndex: number;
   exerciseCounts: Record<string, number>;
+  dominantMuscleGroups: Record<string, string | null>;
   canStartWorkout: boolean;
 
   // Menu state
@@ -184,6 +186,30 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     return () => subscription.unsubscribe();
   }, [planDays, handleError]);
 
+  // ── Dominant muscle groups observation (reactive) ──────────────────
+  const [dominantMuscleGroups, setDominantMuscleGroups] = useState<Record<string, string | null>>(
+    {}
+  );
+
+  useEffect(() => {
+    const dayIds = planDays.map((d) => d.id);
+    if (dayIds.length === 0) {
+      setDominantMuscleGroups({});
+      return;
+    }
+
+    const subscription = observeDominantMuscleByDays(dayIds).subscribe({
+      next: (groups) => {
+        setDominantMuscleGroups(groups);
+      },
+      error: (error) => {
+        handleError(error, 'observeDominantMuscleByDays');
+      },
+    });
+
+    return () => subscription.unsubscribe();
+  }, [planDays, handleError]);
+
   // ── Day selection ───────────────────────────────────────────────────
   const [selectedDay, setSelectedDay] = useState<PlanDay | null>(null);
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -297,6 +323,7 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     loading,
     activeTabIndex,
     exerciseCounts,
+    dominantMuscleGroups,
     canStartWorkout,
 
     // Day menu
