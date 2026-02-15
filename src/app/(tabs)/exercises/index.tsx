@@ -7,8 +7,7 @@
  */
 
 import { Text } from '@/components/ui/text';
-import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_MD } from '@/constants';
+import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
 import { ScreenContainer } from '@/components/layout';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -80,8 +79,8 @@ export default function ExerciseSelectorScreen() {
           {MUSCLE_GROUPS.map((muscle) => (
             <MuscleCard
               key={muscle.id}
+              muscleGroupId={muscle.id}
               label={muscle.label}
-              isShowAll={muscle.id === 'show-all'}
               onPress={() => handleMusclePress(muscle)}
             />
           ))}
@@ -96,23 +95,21 @@ export default function ExerciseSelectorScreen() {
 // ============================================================================
 
 interface MuscleCardProps {
+  muscleGroupId: string;
   label: string;
-  isShowAll?: boolean;
   onPress: () => void;
 }
 
-function MuscleCard({ label, isShowAll = false, onPress }: MuscleCardProps) {
+function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
+  const isShowAll = muscleGroupId === 'show-all';
+
   return (
     <Pressable
       className={`mb-3 aspect-square w-[31%] items-center justify-center rounded-xl ${isShowAll ? 'bg-primary' : 'bg-background-surface'}`}
       onPress={onPress}
     >
       <View className="mb-2 h-12 w-12 items-center justify-center rounded-full bg-background-elevated">
-        <Ionicons
-          name={isShowAll ? 'list' : 'body'}
-          size={ICON_SIZE_MD}
-          color={isShowAll ? Colors.foreground.DEFAULT : Colors.foreground.secondary}
-        />
+        <MuscleGroupIcon muscleGroupId={muscleGroupId} />
       </View>
       <Text
         className={`text-center text-sm font-medium ${isShowAll ? 'text-white' : 'text-foreground'}`}
