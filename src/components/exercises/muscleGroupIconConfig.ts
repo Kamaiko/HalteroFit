@@ -42,32 +42,32 @@ export interface MuscleIconRenderData {
 const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   chest: {
     side: 'front',
-    viewBox: '233 240 260 200',
+    viewBox: '234 240 260 200',
     highlightSlugs: ['chest'],
   },
   lats: {
     side: 'back',
     viewBox: '811 314 267 313',
-    highlightSlugs: ['lats', 'lower-back'],
+    highlightSlugs: ['lats'],
   },
   'upper-back': {
     side: 'back',
-    viewBox: '951 281 258 239',
+    viewBox: '952 281 258 239',
     highlightSlugs: ['upper-back'],
   },
   shoulder: {
     side: 'front',
-    viewBox: '132 234 180 246',
+    viewBox: '127 234 180 246',
     highlightSlugs: ['deltoids'],
   },
   traps: {
     side: 'back',
-    viewBox: '945 220 254 259',
+    viewBox: '940 220 254 259',
     highlightSlugs: ['trapezius', 'neck'],
   },
   biceps: {
     side: 'front',
-    viewBox: '111 318 180 248',
+    viewBox: '107 318 180 248',
     highlightSlugs: ['biceps'],
   },
   triceps: {
@@ -82,7 +82,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   abs: {
     side: 'front',
-    viewBox: '219 310 292 195',
+    viewBox: '217 310 292 195',
     highlightSlugs: ['abs', 'obliques'],
   },
   quads: {
@@ -92,22 +92,22 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   hamstrings: {
     side: 'back',
-    viewBox: '912 710 246 262',
+    viewBox: '905 710 246 262',
     highlightSlugs: ['hamstring'],
   },
   glutes: {
     side: 'back',
-    viewBox: '940 575 290 290',
+    viewBox: '938 575 290 290',
     highlightSlugs: ['gluteal'],
   },
   calves: {
     side: 'back',
-    viewBox: '927 878 310 290',
+    viewBox: '929 878 310 290',
     highlightSlugs: ['calves'],
   },
   'show-all': {
     side: 'front',
-    viewBox: '60 80 480 1320',
+    viewBox: '56 80 480 1320',
     highlightSlugs: [
       'chest',
       'obliques',

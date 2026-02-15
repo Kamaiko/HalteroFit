@@ -417,6 +417,32 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
       Files: src/app/exercise/[id].tsx
       Deps: 3.7.3
 
+### 3.8: Starred Exercises (US-018)
+
+> Mark exercises as favorites for quick access during workout setup.
+
+- [ ] **3.8.1** Add is_starred field to exercises schema (S - 1h)
+      WatermelonDB schema + Supabase migration + sync protocol
+      Files: src/services/database/local/schema.ts, supabase/migrations/
+
+- [ ] **3.8.2** Star toggle CRUD operations (S - 1h)
+      toggleExerciseStar(), observeStarredExercises()
+      Files: src/services/database/operations/exercises.ts
+
+- [ ] **3.8.3** Star toggle UI in ExerciseCard (S - 1h)
+      Star icon button, optimistic update
+      Files: src/components/exercises/ExerciseCard.tsx
+
+- [ ] **3.8.4** "My Starred" button on ExerciseSelectorScreen (M - 2h)
+      Full-width button below category grid, navigates to filtered browser
+      Files: src/app/(tabs)/exercises/index.tsx
+      Deps: 3.8.2
+
+- [ ] **3.8.5** Starred exercises sort priority in picker (S - 1h)
+      Starred exercises appear at top of exercise list
+      Files: src/hooks/exercises/useExerciseSearch.ts
+      Deps: 3.8.2
+
 ---
 
 ## Phase 4: Auth, Settings & Progress

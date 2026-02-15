@@ -114,7 +114,7 @@ function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
       className="mb-3 aspect-square w-[31%] items-center justify-center rounded-xl bg-background-surface"
       onPress={onPress}
     >
-      <View className="mb-2 h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-background-elevated">
+      <View className="mb-2 h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-background-elevated">
         <MuscleGroupIcon muscleGroupId={muscleGroupId} />
       </View>
       <Text className="text-center text-sm font-medium text-foreground">{label}</Text>

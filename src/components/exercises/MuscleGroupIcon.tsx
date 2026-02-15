@@ -12,7 +12,7 @@ import { memo } from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
 
 import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_MD, ICON_SIZE_MUSCLE } from '@/constants';
+import { Colors, ICON_SIZE_LG, ICON_SIZE_MUSCLE } from '@/constants';
 
 import { getMuscleIconData } from './muscleGroupIconConfig';
 
@@ -51,7 +51,7 @@ export const MuscleGroupIcon = memo(function MuscleGroupIcon({
 
   // Fallback icon for cardio (only non-SVG category remaining)
   if (!iconData) {
-    return <Ionicons name="heart" size={ICON_SIZE_MD} color={Colors.primary.DEFAULT} />;
+    return <Ionicons name="heart" size={ICON_SIZE_LG} color={Colors.primary.DEFAULT} />;
   }
 
   const isLight = variant === 'light';
