@@ -5,7 +5,7 @@
  * Uses the vendored body-highlighter SVG path data with a custom viewBox
  * to zoom into the relevant body region for each muscle group.
  *
- * Falls back to Ionicons for non-anatomical categories (cardio, show-all).
+ * Falls back to Ionicons for non-anatomical categories (cardio).
  */
 
 import { memo } from 'react';
@@ -36,7 +36,7 @@ export interface MuscleGroupIconProps {
 const DIM_BODY_COLOR_DARK = Colors.muscle.dimBody;
 const DIM_BODY_COLOR_LIGHT = Colors.border.input;
 /** Padding ratio applied to viewBox to prevent silhouette edge bleed (8% per side) */
-const VIEWBOX_PADDING_RATIO = 0.08;
+const VIEWBOX_PADDING_RATIO = 0.04;
 
 // ============================================================================
 // Component

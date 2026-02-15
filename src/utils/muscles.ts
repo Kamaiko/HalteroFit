@@ -59,7 +59,7 @@ const MUSCLE_MAPPING: Record<string, Slug> = {
   hamstrings: 'hamstring',
   forearms: 'forearm',
   traps: 'trapezius',
-  lats: 'upper-back',
+  lats: 'lats',
   adductors: 'adductors',
   abductors: 'gluteal', // hip abductors ≈ glute medius
   'upper back': 'upper-back',
@@ -78,7 +78,7 @@ const MUSCLE_MAPPING: Record<string, Slug> = {
   'lower back': 'lower-back',
   back: 'upper-back',
   rhomboids: 'upper-back',
-  'latissimus dorsi': 'upper-back',
+  'latissimus dorsi': 'lats',
   'inner thighs': 'adductors',
   groin: 'adductors',
   shins: 'tibialis',
@@ -101,7 +101,7 @@ const MUSCLE_MAPPING: Record<string, Slug> = {
 // ============================================================================
 
 /**
- * Maps ExerciseDB target muscle names to the 12 muscle group IDs
+ * Maps ExerciseDB target muscle names to the 13 muscle group IDs
  * used by MuscleGroupIcon / muscleGroupIconConfig.
  *
  * Covers 17 mappable ExerciseDB target muscles.
@@ -109,8 +109,8 @@ const MUSCLE_MAPPING: Record<string, Slug> = {
  */
 const TARGET_MUSCLE_TO_GROUP_ID: Record<string, string> = {
   pectorals: 'chest',
-  lats: 'back',
-  'upper back': 'back',
+  lats: 'lats',
+  'upper back': 'upper-back',
   delts: 'shoulder',
   traps: 'traps',
   biceps: 'biceps',

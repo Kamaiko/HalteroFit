@@ -2,7 +2,7 @@
  * Muscle Group Icon Configuration
  *
  * Maps each muscle group ID to an SVG crop region and highlighted body part slugs.
- * Reuses the vendored body-highlighter SVG path data without modifying the library.
+ * Reuses the vendored body-highlighter SVG path data.
  */
 
 import type { BodyPart, Slug } from '@/lib/body-highlighter';
@@ -45,19 +45,24 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
     viewBox: '235 240 260 200',
     highlightSlugs: ['chest'],
   },
-  back: {
+  lats: {
     side: 'back',
-    viewBox: '870 280 290 315',
-    highlightSlugs: ['upper-back', 'lower-back'],
+    viewBox: '815 314 267 313',
+    highlightSlugs: ['lats', 'lower-back'],
+  },
+  'upper-back': {
+    side: 'back',
+    viewBox: '951 281 258 239',
+    highlightSlugs: ['upper-back'],
   },
   shoulder: {
     side: 'front',
-    viewBox: '128 240 170 236',
+    viewBox: '132 234 180 246',
     highlightSlugs: ['deltoids'],
   },
   traps: {
     side: 'back',
-    viewBox: '940 220 300 280',
+    viewBox: '959 242 254 237',
     highlightSlugs: ['trapezius'],
   },
   biceps: {
@@ -77,7 +82,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   abs: {
     side: 'front',
-    viewBox: '177 309 376 250',
+    viewBox: '219 325 292 195',
     highlightSlugs: ['abs', 'obliques'],
   },
   quads: {
@@ -87,7 +92,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   hamstrings: {
     side: 'back',
-    viewBox: '887 700 290 310',
+    viewBox: '910 710 246 262',
     highlightSlugs: ['hamstring'],
   },
   glutes: {
@@ -102,7 +107,7 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
   },
   'show-all': {
     side: 'front',
-    viewBox: '75 80 480 1320',
+    viewBox: '80 80 480 1320',
     highlightSlugs: [
       'chest',
       'obliques',

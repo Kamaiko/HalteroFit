@@ -9,6 +9,7 @@
  * - Fixed duplicate Slug type entry
  * - Updated import paths for vendored location
  * - Replaced hardcoded '#3f3f3f' fills with Colors.muscle.dimBody
+ * - Added 'lats' slug: extracted latissimus dorsi paths from original 'upper-back' entry
  *
  * @see https://github.com/HichamELBSI/react-native-body-highlighter
  */
@@ -40,6 +41,7 @@ export type Slug =
   | 'hair'
   | 'head'
   | 'knees'
+  | 'lats'
   | 'lower-back'
   | 'neck'
   | 'obliques'

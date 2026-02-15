@@ -25,26 +25,27 @@ interface MuscleGroup {
   filterValue?: string;
 }
 
-/** Muscle groups mapped to ExerciseDB dataset values, ordered by body region */
+/** Muscle groups mapped to ExerciseDB dataset values, ordered for 5×3 aesthetic grid */
 const MUSCLE_GROUPS: MuscleGroup[] = [
-  // Row 1: Upper body (torso)
-  { id: 'chest', label: 'Chest', filterType: 'bodyPart', filterValue: 'chest' },
-  { id: 'back', label: 'Back', filterType: 'bodyPart', filterValue: 'back' },
-  { id: 'shoulder', label: 'Shoulders', filterType: 'bodyPart', filterValue: 'shoulders' },
-  // Row 2: Upper body (neck + arms)
+  // Row 1: Upper body (shoulders/back)
+  { id: 'shoulder', label: 'Delts', filterType: 'bodyPart', filterValue: 'shoulders' },
   { id: 'traps', label: 'Traps', filterType: 'targetMuscle', filterValue: 'traps' },
+  { id: 'upper-back', label: 'Upper Back', filterType: 'targetMuscle', filterValue: 'upper back' },
+  // Row 2: Torso + arms (push/pull)
   { id: 'biceps', label: 'Biceps', filterType: 'targetMuscle', filterValue: 'biceps' },
+  { id: 'chest', label: 'Chest', filterType: 'bodyPart', filterValue: 'chest' },
   { id: 'triceps', label: 'Triceps', filterType: 'targetMuscle', filterValue: 'triceps' },
-  // Row 3: Arms + core
+  // Row 3: Core + support
   { id: 'forearms', label: 'Forearms', filterType: 'targetMuscle', filterValue: 'forearms' },
   { id: 'abs', label: 'Abs', filterType: 'targetMuscle', filterValue: 'abs' },
-  { id: 'quads', label: 'Quads', filterType: 'targetMuscle', filterValue: 'quads' },
-  // Row 4: Lower body
-  { id: 'hamstrings', label: 'Hamstrings', filterType: 'targetMuscle', filterValue: 'hamstrings' },
+  { id: 'lats', label: 'Lats', filterType: 'targetMuscle', filterValue: 'lats' },
+  // Row 4: Upper legs
   { id: 'glutes', label: 'Glutes', filterType: 'targetMuscle', filterValue: 'glutes' },
-  { id: 'calves', label: 'Calves', filterType: 'targetMuscle', filterValue: 'calves' },
-  // Row 5: Other + action
+  { id: 'quads', label: 'Quads', filterType: 'targetMuscle', filterValue: 'quads' },
+  { id: 'hamstrings', label: 'Hamstrings', filterType: 'targetMuscle', filterValue: 'hamstrings' },
+  // Row 5: Lower legs + special
   { id: 'cardio', label: 'Cardio', filterType: 'bodyPart', filterValue: 'cardio' },
+  { id: 'calves', label: 'Calves', filterType: 'targetMuscle', filterValue: 'calves' },
   { id: 'show-all', label: 'Show All' },
 ];
 

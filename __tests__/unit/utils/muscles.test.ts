@@ -94,8 +94,8 @@ describe('getMuscleHighlighterData', () => {
     ];
 
     const result = getMuscleHighlighterData(mappableTargets, []);
-    // 17 inputs but 15 unique slugs (lats/upper back → upper-back, glutes/abductors → gluteal)
-    expect(result.data.length).toBe(15);
+    // 17 inputs but 16 unique slugs (lats → lats, upper back → upper-back, glutes/abductors → gluteal)
+    expect(result.data.length).toBe(16);
     expect(result.data.every((d) => d.intensity === 1)).toBe(true);
     expect(result.hasAnyMuscle).toBe(true);
   });
@@ -156,8 +156,8 @@ describe('getTargetMuscleGroupId', () => {
   it('maps ExerciseDB muscles to group IDs (case-insensitive, trimmed)', () => {
     expect(getTargetMuscleGroupId('pectorals')).toBe('chest');
     expect(getTargetMuscleGroupId('delts')).toBe('shoulder');
-    expect(getTargetMuscleGroupId('lats')).toBe('back');
-    expect(getTargetMuscleGroupId('upper back')).toBe('back');
+    expect(getTargetMuscleGroupId('lats')).toBe('lats');
+    expect(getTargetMuscleGroupId('upper back')).toBe('upper-back');
     expect(getTargetMuscleGroupId('adductors')).toBe('quads');
     expect(getTargetMuscleGroupId('abductors')).toBe('glutes');
     // Case-insensitive + whitespace
@@ -198,9 +198,9 @@ describe('computeDominantMuscleGroup', () => {
     expect(computeDominantMuscleGroup(['biceps', 'pectorals'])).toBe('biceps');
   });
 
-  it('consolidates different muscles mapping to the same group', () => {
-    // lats + upper back both → 'back' (2x) vs pectorals → 'chest' (1x)
-    expect(computeDominantMuscleGroup(['pectorals', 'lats', 'upper back'])).toBe('back');
+  it('resolves tie by first-occurring group (lats and upper-back are now separate)', () => {
+    // lats → 'lats', upper back → 'upper-back', pectorals → 'chest' — all 1x, first wins
+    expect(computeDominantMuscleGroup(['pectorals', 'lats', 'upper back'])).toBe('chest');
   });
 
   it('returns null when no group can be resolved', () => {
