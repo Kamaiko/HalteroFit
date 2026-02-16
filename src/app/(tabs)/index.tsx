@@ -17,7 +17,7 @@ export default function HomeScreen() {
   return (
     <ScreenContainer scroll edges={[]}>
       {/* Profile button — top right */}
-      <View className="flex-row justify-end px-6 pt-2">
+      <View className="flex-row justify-end px-6 pt-8">
         <Pressable
           onPress={() => router.push('/settings')}
           className="w-10 h-10 rounded-full items-center justify-center bg-background-surface border border-background-elevated"
