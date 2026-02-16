@@ -101,10 +101,7 @@ export const DayCard = memo(function DayCard({
       </View>
 
       {/* Icon placeholder */}
-      <View
-        className="w-14 h-14 items-center justify-center rounded-lg overflow-hidden"
-        style={{ backgroundColor: Colors.background.elevated }}
-      >
+      <View className="w-14 h-14 items-center justify-center rounded-lg overflow-hidden bg-background border border-background-elevated">
         {dominantMuscleGroupId ? (
           <MuscleGroupIcon
             muscleGroupId={dominantMuscleGroupId}

@@ -112,10 +112,10 @@ interface MuscleCardProps {
 const MuscleCard = memo(function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
   return (
     <Pressable
-      className="mb-3 w-[31%] items-center rounded-xl bg-background-surface py-3"
+      className="mb-3 w-[31%] items-center rounded-xl bg-background-surface border border-background-elevated py-3"
       onPress={onPress}
     >
-      <View className="mb-2 h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-background-elevated">
+      <View className="mb-2 h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-background border border-background-elevated">
         <MuscleGroupIcon muscleGroupId={muscleGroupId} />
       </View>
       <Text className="text-center text-sm font-medium text-foreground">{label}</Text>

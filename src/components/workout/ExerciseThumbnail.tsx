@@ -56,17 +56,15 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
       style={{ backgroundColor: Colors.surface.white }}
     >
       {showPlaceholder ? (
-        <View className="h-14 w-14 items-center justify-center bg-white">
-          {muscleGroupId ? (
-            <MuscleGroupIcon muscleGroupId={muscleGroupId} size={THUMBNAIL_SM} variant="light" />
-          ) : (
-            <Ionicons
-              name="barbell-outline"
-              size={ICON_SIZE_MD}
-              color={Colors.foreground.secondary}
-            />
-          )}
-        </View>
+        muscleGroupId ? (
+          <MuscleGroupIcon muscleGroupId={muscleGroupId} size={THUMBNAIL_SM} variant="light" />
+        ) : (
+          <Ionicons
+            name="barbell-outline"
+            size={ICON_SIZE_MD}
+            color={Colors.foreground.secondary}
+          />
+        )
       ) : (
         <Image
           source={{ uri: imageUrl }}
