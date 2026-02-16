@@ -71,9 +71,10 @@ nul
 .agents/
 
 # ===================
-# Reference Material
+# Reference & Archives
 # ===================
-docs/reference/jefit/
+docs/reference/
+docs/archives/
 
 # ===================
 # Secrets & Credentials
