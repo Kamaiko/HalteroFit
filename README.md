@@ -1,17 +1,17 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/logo.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.svg" />
-  <img src="assets/logo-dark.svg" alt="Halterofit icon" width="130" />
+  <source media="(prefers-color-scheme: dark)" srcset="assets/branding/icon.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="assets/branding/icon-dark.svg" />
+  <img src="assets/branding/icon-dark.svg" alt="Halterofit icon" width="130" />
 </picture>
 
 <br/>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/logo.png" />
-  <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.png" />
-  <img src="assets/logo-dark.png" alt="Halterofit" width="360" />
+  <source media="(prefers-color-scheme: dark)" srcset="assets/branding/wordmark.png" />
+  <source media="(prefers-color-scheme: light)" srcset="assets/branding/wordmark-dark.png" />
+  <img src="assets/branding/wordmark-dark.png" alt="Halterofit" width="360" />
 </picture>
 
 **Workout Tracking App with Training Analytics**
