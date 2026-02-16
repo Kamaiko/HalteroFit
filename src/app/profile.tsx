@@ -4,7 +4,7 @@ import { ScreenContainer } from '@/components/layout';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors, ICON_SIZE_MD, ICON_SIZE_3XL } from '@/constants';
 
-export default function SettingsScreen() {
+export default function ProfileScreen() {
   return (
     <ScreenContainer>
       <View className="px-6 pt-4">
@@ -18,9 +18,9 @@ export default function SettingsScreen() {
         </Pressable>
       </View>
       <View className="flex-1 items-center justify-center p-6">
-        <Ionicons name="cog-outline" size={ICON_SIZE_3XL} color={Colors.foreground.tertiary} />
-        <Text className="text-3xl font-bold text-foreground mt-4 mb-2">Settings</Text>
-        <Text className="text-base text-foreground-secondary">Customize your experience</Text>
+        <Ionicons name="person-outline" size={ICON_SIZE_3XL} color={Colors.foreground.tertiary} />
+        <Text className="text-3xl font-bold text-foreground mt-4 mb-2">Profile</Text>
+        <Text className="text-base text-foreground-secondary">Your fitness identity</Text>
       </View>
     </ScreenContainer>
   );

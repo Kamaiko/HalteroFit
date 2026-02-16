@@ -11,25 +11,31 @@ import Svg, { Defs, LinearGradient as SvgGradient, Stop, Rect } from 'react-nati
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons, MaterialIcons } from '@/components/ui/icon';
-import { Colors, DURATION_FAST, DURATION_MODERATE, ICON_SIZE_LG, ICON_SIZE_MD } from '@/constants';
-
-/** Primary color at 12% opacity (Colors.primary.DEFAULT with alpha) */
-const ICON_CIRCLE_BG = `${Colors.primary.DEFAULT}1F`;
+import { Colors, DURATION_FAST, DURATION_MODERATE, ICON_SIZE_LG, ICON_SIZE_XL } from '@/constants';
 
 export default function HomeScreen() {
   return (
     <ScreenContainer scroll>
+      {/* Top Navigation Bar */}
+      <View className="flex-row items-center justify-between px-6 pt-6 pb-2">
+        <Pressable
+          onPress={() => router.push('/profile')}
+          className="w-14 h-14 rounded-full items-center justify-center bg-background-elevated"
+        >
+          <Ionicons name="person" size={ICON_SIZE_XL} color={Colors.foreground.secondary} />
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push('/settings')}
+          className="w-12 h-12 items-center justify-center"
+        >
+          <Ionicons name="cog-outline" size={ICON_SIZE_LG} color={Colors.foreground.secondary} />
+        </Pressable>
+      </View>
+
       {/* Summary Section */}
-      <Animated.View entering={FadeInUp.duration(DURATION_MODERATE)} className="px-6 pt-6 mb-8">
-        <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-xl font-bold text-foreground">Summary</Text>
-          <Pressable
-            onPress={() => router.push('/settings')}
-            className="w-10 h-10 rounded-full items-center justify-center bg-background-elevated"
-          >
-            <Ionicons name="person" size={ICON_SIZE_MD} color={Colors.foreground.secondary} />
-          </Pressable>
-        </View>
+      <Animated.View entering={FadeInUp.duration(DURATION_MODERATE)} className="px-6 mb-8">
+        <Text className="text-xl font-bold text-foreground mb-4">Summary</Text>
         <View className="flex-row gap-3">
           <StatCard icon="bolt" value={0} label="Workouts" />
           <StatCard icon="layers" value={0} label="Total Sets" />
@@ -64,10 +70,7 @@ interface StatCardProps {
 function StatCard({ icon, value, label }: StatCardProps) {
   return (
     <View className="flex-1 bg-background-surface rounded-2xl p-4 items-center border border-background-elevated shadow-sm">
-      <View
-        className="w-16 h-16 rounded-full items-center justify-center mb-3"
-        style={{ backgroundColor: ICON_CIRCLE_BG }}
-      >
+      <View className="w-16 h-16 rounded-full items-center justify-center mb-3 bg-background border border-background-elevated">
         <MaterialIcons name={icon} size={ICON_SIZE_LG} color={Colors.primary.DEFAULT} />
       </View>
       <Text
