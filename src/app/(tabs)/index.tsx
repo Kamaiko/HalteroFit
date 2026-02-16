@@ -5,38 +5,19 @@
  */
 
 import type { ComponentProps } from 'react';
-import { Image, Pressable, View, Text } from 'react-native';
+import { Pressable, View, Text } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient as SvgGradient, Stop, Rect } from 'react-native-svg';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons, MaterialIcons } from '@/components/ui/icon';
-import {
-  BORDER_RADIUS_MD,
-  Colors,
-  DURATION_FAST,
-  DURATION_MODERATE,
-  ICON_SIZE_LG,
-  ICON_SIZE_MD,
-} from '@/constants';
-import appIcon from '../../../assets/icon.png';
+import { Colors, DURATION_FAST, DURATION_MODERATE, ICON_SIZE_LG, ICON_SIZE_MD } from '@/constants';
 
 export default function HomeScreen() {
   return (
     <ScreenContainer scroll edges={[]}>
-      {/* Header — branding centered */}
-      <View className="items-center px-6 pt-2">
-        <View className="flex-row items-center gap-2">
-          <Image
-            source={appIcon}
-            style={{ width: ICON_SIZE_LG, height: ICON_SIZE_LG, borderRadius: BORDER_RADIUS_MD }}
-          />
-          <Text className="text-sm font-semibold text-foreground">Halterofit</Text>
-        </View>
-      </View>
-
-      {/* Profile button — right-aligned, between header and content */}
-      <View className="flex-row justify-end px-6 mt-1">
+      {/* Profile button — top right */}
+      <View className="flex-row justify-end px-6 pt-2">
         <Pressable
           onPress={() => router.push('/settings')}
           className="w-10 h-10 rounded-full items-center justify-center bg-background-surface border border-background-elevated"

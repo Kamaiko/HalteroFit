@@ -3,10 +3,14 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/logo.svg" />
   <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.svg" />
-  <img src="assets/logo.svg" alt="Halterofit" width="240" />
+  <img src="assets/logo-dark.svg" alt="Halterofit icon" width="56" />
 </picture>
 
-# Halterofit
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo.png" />
+  <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.png" />
+  <img src="assets/logo-dark.png" alt="Halterofit" width="360" />
+</picture>
 
 **Workout Tracking App with Training Analytics**
 
