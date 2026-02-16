@@ -95,7 +95,7 @@ export default function RootLayout() {
       <Sentry.ErrorBoundary fallback={ErrorFallbackScreen}>
         <SafeAreaProvider>
           <StatusBar style="light" backgroundColor={Colors.background.DEFAULT} />
-          {__DEV__ && (
+          {/* {__DEV__ && (
             <View
               style={{
                 backgroundColor: Colors.dev.banner,
@@ -114,7 +114,7 @@ export default function RootLayout() {
                 [DEV] Mock User Active
               </Text>
             </View>
-          )}
+          )} */}
           <Stack
             screenOptions={{
               headerShown: false,
