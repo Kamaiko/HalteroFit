@@ -14,7 +14,7 @@
   <img src="assets/branding/wordmark-dark.png" alt="Halterofit" width="360" />
 </picture>
 
-**Workout Tracking App with Training Analytics**
+**Track your sets. Follow your plan. See your progress.**
 
 <!-- Tech Stack -->
 
@@ -42,28 +42,26 @@
 
 ## About
 
-A workout tracking app with analytics to identify trends, monitor progress, and optimize training routines.
+Comprehensive workout tracker with a 1,300+ exercise library, customizable training plans, and fast set logging. Built for lifters who want to track everything without friction.
 
 ---
 
 ## Development
 
-### Prerequisites
-
-- Node.js 18+
-- iOS Simulator or Android Emulator
-- [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/)
-
-### Setup
+Requires Node.js 18+ and an [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/).
 
 ```bash
 npm install
-cp .env.example .env.local  # Configure your environment
+cp .env.example .env.local
 npm start
 ```
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 Full documentation in [`/docs`](docs/).
+
+## License
+
+[MIT](LICENSE)
