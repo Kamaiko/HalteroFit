@@ -149,7 +149,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
           className="w-16 items-center justify-center"
           style={{ backgroundColor: Colors.destructive }}
         >
-          <Ionicons name="trash-outline" size={ICON_SIZE_MD} color="white" />
+          <Ionicons name="trash-outline" size={ICON_SIZE_MD} color={Colors.primary.foreground} />
         </Pressable>
       </View>
     );

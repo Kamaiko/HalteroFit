@@ -23,7 +23,7 @@ import {
   WorkoutDayDetailsContent,
   type DayExercise,
 } from '@/components/workout';
-import { Colors, START_BUTTON_HEIGHT } from '@/constants';
+import { Colors, ICON_SIZE_SM, START_BUTTON_HEIGHT } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
 
 export default function WorkoutScreen() {
@@ -209,14 +209,14 @@ export default function WorkoutScreen() {
             onPress={handleEditDay}
             className="flex-row items-center px-4 py-3 active:opacity-60"
           >
-            <Ionicons name="pencil-outline" size={20} color={Colors.foreground.DEFAULT} />
+            <Ionicons name="pencil-outline" size={ICON_SIZE_SM} color={Colors.foreground.DEFAULT} />
             <Text className="text-foreground text-base ml-3">Edit</Text>
           </Pressable>
           <Pressable
             onPress={handleDeleteDayPress}
             className="flex-row items-center px-4 py-3 active:opacity-60"
           >
-            <Ionicons name="trash-outline" size={20} color={Colors.destructive} />
+            <Ionicons name="trash-outline" size={ICON_SIZE_SM} color={Colors.destructive} />
             <Text className="text-destructive text-base ml-3">Delete</Text>
           </Pressable>
         </View>

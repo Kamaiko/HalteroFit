@@ -102,7 +102,12 @@ export default function RootLayout() {
               }}
             >
               <Text
-                style={{ color: 'white', fontSize: 11, textAlign: 'center', fontWeight: '600' }}
+                style={{
+                  color: Colors.primary.foreground,
+                  fontSize: 11,
+                  textAlign: 'center',
+                  fontWeight: '600',
+                }}
               >
                 [DEV] Mock User Active
               </Text>

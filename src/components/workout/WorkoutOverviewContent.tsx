@@ -14,7 +14,7 @@ import { Pressable, View } from 'react-native';
 import { EmptyState } from '@/components/ui';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors } from '@/constants';
+import { Colors, ICON_SIZE_SM } from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DayCard } from './DayCard';
@@ -85,7 +85,7 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
               className="w-8 h-8 rounded-full items-center justify-center mr-3"
               style={{ backgroundColor: Colors.primary.DEFAULT }}
             >
-              <Ionicons name="add" size={20} color="white" />
+              <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.foreground} />
             </View>
             <Text className="text-primary font-medium">Add a day</Text>
           </Pressable>

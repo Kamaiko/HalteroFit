@@ -85,7 +85,9 @@ export default function ExercisePickerScreen() {
         >
           <Text
             className="font-semibold text-base"
-            style={{ color: !hasSelection ? Colors.foreground.tertiary : 'white' }}
+            style={{
+              color: !hasSelection ? Colors.foreground.tertiary : Colors.primary.foreground,
+            }}
           >
             {buttonText}
           </Text>

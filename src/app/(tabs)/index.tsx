@@ -11,7 +11,14 @@ import Svg, { Defs, LinearGradient as SvgGradient, Stop, Rect } from 'react-nati
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons, MaterialIcons } from '@/components/ui/icon';
-import { Colors, DURATION_FAST, DURATION_MODERATE, ICON_SIZE_LG, ICON_SIZE_MD } from '@/constants';
+import {
+  BORDER_RADIUS_MD,
+  Colors,
+  DURATION_FAST,
+  DURATION_MODERATE,
+  ICON_SIZE_LG,
+  ICON_SIZE_MD,
+} from '@/constants';
 import appIcon from '../../../assets/icon.png';
 
 export default function HomeScreen() {
@@ -20,7 +27,10 @@ export default function HomeScreen() {
       {/* Header — branding centered */}
       <View className="items-center px-6 pt-2">
         <View className="flex-row items-center gap-2">
-          <Image source={appIcon} style={{ width: 32, height: 32, borderRadius: 7 }} />
+          <Image
+            source={appIcon}
+            style={{ width: ICON_SIZE_LG, height: ICON_SIZE_LG, borderRadius: BORDER_RADIUS_MD }}
+          />
           <Text className="text-sm font-semibold text-foreground">Halterofit</Text>
         </View>
       </View>
@@ -29,8 +39,7 @@ export default function HomeScreen() {
       <View className="flex-row justify-end px-6 mt-1">
         <Pressable
           onPress={() => router.push('/settings')}
-          style={{ width: 44, height: 44, borderRadius: 22 }}
-          className="items-center justify-center bg-background-elevated"
+          className="w-10 h-10 rounded-full items-center justify-center bg-background-elevated"
         >
           <Ionicons name="person" size={ICON_SIZE_MD} color={Colors.foreground.secondary} />
         </Pressable>

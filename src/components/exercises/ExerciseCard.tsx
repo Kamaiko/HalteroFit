@@ -92,7 +92,9 @@ export const ExerciseCard = memo(function ExerciseCard({
         <Ionicons name="chevron-forward" size={ICON_SIZE_SM} color={Colors.foreground.secondary} />
       ) : (
         <View style={checkboxStyle}>
-          {selected && <Ionicons name="checkmark" size={ICON_SIZE_XS} color="white" />}
+          {selected && (
+            <Ionicons name="checkmark" size={ICON_SIZE_XS} color={Colors.primary.foreground} />
+          )}
         </View>
       )}
     </Pressable>

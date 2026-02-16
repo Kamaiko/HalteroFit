@@ -21,6 +21,7 @@ import { Text } from '@/components/ui/text';
 import {
   Colors,
   CARD_ACTIVE_STYLE,
+  ICON_SIZE_XS,
   ICON_SIZE_MD,
   THUMBNAIL_SM,
   MINUTES_PER_EXERCISE,
@@ -126,7 +127,7 @@ export const DayCard = memo(function DayCard({
 
         {/* Stats row */}
         <View className="flex-row items-center mt-1">
-          <Ionicons name="time-outline" size={14} color={Colors.foreground.tertiary} />
+          <Ionicons name="time-outline" size={ICON_SIZE_XS} color={Colors.foreground.tertiary} />
           <Text className="text-sm text-foreground-secondary ml-1">
             Est. {estimateTime(exerciseCount)}
           </Text>

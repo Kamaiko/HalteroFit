@@ -86,12 +86,7 @@ export default function ExerciseSelectorScreen() {
         {/* Grid */}
         <View className="flex-row flex-wrap justify-between">
           {MUSCLE_GROUPS.map((muscle) => (
-            <MuscleCard
-              key={muscle.id}
-              muscleGroupId={muscle.id}
-              label={muscle.label}
-              onPress={() => handleMusclePress(muscle)}
-            />
+            <MuscleCard key={muscle.id} muscle={muscle} onPress={handleMusclePress} />
           ))}
         </View>
       </ScrollView>
@@ -104,21 +99,24 @@ export default function ExerciseSelectorScreen() {
 // ============================================================================
 
 interface MuscleCardProps {
-  muscleGroupId: string;
-  label: string;
-  onPress: () => void;
+  muscle: MuscleGroup;
+  onPress: (muscle: MuscleGroup) => void;
 }
 
-const MuscleCard = memo(function MuscleCard({ muscleGroupId, label, onPress }: MuscleCardProps) {
+const MuscleCard = memo(function MuscleCard({ muscle, onPress }: MuscleCardProps) {
+  const handlePress = useCallback(() => {
+    onPress(muscle);
+  }, [muscle, onPress]);
+
   return (
     <Pressable
       className="mb-3 w-[31%] items-center rounded-xl bg-background-surface border border-background-elevated py-3"
-      onPress={onPress}
+      onPress={handlePress}
     >
       <View className="mb-2 h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-background border border-background-elevated">
-        <MuscleGroupIcon muscleGroupId={muscleGroupId} />
+        <MuscleGroupIcon muscleGroupId={muscle.id} />
       </View>
-      <Text className="text-center text-sm font-medium text-foreground">{label}</Text>
+      <Text className="text-center text-sm font-medium text-foreground">{muscle.label}</Text>
     </Pressable>
   );
 });

@@ -50,7 +50,7 @@ export const PlanHeader = memo(function PlanHeader({ planName, coverImageUrl }: 
 
       {/* Gradient overlay for text readability */}
       <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.7)']}
+        colors={['transparent', `${Colors.background.DEFAULT}B3`]}
         style={{
           position: 'absolute',
           left: 0,

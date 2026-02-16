@@ -13,7 +13,7 @@
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors } from '@/constants';
+import { Colors, ICON_SIZE_MD, ICON_SIZE_SM } from '@/constants';
 import type { Exercise } from '@/services/database/operations';
 import { FlashList } from '@shopify/flash-list';
 import { memo, useCallback, type ReactElement, type ReactNode } from 'react';
@@ -90,7 +90,7 @@ export const ExerciseListView = memo(function ExerciseListView({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
+          <Ionicons name="arrow-back" size={ICON_SIZE_MD} color={Colors.foreground.DEFAULT} />
         </Pressable>
         <View className="flex-1">
           <Text className="text-xl font-semibold text-foreground">{title}</Text>
@@ -103,7 +103,7 @@ export const ExerciseListView = memo(function ExerciseListView({
         <View className="flex-row items-center rounded-lg bg-background-surface px-3 py-2">
           <Ionicons
             name="search"
-            size={20}
+            size={ICON_SIZE_SM}
             color={Colors.foreground.secondary}
             style={{ marginRight: 8 }}
           />
@@ -122,7 +122,7 @@ export const ExerciseListView = memo(function ExerciseListView({
               accessibilityRole="button"
               accessibilityLabel="Clear search"
             >
-              <Ionicons name="close" size={20} color={Colors.foreground.secondary} />
+              <Ionicons name="close" size={ICON_SIZE_SM} color={Colors.foreground.secondary} />
             </Pressable>
           )}
         </View>

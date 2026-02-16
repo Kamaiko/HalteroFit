@@ -47,7 +47,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="stats"
+        name="progress"
         options={{
           title: 'Progress',
           tabBarIcon: ({ color }) => (

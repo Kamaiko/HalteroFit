@@ -18,7 +18,7 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 import { EmptyState } from '@/components/ui';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors } from '@/constants';
+import { Colors, ICON_SIZE_SM } from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DayExerciseCard, type DayExercise } from './DayExerciseCard';
@@ -132,7 +132,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
                 className="mr-3 h-10 w-10 items-center justify-center rounded-full"
                 style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
               >
-                <Ionicons name="add" size={22} color={Colors.primary.DEFAULT} />
+                <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.DEFAULT} />
               </View>
               <Text className="text-base font-medium text-foreground">Add Exercise</Text>
             </Pressable>
