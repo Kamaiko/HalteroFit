@@ -11,7 +11,13 @@
     "newArchEnabled": true,
     "plugins": [
       "expo-router",
-      ["@sentry/react-native/expo", { "organization": "halterofit", "project": "halterofit" }],
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "halterofit",
+          "project": "halterofit"
+        }
+      ],
       "expo-asset",
       [
         "expo-splash-screen",
@@ -29,6 +35,21 @@
             "node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf",
             "node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome.ttf"
           ]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "minSdkVersion": 24,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
         }
       ]
     ],
