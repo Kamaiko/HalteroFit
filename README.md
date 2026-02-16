@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/logo.svg" />
   <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.svg" />
-  <img src="assets/logo-dark.svg" alt="Halterofit icon" width="80" />
+  <img src="assets/logo-dark.svg" alt="Halterofit icon" width="110" />
 </picture>
 
 <br/>
