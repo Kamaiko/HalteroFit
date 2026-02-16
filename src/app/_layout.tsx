@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PortalHost } from '@rn-primitives/portal';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants';
 import { initSentry, setSentryUser, Sentry } from '@/utils/sentry';
 import { ErrorFallbackScreen } from '@/components/layout';
@@ -27,6 +29,13 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
 
+  // Preload icon fonts — no-op if already embedded via expo-font config plugin
+  const [fontsLoaded, fontError] = useFonts({
+    ...Ionicons.font,
+    ...MaterialIcons.font,
+    ...FontAwesome.font,
+  });
+
   // Initialize app on startup
   useEffect(() => {
     async function initialize() {
@@ -44,17 +53,22 @@ export default function RootLayout() {
         await initializeExercises();
 
         setIsReady(true);
-        await SplashScreen.hideAsync();
       } catch (error) {
         console.error('App initialization failed:', error);
         // Still show app even if seeding fails
         setIsReady(true);
-        await SplashScreen.hideAsync();
       }
     }
 
     initialize();
   }, []);
+
+  // Hide splash only when both app init AND fonts are ready
+  useEffect(() => {
+    if (isReady && (fontsLoaded || fontError)) {
+      SplashScreen.hideAsync();
+    }
+  }, [isReady, fontsLoaded, fontError]);
 
   // Sync Sentry user context with auth state
   useEffect(() => {
@@ -69,8 +83,8 @@ export default function RootLayout() {
     return unsubscribe;
   }, []);
 
-  // Wait for initialization (native splash stays visible)
-  if (!isReady) {
+  // Wait for initialization + fonts (native splash stays visible)
+  if (!isReady || (!fontsLoaded && !fontError)) {
     return null;
   }
 
@@ -103,7 +117,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="exercise" options={{ headerShown: false }} />
             <Stack.Screen name="plans" options={{ headerShown: false }} />
-            <Stack.Screen name="profile" options={{ headerShown: false }} />
+            <Stack.Screen name="settings" options={{ headerShown: false }} />
           </Stack>
           <PortalHost />
         </SafeAreaProvider>

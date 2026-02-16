@@ -20,6 +20,16 @@
           "image": "./assets/images/splash.png",
           "imageWidth": 150
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf",
+            "node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf",
+            "node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome.ttf"
+          ]
+        }
       ]
     ],
     "assetBundlePatterns": ["**/*"],

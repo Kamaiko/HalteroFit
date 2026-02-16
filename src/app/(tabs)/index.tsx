@@ -5,36 +5,39 @@
  */
 
 import type { ComponentProps } from 'react';
-import { Pressable, View, Text } from 'react-native';
+import { Image, Pressable, View, Text } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient as SvgGradient, Stop, Rect } from 'react-native-svg';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons, MaterialIcons } from '@/components/ui/icon';
-import { Colors, DURATION_FAST, DURATION_MODERATE, ICON_SIZE_LG, ICON_SIZE_XL } from '@/constants';
+import { Colors, DURATION_FAST, DURATION_MODERATE, ICON_SIZE_LG, ICON_SIZE_MD } from '@/constants';
+import appIcon from '../../../assets/icon.png';
 
 export default function HomeScreen() {
   return (
     <ScreenContainer scroll>
-      {/* Top Navigation Bar */}
-      <View className="flex-row items-center justify-between px-6 pt-6 pb-2">
-        <Pressable
-          onPress={() => router.push('/profile')}
-          className="w-14 h-14 rounded-full items-center justify-center bg-background-elevated"
-        >
-          <Ionicons name="person" size={ICON_SIZE_XL} color={Colors.foreground.secondary} />
-        </Pressable>
+      {/* Header — branding centered */}
+      <View className="items-center px-6 pt-2">
+        <View className="flex-row items-center gap-2">
+          <Image source={appIcon} style={{ width: 32, height: 32, borderRadius: 7 }} />
+          <Text className="text-sm font-semibold text-foreground">Halterofit</Text>
+        </View>
+      </View>
 
+      {/* Profile button — right-aligned, between header and content */}
+      <View className="flex-row justify-end px-6 mt-1">
         <Pressable
           onPress={() => router.push('/settings')}
-          className="w-12 h-12 items-center justify-center"
+          style={{ width: 44, height: 44, borderRadius: 22 }}
+          className="items-center justify-center bg-background-elevated"
         >
-          <Ionicons name="cog-outline" size={ICON_SIZE_LG} color={Colors.foreground.secondary} />
+          <Ionicons name="person" size={ICON_SIZE_MD} color={Colors.foreground.secondary} />
         </Pressable>
       </View>
 
       {/* Summary Section */}
-      <Animated.View entering={FadeInUp.duration(DURATION_MODERATE)} className="px-6 mb-8">
+      <Animated.View entering={FadeInUp.duration(DURATION_MODERATE)} className="px-6 mt-2 mb-8">
         <Text className="text-xl font-bold text-foreground mb-4">Summary</Text>
         <View className="flex-row gap-3">
           <StatCard icon="bolt" value={0} label="Workouts" />

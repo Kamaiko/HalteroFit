@@ -55,13 +55,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      {/* Settings screen hidden from tabs - accessible via navigation */}
-      <Tabs.Screen
-        name="settings"
-        options={{
-          href: null, // Hide from tab bar
-        }}
-      />
     </Tabs>
   );
 }
