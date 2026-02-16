@@ -4,15 +4,13 @@
  * Renders a cropped SVG body diagram with the target muscle highlighted.
  * Uses the vendored body-highlighter SVG path data with a custom viewBox
  * to zoom into the relevant body region for each muscle group.
- *
- * Falls back to Ionicons for non-anatomical categories (cardio).
+ * Supports optional overlay paths (e.g. heart icon for cardio).
  */
 
 import { memo } from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
 
-import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_MUSCLE, ICON_SIZE_XL } from '@/constants';
+import { Colors, ICON_SIZE_MUSCLE } from '@/constants';
 
 import { getMuscleIconData } from './muscleGroupIconConfig';
 
@@ -49,9 +47,9 @@ export const MuscleGroupIcon = memo(function MuscleGroupIcon({
 }: MuscleGroupIconProps) {
   const iconData = getMuscleIconData(muscleGroupId);
 
-  // Fallback icon for cardio (only non-SVG category remaining)
+  // All muscle groups should have SVG data in muscleGroupIconConfig
   if (!iconData) {
-    return <Ionicons name="heart" size={ICON_SIZE_XL} color={Colors.primary.DEFAULT} />;
+    return null;
   }
 
   const isLight = variant === 'light';
@@ -100,6 +98,17 @@ export const MuscleGroupIcon = memo(function MuscleGroupIcon({
           strokeLinejoin="round"
         />
       ))}
+
+      {/* Layer 3: Overlay icon (e.g. heart for cardio) */}
+      {iconData.overlayPath && (
+        <Path
+          d={iconData.overlayPath}
+          fill={Colors.primary.DEFAULT}
+          stroke={Colors.primary.DEFAULT}
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+        />
+      )}
     </Svg>
   );
 });

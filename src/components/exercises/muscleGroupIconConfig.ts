@@ -28,6 +28,8 @@ export interface MuscleIconRenderData {
   allPaths: string[];
   /** SVG path strings for the highlighted muscle(s) */
   highlightPaths: string[];
+  /** Optional SVG path overlaid in primary color (e.g. heart for cardio) */
+  overlayPath?: string;
 }
 
 // ============================================================================
@@ -105,6 +107,11 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
     viewBox: '929 878 310 290',
     highlightSlugs: ['calves'],
   },
+  cardio: {
+    side: 'front',
+    viewBox: '234 240 260 210',
+    highlightSlugs: [],
+  },
   'show-all': {
     side: 'front',
     viewBox: '56 80 480 1320',
@@ -130,6 +137,17 @@ const MUSCLE_ICON_CONFIGS: Record<string, MuscleIconConfig> = {
     ],
   },
 };
+
+// ============================================================================
+// Overlay Paths
+// ============================================================================
+
+/**
+ * Heart SVG path pre-transformed to chest viewBox coordinates (234 240 260 200).
+ * Source: Material Design heart icon (24×24) scaled 5.5× and centered at (364, 360).
+ */
+const HEART_OVERLAY_PATH =
+  'M364 448L356 441C328 416 309 398 309 378C309 361 322 348 339 348C349 348 358 352 364 359C370 352 379 348 389 348C406 348 419 361 419 378C419 398 400 416 372 441L364 448Z';
 
 // ============================================================================
 // Path Extraction
@@ -176,13 +194,16 @@ for (const [id, config] of Object.entries(MUSCLE_ICON_CONFIGS)) {
   });
 }
 
+// Inject overlay paths for special icons
+precomputedData.get('cardio')!.overlayPath = HEART_OVERLAY_PATH;
+
 // ============================================================================
 // Public API
 // ============================================================================
 
 /**
  * Get pre-computed render data for a muscle group icon.
- * Returns null for muscle groups without SVG representation (cardio).
+ * Returns null for unknown muscle group IDs.
  */
 export function getMuscleIconData(muscleGroupId: string): MuscleIconRenderData | null {
   return precomputedData.get(muscleGroupId) ?? null;
