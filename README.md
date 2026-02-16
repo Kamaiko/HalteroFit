@@ -6,6 +6,8 @@
   <img src="assets/logo-dark.svg" alt="Halterofit icon" width="56" />
 </picture>
 
+<br/>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/logo.png" />
   <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.png" />
