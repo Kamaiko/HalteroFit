@@ -23,7 +23,7 @@ import appIcon from '../../../assets/icon.png';
 
 export default function HomeScreen() {
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll edges={[]}>
       {/* Header — branding centered */}
       <View className="items-center px-6 pt-2">
         <View className="flex-row items-center gap-2">
@@ -39,7 +39,7 @@ export default function HomeScreen() {
       <View className="flex-row justify-end px-6 mt-1">
         <Pressable
           onPress={() => router.push('/settings')}
-          className="w-10 h-10 rounded-full items-center justify-center bg-background-elevated"
+          className="w-10 h-10 rounded-full items-center justify-center bg-background-surface border border-background-elevated"
         >
           <Ionicons name="person" size={ICON_SIZE_MD} color={Colors.foreground.secondary} />
         </Pressable>

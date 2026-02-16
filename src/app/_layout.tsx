@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { InteractionManager, View, Text } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -66,7 +66,9 @@ export default function RootLayout() {
   // Hide splash only when both app init AND fonts are ready
   useEffect(() => {
     if (isReady && (fontsLoaded || fontError)) {
-      SplashScreen.hideAsync();
+      InteractionManager.runAfterInteractions(() => {
+        SplashScreen.hideAsync();
+      });
     }
   }, [isReady, fontsLoaded, fontError]);
 

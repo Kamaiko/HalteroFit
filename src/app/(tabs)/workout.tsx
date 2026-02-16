@@ -157,7 +157,7 @@ export default function WorkoutScreen() {
 
   if (loading) {
     return (
-      <ScreenContainer contentClassName="items-center justify-center">
+      <ScreenContainer contentClassName="items-center justify-center" edges={[]}>
         <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
         <Text className="text-foreground-secondary mt-4">Loading workout...</Text>
       </ScreenContainer>
@@ -166,7 +166,7 @@ export default function WorkoutScreen() {
 
   if (!user?.id) {
     return (
-      <ScreenContainer contentClassName="items-center justify-center p-6">
+      <ScreenContainer contentClassName="items-center justify-center p-6" edges={[]}>
         <Text className="text-xl font-bold text-foreground mb-2">Sign In Required</Text>
         <Text className="text-base text-foreground-secondary text-center">
           Please sign in to access your workout plans
@@ -176,7 +176,7 @@ export default function WorkoutScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={[]}>
       <PlanHeader
         planName={activePlan?.name ?? 'New Workout'}
         coverImageUrl={activePlan?.cover_image_url}

@@ -71,7 +71,7 @@ export default function ExerciseSelectorScreen() {
   }, []);
 
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={[]}>
       {/* Header */}
       <View className="border-b border-background-elevated px-4 py-3">
         <Text className="text-xl font-semibold text-foreground">Exercises</Text>
