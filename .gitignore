@@ -71,6 +71,11 @@ nul
 .agents/
 
 # ===================
+# Reference Material
+# ===================
+docs/reference/jefit/
+
+# ===================
 # Secrets & Credentials
 # ===================
 *.jks
