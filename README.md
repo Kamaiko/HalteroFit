@@ -61,7 +61,3 @@ npm start
 ## Documentation
 
 Full documentation in [`/docs`](docs/).
-
-## License
-
-[MIT](LICENSE)
