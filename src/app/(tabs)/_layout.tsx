@@ -23,7 +23,7 @@ export default function TabsLayout() {
           tabBarInactiveTintColor: Colors.foreground.tertiary,
           tabBarShowLabel: true,
           tabBarLabelStyle: styles.tabLabel,
-          sceneStyle: { backgroundColor: Colors.background.surface },
+          sceneStyle: { backgroundColor: Colors.background.DEFAULT },
         }}
         detachInactiveScreens={false}
       >
