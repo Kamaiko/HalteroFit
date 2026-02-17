@@ -55,9 +55,3 @@ npm install
 cp .env.example .env.local
 npm start
 ```
-
----
-
-## Documentation
-
-Full documentation in [`/docs`](docs/).

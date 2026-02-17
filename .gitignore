@@ -71,10 +71,9 @@ nul
 .agents/
 
 # ===================
-# Reference & Archives
+# Documentation
 # ===================
-docs/reference/
-docs/archives/
+docs/
 
 # ===================
 # Secrets & Credentials
