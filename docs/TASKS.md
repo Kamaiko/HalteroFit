@@ -121,6 +121,7 @@ Actionable tasks with Kanban tracking. For strategic overview, see [ROADMAP.md](
 - [ ] **2.1.5** CreateEditPlanScreen (S - 2h)
       Plan name, description, cover image
       Create new / Edit existing
+      **Note:** Enables plan rename — resolves stale default names on existing DB records (see DEFAULT_PLAN_NAME TODO)
 
 - [x] **2.1.6** AddDayDialog (S - 1h) ✅ `[src/components/ui/dialog.tsx, input-dialog.tsx]`
       Day name input (day of week selector deferred to BACKLOG.md)

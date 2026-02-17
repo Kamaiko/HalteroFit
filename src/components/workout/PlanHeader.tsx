@@ -81,7 +81,11 @@ export const PlanHeader = memo(function PlanHeader({ planName, coverImageUrl }: 
       {/* Placeholder icon when no cover image */}
       {!coverImageUrl && (
         <View className="absolute inset-0 items-center justify-center" pointerEvents="none">
-          <BrandIcon size={ICON_SIZE_MUSCLE} color={Colors.primary.light} />
+          <BrandIcon
+            size={ICON_SIZE_MUSCLE}
+            color={Colors.brand.carbonDark}
+            gradientColors={[Colors.brand.carbonLight, Colors.brand.carbonDark]}
+          />
         </View>
       )}
     </View>

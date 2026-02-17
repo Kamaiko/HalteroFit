@@ -98,7 +98,7 @@ export function Icon({ name, pack = 'material', size, variant, className }: Icon
  * @example
  * ```tsx
  * import { MaterialIcons } from '@/components/ui/icon';
- * <MaterialIcons name="home" size={24} color="#00E5FF" />
+ * <MaterialIcons name="home" size={24} color={Colors.primary.DEFAULT} />
  * ```
  */
 export { MaterialIcons, Ionicons, FontAwesome };

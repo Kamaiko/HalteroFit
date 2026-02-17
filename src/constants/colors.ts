@@ -10,6 +10,10 @@
  */
 
 export const Colors = {
+  // ============================================================================
+  // Core App Colors
+  // ============================================================================
+
   // Background colors
   background: {
     DEFAULT: '#0A0A0A',
@@ -27,45 +31,25 @@ export const Colors = {
   },
 
   // Semantic colors
-  success: '#38a169',
-  warning: '#d69e2e',
-  destructive: '#e53e3e',
+  success: '#38A169',
+  warning: '#D69E2E',
+  destructive: '#E53E3E',
   info: '#0369A1', // sky-700
 
   // Text colors
   foreground: {
-    DEFAULT: '#e2e8f0',
-    secondary: '#a0aec0',
+    DEFAULT: '#E2E8F0',
+    secondary: '#A0AEC0',
     tertiary: '#718096',
-    inverse: '#1a202c',
+    inverse: '#1A202C',
   },
 
   // Border colors
   border: {
-    DEFAULT: '#2d3748',
-    light: '#4a5568',
+    DEFAULT: '#2D3748',
+    light: '#4A5568',
     input: '#9CA3AF', // Checkbox/input borders (unselected state)
   },
-
-  // UI library tokens (react-native-reusables components)
-  accent: {
-    DEFAULT: '#27272A',
-    foreground: '#E2E8F0',
-  },
-  secondary: {
-    DEFAULT: '#27272A',
-    foreground: '#E2E8F0',
-  },
-  card: {
-    DEFAULT: '#1A1A1A',
-    foreground: '#E2E8F0',
-  },
-  input: '#27272A',
-  muted: {
-    DEFAULT: '#27272A',
-    foreground: '#94A3B8',
-  },
-  ring: '#0EA5E9',
 
   // Surface colors
   surface: {
@@ -77,21 +61,56 @@ export const Colors = {
     light: 'rgba(255, 255, 255, 0.3)', // Handles, placeholder icons on dark bg
   },
 
+  // ============================================================================
+  // UI Library Tokens (react-native-reusables components)
+  // Values may duplicate core colors — kept separate for library compatibility
+  // ============================================================================
+
+  accent: {
+    DEFAULT: '#27272A',
+    foreground: '#E2E8F0',
+  },
+  secondary: {
+    DEFAULT: '#27272A',
+    foreground: '#E2E8F0',
+  },
+  card: {
+    DEFAULT: '#1A1A1A', // matches background.surface
+    foreground: '#E2E8F0',
+  },
+  input: '#27272A',
+  muted: {
+    DEFAULT: '#27272A',
+    foreground: '#94A3B8',
+  },
+  ring: '#0EA5E9', // matches primary.DEFAULT
+
+  // ============================================================================
+  // Domain-Specific Colors
+  // ============================================================================
+
+  // Brand logo gradient (carbon fiber effect — diagonal sheen on dark backgrounds)
+  brand: {
+    carbonLight: '#404040', // Highlight (top-left sheen)
+    carbonDark: '#1A1A1A', // Shadow (matches background.surface)
+  },
+
   // Dev mode
   dev: {
-    banner: '#ff6b35', // Orange dev mode indicator
+    banner: '#FF6B35', // Orange dev mode indicator
   },
 
   // Muscle diagram colors (body-highlighter SVG icons)
   muscle: {
-    dimBody: '#4f4f4f', // Silhouette context layer (dark variant)
+    dimBody: '#4F4F4F', // Silhouette context layer (dark variant)
   },
 
   // RPE Colors (Rate of Perceived Exertion)
+  // Intentionally duplicates semantic colors — may diverge for fine-grained RPE visualization
   rpe: {
-    low: '#38a169',
-    medium: '#d69e2e',
-    high: '#e53e3e',
-    max: '#c53030',
+    low: '#38A169',
+    medium: '#D69E2E',
+    high: '#E53E3E',
+    max: '#C53030',
   },
 } as const;
