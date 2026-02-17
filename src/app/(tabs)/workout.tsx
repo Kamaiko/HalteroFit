@@ -23,7 +23,7 @@ import {
   WorkoutDayDetailsContent,
   type DayExercise,
 } from '@/components/workout';
-import { Colors, ICON_SIZE_SM, START_BUTTON_HEIGHT } from '@/constants';
+import { Colors, DEFAULT_PLAN_NAME, ICON_SIZE_SM, START_BUTTON_HEIGHT } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
 
 export default function WorkoutScreen() {
@@ -178,7 +178,7 @@ export default function WorkoutScreen() {
   return (
     <ScreenContainer edges={[]}>
       <PlanHeader
-        planName={activePlan?.name ?? 'New Workout'}
+        planName={activePlan?.name ?? DEFAULT_PLAN_NAME}
         coverImageUrl={activePlan?.cover_image_url}
       />
 

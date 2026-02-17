@@ -2,7 +2,7 @@
  * ExerciseThumbnail - Exercise image with fallback icon
  *
  * Displays an exercise GIF thumbnail, a muscle group SVG placeholder
- * (when target muscles are known), or a barbell icon fallback.
+ * (when target muscles are known), or the Halterofit brand icon fallback.
  * Handles image loading errors internally.
  * Optionally wraps in a Pressable for tap-to-view behavior.
  *
@@ -12,7 +12,7 @@
 
 import { Colors, DURATION_STANDARD, ICON_SIZE_MD, THUMBNAIL_SM } from '@/constants';
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
-import { Ionicons } from '@/components/ui/icon';
+import { BrandIcon } from '@/components/ui/brand-icon';
 import { getFirstMuscleGroupId } from '@/utils/muscles';
 import { Image } from 'expo-image';
 import { memo, useCallback, useState } from 'react';
@@ -59,11 +59,7 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
         muscleGroupId ? (
           <MuscleGroupIcon muscleGroupId={muscleGroupId} size={THUMBNAIL_SM} variant="light" />
         ) : (
-          <Ionicons
-            name="barbell-outline"
-            size={ICON_SIZE_MD}
-            color={Colors.foreground.secondary}
-          />
+          <BrandIcon size={ICON_SIZE_MD} color={Colors.foreground.secondary} />
         )
       ) : (
         <Image

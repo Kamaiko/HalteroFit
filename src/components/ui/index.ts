@@ -11,6 +11,8 @@
  *   import { Button } from '@/components/ui/button';  // ShadCN primitive
  */
 
+export { BrandIcon } from './brand-icon';
+
 export { CachedImage } from './cached-image';
 export type { CachedImageProps } from './cached-image';
 

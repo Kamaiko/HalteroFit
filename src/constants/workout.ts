@@ -43,7 +43,7 @@ export const START_BUTTON_HEIGHT = 56;
 // ============================================================================
 
 /** Default name for a new workout plan */
-export const DEFAULT_PLAN_NAME = 'New Workout';
+export const DEFAULT_PLAN_NAME = 'Balanced Hypertrophy Split';
 
 /** Default name for the first day in a new plan */
 export const DEFAULT_FIRST_DAY_NAME = 'Workout Day #1';

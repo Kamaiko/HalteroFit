@@ -15,8 +15,8 @@ import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@/components/ui/icon';
-import { Colors, ICON_SIZE_3XL } from '@/constants';
+import { BrandIcon } from '@/components/ui/brand-icon';
+import { Colors, ICON_SIZE_MUSCLE } from '@/constants';
 
 // ============================================================================
 // Constants
@@ -83,11 +83,7 @@ export const ExerciseGifHeader = memo(function ExerciseGifHeader({
     >
       {showPlaceholder ? (
         <View className="items-center justify-center">
-          <Ionicons
-            name="barbell-outline"
-            size={ICON_SIZE_3XL}
-            color={Colors.foreground.secondary}
-          />
+          <BrandIcon size={ICON_SIZE_MUSCLE} color={Colors.foreground.secondary} />
         </View>
       ) : (
         <Image

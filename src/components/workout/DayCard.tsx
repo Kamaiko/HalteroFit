@@ -4,7 +4,7 @@
  * Displays:
  * - Selection indicators (blue left bar + blue border when selected)
  * - Drag handle (long-press to reorder)
- * - Fitness icon placeholder
+ * - Brand icon placeholder
  * - Day name (vertically centered)
  * - Estimated time & exercise count
  * - Menu button (...)
@@ -16,6 +16,7 @@ import { memo, useCallback } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
+import { BrandIcon } from '@/components/ui/brand-icon';
 import { Ionicons, MaterialIcons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import {
@@ -23,6 +24,7 @@ import {
   CARD_ACTIVE_STYLE,
   ICON_SIZE_XS,
   ICON_SIZE_MD,
+  ICON_SIZE_LG,
   THUMBNAIL_SM,
   MINUTES_PER_EXERCISE,
 } from '@/constants';
@@ -110,11 +112,7 @@ export const DayCard = memo(function DayCard({
             variant="dark"
           />
         ) : (
-          <MaterialIcons
-            name="fitness-center"
-            size={ICON_SIZE_MD}
-            color={Colors.foreground.secondary}
-          />
+          <BrandIcon size={ICON_SIZE_LG} color={Colors.foreground.secondary} />
         )}
       </View>
 

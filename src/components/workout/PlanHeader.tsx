@@ -14,10 +14,10 @@ import { router } from 'expo-router';
 import { memo, useCallback } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { BrandIcon } from '@/components/ui/brand-icon';
 import { CachedImage } from '@/components/ui/cached-image';
-import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { Colors, ICON_SIZE_XL } from '@/constants';
+import { Colors, ICON_SIZE_MUSCLE } from '@/constants';
 
 interface PlanHeaderProps {
   planName: string;
@@ -80,11 +80,8 @@ export const PlanHeader = memo(function PlanHeader({ planName, coverImageUrl }: 
 
       {/* Placeholder icon when no cover image */}
       {!coverImageUrl && (
-        <View
-          className="absolute top-1/2 left-1/2"
-          style={{ transform: [{ translateX: -20 }, { translateY: -40 }] }}
-        >
-          <Ionicons name="barbell-outline" size={ICON_SIZE_XL} color={Colors.overlay.light} />
+        <View className="absolute inset-0 items-center justify-center" pointerEvents="none">
+          <BrandIcon size={ICON_SIZE_MUSCLE} color={Colors.primary.light} />
         </View>
       )}
     </View>
