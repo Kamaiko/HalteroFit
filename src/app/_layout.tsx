@@ -121,10 +121,9 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: Colors.background.DEFAULT },
             }}
           >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="exercise" options={{ headerShown: false }} />
-            <Stack.Screen name="plans" options={{ headerShown: false }} />
-            <Stack.Screen name="settings" options={{ headerShown: false }} />
+            <Stack.Screen name="(app)" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="+not-found" />
           </Stack>
           <PortalHost />
         </SafeAreaProvider>
