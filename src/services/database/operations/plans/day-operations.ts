@@ -25,7 +25,7 @@ import {
   countExercisesByDay,
   computeDominantMuscleGroup,
 } from './mappers';
-import { validateExerciseAdditions } from './exercise-operations';
+import { validateExerciseAdditions, validateReorderInput } from './exercise-operations';
 
 // ============================================================================
 // CREATE
@@ -114,7 +114,7 @@ export async function savePlanDayEdits(data: {
         // 1. Update day name if provided
         if (data.name !== undefined) {
           const trimmedName = data.name.trim();
-          validateDayName(data.name, `day ${data.dayId}`);
+          validateDayName(trimmedName, `day ${data.dayId}`);
           allOperations.push(
             planDay.prepareUpdate((d) => {
               d.name = trimmedName;
@@ -246,10 +246,22 @@ export function observeDominantMuscleByDays(
         const exerciseIds = [...new Set(dayExercises.map((de) => de.exerciseId))];
 
         return from(
-          Promise.all(exerciseIds.map((id) => database.get<ExerciseModel>('exercises').find(id)))
+          Promise.all(
+            exerciseIds.map(async (id) => {
+              try {
+                return await database.get<ExerciseModel>('exercises').find(id);
+              } catch {
+                return null;
+              }
+            })
+          )
         ).pipe(
           map((exercises) => {
-            const exerciseMap = new Map(exercises.map((e) => [e.id, e.targetMuscles]));
+            const exerciseMap = new Map(
+              exercises
+                .filter((e): e is ExerciseModel => e !== null)
+                .map((e) => [e.id, e.targetMuscles])
+            );
 
             // Accumulate target muscles per day (in order_index order)
             const musclesByDay = new Map<string, string[]>();
@@ -298,14 +310,20 @@ export function observePlanDayWithExercises(planDayId: string): Observable<PlanD
       return from(
         Promise.all(
           planDayExercises.map(async (pde) => {
-            const exercise = await database.get<ExerciseModel>('exercises').find(pde.exerciseId);
-            return planDayExerciseWithDetailToPlain(pde, exercise);
+            try {
+              const exercise = await database.get<ExerciseModel>('exercises').find(pde.exerciseId);
+              return planDayExerciseWithDetailToPlain(pde, exercise);
+            } catch {
+              return null;
+            }
           })
         )
       ).pipe(
-        map((exercises) => ({
+        map((results) => ({
           ...planDayToPlain(planDay),
-          exercises,
+          exercises: results.filter(
+            (r): r is PlanDayWithExercises['exercises'][number] => r !== null
+          ),
         }))
       );
     })
@@ -420,13 +438,14 @@ export async function updatePlanDay(id: string, updates: UpdatePlanDay): Promise
 
         validateOwnership(plan.userId, currentUser.id, 'update this plan');
 
-        // Validate name length if being updated
-        if (updates.name !== undefined) {
-          validateDayName(updates.name, `plan day ${id}`);
+        // Validate and trim name if being updated
+        const trimmedName = updates.name !== undefined ? updates.name.trim() : undefined;
+        if (trimmedName !== undefined) {
+          validateDayName(trimmedName, `plan day ${id}`);
         }
 
         await planDay.update((d) => {
-          if (updates.name !== undefined) d.name = updates.name;
+          if (trimmedName !== undefined) d.name = trimmedName;
           if (updates.day_of_week !== undefined) d.dayOfWeek = updates.day_of_week;
           if (updates.order_index !== undefined) d.orderIndex = updates.order_index;
         });
@@ -449,6 +468,9 @@ export async function reorderPlanDays(
 ): Promise<void> {
   if (days.length === 0) return;
 
+  // Pre-transaction guards (pure, no DB)
+  validateReorderInput(days, 'reorderPlanDays');
+
   return withDatabaseError(
     async () => {
       const currentUser = requireAuth('reorder days');
@@ -460,10 +482,31 @@ export async function reorderPlanDays(
 
         validateOwnership(plan.userId, currentUser.id, 'reorder these days');
 
-        // Prepare all updates, then execute in a single batch (1 adapter op, 1 emission)
+        const planId = planDay.planId;
+
+        // Completeness: batch must include all days for this plan
+        const totalCount = await database
+          .get<PlanDayModel>('plan_days')
+          .query(Q.where('plan_id', planId))
+          .fetchCount();
+
+        if (days.length !== totalCount) {
+          throw new ValidationError(
+            'Reorder failed due to invalid input.',
+            `reorderPlanDays: batch has ${days.length} items but plan ${planId} has ${totalCount} days`
+          );
+        }
+
+        // Prepare all updates, verify same parent, then batch
         const preparedUpdates = await Promise.all(
           days.map(async ({ id, order_index }) => {
             const day = await database.get<PlanDayModel>('plan_days').find(id);
+            if (day.planId !== planId) {
+              throw new ValidationError(
+                'Reorder failed due to invalid input.',
+                `reorderPlanDays: day ${id} belongs to plan ${day.planId}, not ${planId}`
+              );
+            }
             return day.prepareUpdate((d) => {
               d.orderIndex = order_index;
             });
@@ -482,7 +525,14 @@ export async function reorderPlanDays(
 // ============================================================================
 
 /**
- * Delete plan day
+ * Delete a plan day and all its exercises in a single atomic transaction.
+ *
+ * WatermelonDB does NOT auto-cascade deletes via @children — that decorator
+ * is for reactive queries only. This function manually fetches and marks all
+ * PlanDayExercise records as deleted before deleting the PlanDay itself.
+ *
+ * @throws {AuthError} If user is not authenticated or does not own the plan
+ * @throws {DatabaseError} If database operation fails
  */
 export async function deletePlanDay(id: string): Promise<void> {
   return withDatabaseError(

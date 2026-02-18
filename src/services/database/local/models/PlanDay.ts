@@ -21,6 +21,8 @@ export default class PlanDay extends Model {
 
   @field('plan_id') planId!: string;
   @relation('workout_plans', 'plan_id') plan!: WorkoutPlan;
+  // @children enables reactive queries (observable) — does NOT cascade deletes.
+  // deletePlanDay() in day-operations.ts handles manual cascade.
   @children('plan_day_exercises') exercises!: PlanDayExercise[];
 
   @field('name') name!: string;

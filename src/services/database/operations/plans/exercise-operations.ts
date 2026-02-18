@@ -17,15 +17,80 @@ import type { PlanDayExercise, AddExerciseToPlanDay } from './types';
 import { planDayExerciseToPlain } from './mappers';
 
 // ============================================================================
+// TYPES
+// ============================================================================
+
+/**
+ * Structured result from checkExerciseAdditions().
+ * Maps to specific UX responses in the picker hook.
+ */
+export type ExerciseAdditionError =
+  | { type: 'limit'; available: number; message: string }
+  | { type: 'duplicates'; duplicateIds: string[]; message: string };
+
+// ============================================================================
 // VALIDATION
 // ============================================================================
 
 /**
+ * Check whether exercises can be added to a plan day.
+ *
+ * Returns a typed error descriptor if invalid, or null if valid.
+ * Use this in hooks/UI that need to map errors to specific UX actions
+ * (e.g., deselecting duplicates, showing limit alerts).
+ *
+ * Companion to validateExerciseAdditions() which throws instead.
+ */
+export function checkExerciseAdditions(params: {
+  currentCount: number;
+  existingExerciseIds: Set<string>;
+  newExerciseIds: string[];
+}): ExerciseAdditionError | null {
+  const { currentCount, existingExerciseIds, newExerciseIds } = params;
+
+  // Check limit
+  if (currentCount + newExerciseIds.length > MAX_EXERCISES_PER_DAY) {
+    const available = MAX_EXERCISES_PER_DAY - currentCount;
+    return {
+      type: 'limit',
+      available,
+      message:
+        available <= 0
+          ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
+          : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
+    };
+  }
+
+  // Check duplicates (against existing + within batch)
+  const seen = new Set<string>();
+  const duplicateIds: string[] = [];
+
+  for (const exerciseId of newExerciseIds) {
+    if (existingExerciseIds.has(exerciseId) || seen.has(exerciseId)) {
+      duplicateIds.push(exerciseId);
+    }
+    seen.add(exerciseId);
+  }
+
+  if (duplicateIds.length > 0) {
+    return {
+      type: 'duplicates',
+      duplicateIds,
+      message:
+        duplicateIds.length === 1
+          ? 'This exercise is already in this workout day'
+          : `${duplicateIds.length} exercises are already in this workout day`,
+    };
+  }
+
+  return null;
+}
+
+/**
  * Validate that exercises can be added to a plan day.
  *
- * Checks max exercise limit and duplicates (against existing + within batch).
- * Designed to be called inside a database.write() transaction — does not
- * perform any database queries itself.
+ * Delegates to checkExerciseAdditions() and throws ValidationError on failure.
+ * Designed to be called inside a database.write() transaction.
  *
  * @throws {ValidationError} If limit exceeded or duplicates found
  */
@@ -35,37 +100,56 @@ export function validateExerciseAdditions(params: {
   newExerciseIds: string[];
   dayId: string;
 }): void {
-  const { currentCount, existingExerciseIds, newExerciseIds, dayId } = params;
+  const { dayId, ...checkParams } = params;
+  const error = checkExerciseAdditions(checkParams);
 
-  // Check limit
-  if (currentCount + newExerciseIds.length > MAX_EXERCISES_PER_DAY) {
-    const available = MAX_EXERCISES_PER_DAY - currentCount;
+  if (error === null) return;
+
+  if (error.type === 'limit') {
     throw new ValidationError(
-      available <= 0
-        ? `This day already has ${MAX_EXERCISES_PER_DAY} exercises (maximum)`
-        : `Can only add ${available} more exercise${available !== 1 ? 's' : ''} to this day (${currentCount}/${MAX_EXERCISES_PER_DAY})`,
-      `Day ${dayId} has ${currentCount} exercises, tried to add ${newExerciseIds.length} (max: ${MAX_EXERCISES_PER_DAY})`
+      error.message,
+      `Day ${dayId} has ${params.currentCount} exercises, tried to add ${params.newExerciseIds.length} (max: ${MAX_EXERCISES_PER_DAY})`
     );
   }
 
-  // Check duplicates (against existing + within batch)
-  const seen = new Set<string>();
-  const duplicates: string[] = [];
+  // error.type === 'duplicates'
+  throw new ValidationError(
+    error.message,
+    `Duplicate exercise IDs in day ${dayId}: ${error.duplicateIds.join(', ')}`
+  );
+}
 
-  for (const exerciseId of newExerciseIds) {
-    if (existingExerciseIds.has(exerciseId) || seen.has(exerciseId)) {
-      duplicates.push(exerciseId);
+/**
+ * Validate a reorder batch before issuing DB writes.
+ *
+ * Pure function — no database queries. Checks:
+ * 1. No duplicate IDs in the batch
+ * 2. Indices are contiguous 0-based integers [0, 1, 2, ...]
+ *
+ * Same-parent and completeness checks happen inside the write transaction.
+ *
+ * @throws {ValidationError} If duplicates or non-contiguous indices detected
+ */
+export function validateReorderInput(
+  items: Array<{ id: string; order_index: number }>,
+  context: string
+): void {
+  const ids = items.map((i) => i.id);
+  if (new Set(ids).size !== ids.length) {
+    throw new ValidationError(
+      'Reorder failed due to invalid input.',
+      `${context}: duplicate IDs detected in reorder batch`
+    );
+  }
+
+  const sortedIndices = items.map((i) => i.order_index).sort((a, b) => a - b);
+  for (let i = 0; i < sortedIndices.length; i++) {
+    if (sortedIndices[i] !== i) {
+      throw new ValidationError(
+        'Reorder failed due to invalid input.',
+        `${context}: non-contiguous order_index values — expected [0..${items.length - 1}], got [${sortedIndices.join(',')}]`
+      );
     }
-    seen.add(exerciseId);
-  }
-
-  if (duplicates.length > 0) {
-    throw new ValidationError(
-      duplicates.length === 1
-        ? 'This exercise is already in this workout day'
-        : `${duplicates.length} exercises are already in this workout day`,
-      `Duplicate exercise IDs in day ${dayId}: ${duplicates.join(', ')}`
-    );
   }
 }
 
@@ -247,27 +331,47 @@ export async function reorderPlanDayExercises(
 ): Promise<void> {
   if (exercises.length === 0) return;
 
+  // Pre-transaction guards (pure, no DB)
+  validateReorderInput(exercises, 'reorderPlanDayExercises');
+
   return withDatabaseError(
     async () => {
       const currentUser = requireAuth('reorder exercises');
 
       await database.write(async () => {
-        // Verify ownership via first exercise
-        const firstExercise = exercises[0];
-        if (!firstExercise) return; // Already checked above, but TypeScript needs this
-
         const firstPde = await database
           .get<PlanDayExerciseModel>('plan_day_exercises')
-          .find(firstExercise.id);
+          .find(exercises[0]!.id);
         const planDay = await database.get<PlanDayModel>('plan_days').find(firstPde.planDayId);
         const plan = await database.get<WorkoutPlanModel>('workout_plans').find(planDay.planId);
 
         validateOwnership(plan.userId, currentUser.id, 'reorder these exercises');
 
-        // Prepare all updates, then execute in a single batch (1 adapter op, 1 emission)
+        const planDayId = firstPde.planDayId;
+
+        // Completeness: batch must include all exercises for this day
+        const totalCount = await database
+          .get<PlanDayExerciseModel>('plan_day_exercises')
+          .query(Q.where('plan_day_id', planDayId))
+          .fetchCount();
+
+        if (exercises.length !== totalCount) {
+          throw new ValidationError(
+            'Reorder failed due to invalid input.',
+            `reorderPlanDayExercises: batch has ${exercises.length} items but day ${planDayId} has ${totalCount} exercises`
+          );
+        }
+
+        // Prepare all updates, verify same parent, then batch
         const preparedUpdates = await Promise.all(
           exercises.map(async ({ id, order_index }) => {
             const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
+            if (pde.planDayId !== planDayId) {
+              throw new ValidationError(
+                'Reorder failed due to invalid input.',
+                `reorderPlanDayExercises: exercise ${id} belongs to day ${pde.planDayId}, not ${planDayId}`
+              );
+            }
             return pde.prepareUpdate((e) => {
               e.orderIndex = order_index;
             });

@@ -11,13 +11,13 @@
 import { useCallback, useState } from 'react';
 import { router } from 'expo-router';
 
-import { MAX_EXERCISES_PER_DAY } from '@/constants';
 import { useAlertState } from '@/hooks/ui/useAlertState';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { useExerciseSearch } from '@/hooks/exercises/useExerciseSearch';
 import type { Exercise } from '@/services/database/operations';
 import {
   addExercisesToPlanDay,
+  checkExerciseAdditions,
   getExerciseIdsAndCountByDay,
 } from '@/services/database/operations/plans';
 import {
@@ -132,31 +132,27 @@ export function useExercisePicker({
 
       const selectedExerciseIds = Array.from(selectedIds);
 
-      // Check duplicates
-      const duplicates = selectedExerciseIds.filter((id) => existingExerciseIds.has(id));
-      if (duplicates.length > 0) {
-        setAlert({
-          title: 'Already Added',
-          description: `${duplicates.length} exercise${duplicates.length !== 1 ? 's' : ''} deselected.`,
-        });
-        setSelectedIds((prev) => {
-          const next = new Set(prev);
-          for (const id of duplicates) next.delete(id);
-          return next;
-        });
-        return;
-      }
+      // Check duplicates and limit via centralized validator
+      const additionError = checkExerciseAdditions({
+        currentCount,
+        existingExerciseIds,
+        newExerciseIds: selectedExerciseIds,
+      });
 
-      // Check limit
-      if (currentCount + selectedExerciseIds.length > MAX_EXERCISES_PER_DAY) {
-        const available = MAX_EXERCISES_PER_DAY - currentCount;
-        setAlert({
-          title: 'Limit Reached',
-          description:
-            available <= 0
-              ? `Day is full (${MAX_EXERCISES_PER_DAY} exercises).`
-              : `Can only add ${available} more (max ${MAX_EXERCISES_PER_DAY}).`,
-        });
+      if (additionError !== null) {
+        if (additionError.type === 'duplicates') {
+          setAlert({
+            title: 'Already Added',
+            description: `${additionError.duplicateIds.length} exercise${additionError.duplicateIds.length !== 1 ? 's' : ''} deselected.`,
+          });
+          setSelectedIds((prev) => {
+            const next = new Set(prev);
+            for (const id of additionError.duplicateIds) next.delete(id);
+            return next;
+          });
+        } else {
+          setAlert({ title: 'Limit Reached', description: additionError.message });
+        }
         return;
       }
 
