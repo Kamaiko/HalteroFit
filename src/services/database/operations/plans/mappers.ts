@@ -71,7 +71,7 @@ export function planDayExerciseWithDetailToPlain(
 
 /** Count exercises per day from a flat list of exercise models */
 export function countExercisesByDay(
-  exercises: PlanDayExerciseModel[],
+  exercises: ReadonlyArray<{ planDayId: string }>,
   planDayIds: string[]
 ): Record<string, number> {
   const counts: Record<string, number> = {};

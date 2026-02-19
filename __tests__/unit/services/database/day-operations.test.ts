@@ -23,6 +23,8 @@ import {
 import { countRecords } from '@test-helpers/database/queries';
 import { MAX_EXERCISES_PER_DAY, MAX_DAYS_PER_PLAN } from '@/constants';
 import { ValidationError, AuthError } from '@/utils/errors';
+import type PlanDayModel from '@/services/database/local/models/PlanDay';
+import type PlanDayExerciseModel from '@/services/database/local/models/PlanDayExercise';
 
 // ============================================================================
 // Pure function imports (no mocking needed)
@@ -102,7 +104,7 @@ describe('computeDominantMuscleGroup', () => {
 
 describe('countExercisesByDay', () => {
   // Create minimal mock objects with only the fields needed
-  const mockPde = (planDayId: string) => ({ planDayId }) as any;
+  const mockPde = (planDayId: string) => ({ planDayId });
 
   test('returns zeroed record for all dayIds when exercises array is empty', () => {
     const result = countExercisesByDay([], ['day-1', 'day-2']);
@@ -386,11 +388,11 @@ describe('Service: reorderPlanDays', () => {
     ]);
 
     const days = await mockDb
-      .get('plan_days')
+      .get<PlanDayModel>('plan_days')
       .query(Q.where('plan_id', plan.id), Q.sortBy('order_index', Q.asc))
       .fetch();
 
-    expect(days.map((d: any) => d.name)).toEqual(['C', 'B', 'A']);
+    expect(days.map((d) => d.name)).toEqual(['C', 'B', 'A']);
   });
 
   test('throws ValidationError when batch is incomplete (missing days)', async () => {
@@ -434,8 +436,8 @@ describe('Service: savePlanDayEdits', () => {
       reorderedExercises: [],
     });
 
-    const updated = await mockDb.get('plan_days').find(day.id);
-    expect((updated as any).name).toBe('New Name');
+    const updated = await mockDb.get<PlanDayModel>('plan_days').find(day.id);
+    expect(updated.name).toBe('New Name');
   });
 
   test('removes specified exercises', async () => {
@@ -472,13 +474,13 @@ describe('Service: savePlanDayEdits', () => {
     });
 
     const pdes = await mockDb
-      .get('plan_day_exercises')
+      .get<PlanDayExerciseModel>('plan_day_exercises')
       .query(Q.where('plan_day_id', day.id))
       .fetch();
 
     expect(pdes).toHaveLength(1);
-    expect((pdes[0] as any).exerciseId).toBe(exercise.id);
-    expect((pdes[0] as any).orderIndex).toBe(0);
+    expect(pdes[0]!.exerciseId).toBe(exercise.id);
+    expect(pdes[0]!.orderIndex).toBe(0);
   });
 
   test('respects deletions when checking exercise limit', async () => {

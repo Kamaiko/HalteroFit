@@ -24,6 +24,8 @@ import {
   createMultipleRecords,
 } from '@test-helpers/database/factories';
 import { countRecords } from '@test-helpers/database/queries';
+import type PlanDayExerciseModel from '@/services/database/local/models/PlanDayExercise';
+import type WorkoutPlanModel from '@/services/database/local/models/WorkoutPlan';
 
 describe('Plan Operations', () => {
   let database: Database;
@@ -186,7 +188,7 @@ describe('Plan Operations', () => {
       // Batch query using Q.oneOf
       const dayIds = [day1.id, day2.id, day3.id];
       const allExercises = await database
-        .get('plan_day_exercises')
+        .get<PlanDayExerciseModel>('plan_day_exercises')
         .query(Q.where('plan_day_id', Q.oneOf(dayIds)))
         .fetch();
 
@@ -196,7 +198,7 @@ describe('Plan Operations', () => {
         counts[id] = 0;
       }
       for (const exercise of allExercises) {
-        const planDayId = (exercise as any).planDayId;
+        const planDayId = exercise.planDayId;
         counts[planDayId] = (counts[planDayId] ?? 0) + 1;
       }
 
@@ -376,12 +378,12 @@ describe('Plan Operations', () => {
 
       // Query for active plan (same as observeActivePlan)
       const activePlans = await database
-        .get('workout_plans')
+        .get<WorkoutPlanModel>('workout_plans')
         .query(Q.where('user_id', user.id), Q.where('is_active', true), Q.take(1))
         .fetch();
 
       expect(activePlans).toHaveLength(1);
-      expect((activePlans[0] as any).name).toBe('Active Plan');
+      expect(activePlans[0]!.name).toBe('Active Plan');
     });
 
     /**

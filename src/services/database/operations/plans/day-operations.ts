@@ -165,6 +165,11 @@ export async function savePlanDayEdits(data: {
         }
 
         // 4. Prepare reorders
+        // NOTE: order_index values may be non-contiguous (e.g., [0, 2]) because
+        // buildSavePayload maps existing exercises to their position in the full
+        // mixed array (which includes newly-added exercises). The gaps are filled
+        // by addedExercises above. All downstream queries use sortBy('order_index')
+        // which handles gaps correctly.
         const preparedReorders = await Promise.all(
           data.reorderedExercises.map(async ({ id, order_index }) => {
             const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);

@@ -128,6 +128,8 @@ export function validateExerciseAdditions(params: {
  *
  * Same-parent and completeness checks happen inside the write transaction.
  *
+ * @param items - Array of {id, order_index} to validate
+ * @param context - Function name for developer error messages
  * @throws {ValidationError} If duplicates or non-contiguous indices detected
  */
 export function validateReorderInput(
