@@ -1,7 +1,6 @@
 import type { Config } from 'jest';
 
-// Shared config between unit and integration test projects
-const sharedConfig = {
+const config: Config = {
   preset: 'jest-expo',
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@nozbe/watermelondb|msw|@mswjs|until-async)',
@@ -15,37 +14,20 @@ const sharedConfig = {
   },
   testPathIgnorePatterns: ['/node_modules/'],
   cacheDirectory: '.jest-cache',
-};
+  testMatch: ['<rootDir>/__tests__/unit/**/*.test.{ts,tsx}'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 
-const config: Config = {
-  projects: [
-    {
-      ...sharedConfig,
-      displayName: 'unit',
-      testMatch: ['<rootDir>/__tests__/unit/**/*.test.{ts,tsx}'],
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-    },
-    {
-      ...sharedConfig,
-      displayName: 'integration',
-      testMatch: ['<rootDir>/__tests__/integration/**/*.test.{ts,tsx}'],
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/__tests__/integration/setup.ts'],
-    },
-  ],
-
-  // Root-level options (not valid inside projects)
   testTimeout: 30000,
   maxWorkers: '50%',
   verbose: process.env.CI === 'true',
 
   // Force exit after tests complete
   // Required for WatermelonDB/LokiJS which keeps worker threads open
-  // See: docs/TESTING.md#known-issues for details
+  // See: docs/TESTING.md#troubleshooting for details
   forceExit: true,
 
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
-    '__tests__/__helpers__/network/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
     '!src/**/__mocks__/**',

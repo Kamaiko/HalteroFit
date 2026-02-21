@@ -3,7 +3,7 @@
  *
  * Tests plan day service-layer functions with focus on:
  * - Pure validators: checkExerciseAdditions, validateExerciseAdditions,
- *   validateReorderInput, computeDominantMuscleGroup, countExercisesByDay
+ *   validateReorderInput, countExercisesByDay
  * - Service functions: createPlanDay, deletePlanDay, reorderPlanDays, savePlanDayEdits
  *
  * Pure function tests run without mocking. Service function tests use a LokiJS
@@ -30,10 +30,7 @@ import type PlanDayExerciseModel from '@/services/database/local/models/PlanDayE
 // Pure function imports (no mocking needed)
 // ============================================================================
 
-import {
-  computeDominantMuscleGroup,
-  countExercisesByDay,
-} from '@/services/database/operations/plans/mappers';
+import { countExercisesByDay } from '@/services/database/operations/plans/mappers';
 
 import {
   checkExerciseAdditions,
@@ -73,34 +70,6 @@ import {
 // ============================================================================
 // Pure Function Tests
 // ============================================================================
-
-describe('computeDominantMuscleGroup', () => {
-  test('returns null for empty array', () => {
-    expect(computeDominantMuscleGroup([])).toBeNull();
-  });
-
-  test('returns the only group present', () => {
-    // "pectorals" maps to "chest" in TARGET_MUSCLE_TO_GROUP_ID
-    const result = computeDominantMuscleGroup(['pectorals']);
-    expect(result).toBe('chest');
-  });
-
-  test('returns the most frequent group', () => {
-    // 2x chest, 1x triceps
-    const result = computeDominantMuscleGroup(['pectorals', 'pectorals', 'triceps']);
-    expect(result).toBe('chest');
-  });
-
-  test('on a tie, returns the group that appears first (Map insertion order)', () => {
-    // 1x chest, 1x triceps — chest appears first
-    const result = computeDominantMuscleGroup(['pectorals', 'triceps']);
-    expect(result).toBe('chest');
-
-    // Reverse order: triceps first
-    const result2 = computeDominantMuscleGroup(['triceps', 'pectorals']);
-    expect(result2).toBe('triceps');
-  });
-});
 
 describe('countExercisesByDay', () => {
   // Create minimal mock objects with only the fields needed
