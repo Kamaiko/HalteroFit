@@ -18,7 +18,7 @@ import {
 } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import type { PlanDayWithExercises } from '@/services/database/operations/plans';
+import type { DayExercise } from '@/services/database/operations/plans';
 import React, { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { type LayoutChangeEvent, Pressable, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
@@ -35,7 +35,7 @@ import Animated, {
 import { DragHandle } from './DragHandle';
 import { ExerciseThumbnail } from './ExerciseThumbnail';
 
-export type DayExercise = PlanDayWithExercises['exercises'][number];
+export type { DayExercise };
 
 export interface DayExerciseCardProps {
   exercise: DayExercise;

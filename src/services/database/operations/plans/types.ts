@@ -55,6 +55,9 @@ export interface PlanDayWithExercises extends PlanDay {
   })[];
 }
 
+/** Single exercise entry within a PlanDayWithExercises */
+export type DayExercise = PlanDayWithExercises['exercises'][number];
+
 export interface CreatePlan {
   user_id: string;
   name: string;

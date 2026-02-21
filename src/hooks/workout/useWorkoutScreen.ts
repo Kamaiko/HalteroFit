@@ -10,9 +10,10 @@
  * - Exercise delete/reorder (useExerciseActions)
  */
 
-import { type RefObject, useCallback, useEffect, useMemo, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
+
 import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { useObservable } from '@/hooks/ui/useObservable';
@@ -31,12 +32,12 @@ import {
 } from '@/services/database/operations/plans';
 import { useAuthStore } from '@/stores/auth/authStore';
 
-import { useAddDayDialog } from './useAddDayDialog';
-import { useDayMenu } from './useDayMenu';
-import { useExerciseActions } from './useExerciseActions';
+import { useAddDayDialog, type UseAddDayDialogReturn } from './useAddDayDialog';
+import { useDayMenu, type UseDayMenuReturn } from './useDayMenu';
+import { useExerciseActions, type UseExerciseActionsReturn } from './useExerciseActions';
 
 export interface UseWorkoutScreenReturn {
-  // State
+  // Core observable state
   user: { id: string; email: string } | null;
   activePlan: WorkoutPlan | null;
   planDays: PlanDay[];
@@ -49,36 +50,18 @@ export interface UseWorkoutScreenReturn {
   dominantMuscleGroups: Record<string, string | null>;
   canStartWorkout: boolean;
 
-  // Menu state
-  menuDay: PlanDay | null;
-  showDeleteConfirm: boolean;
-  isDeleting: boolean;
+  // Refs (top-level — not inside namespaces, avoids react-hooks/refs conflicts)
   menuSheetRef: RefObject<BottomSheetRef | null>;
 
-  // Handlers
+  // Own handlers
   setActiveTabIndex: (index: number) => void;
-  setShowDeleteConfirm: (show: boolean) => void;
   handleDayPress: (day: PlanDay) => void;
-  handleDayMenuPress: (day: PlanDay) => void;
-  handleEditDay: () => void;
-  handleDeleteDayPress: () => void;
-  handleConfirmDelete: () => Promise<void>;
-  handleAddDayPress: () => void;
-  showAddDayDialog: boolean;
-  addDayName: string;
-  setAddDayName: (name: string) => void;
-  isAddingDay: boolean;
-  handleConfirmAddDay: () => Promise<void>;
-  handleCancelAddDay: () => void;
-  addDayAlert: { title: string; description?: string } | null;
-  clearAddDayAlert: () => void;
-  deletingExerciseId: string | null;
-  deleteExerciseOptimistic: (exerciseId: string) => void;
-  handleDeleteAnimationComplete: () => void;
-  reorderExercisesOptimistic: (
-    reorderedExercises: PlanDayWithExercises['exercises']
-  ) => Promise<void>;
   reorderDaysOptimistic: (reorderedDays: PlanDay[]) => Promise<void>;
+
+  // Sub-hook namespaces
+  dayMenu: UseDayMenuReturn;
+  addDay: UseAddDayDialogReturn;
+  exerciseActions: UseExerciseActionsReturn;
 }
 
 export function useWorkoutScreen(): UseWorkoutScreenReturn {
@@ -237,8 +220,11 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     setSelectedDay(day);
   }, []);
 
+  const menuSheetRef = useRef<BottomSheetRef>(null);
+
   const dayMenu = useDayMenu({
     onDayDeleted: handleDayDeleted,
+    sheetRef: menuSheetRef,
   });
 
   const addDay = useAddDayDialog({
@@ -287,25 +273,12 @@ export function useWorkoutScreen(): UseWorkoutScreenReturn {
     exerciseCounts,
     dominantMuscleGroups,
     canStartWorkout,
-
-    // Day menu
-    ...dayMenu,
-
-    // Tab control
+    menuSheetRef,
     setActiveTabIndex,
-
-    // Day selection
     handleDayPress,
-
-    // Add day dialog
-    ...addDay,
-    addDayAlert: addDay.alert,
-    clearAddDayAlert: addDay.clearAlert,
-
-    // Exercise actions
-    ...exerciseActions,
-
-    // Day reorder
     reorderDaysOptimistic,
+    dayMenu,
+    addDay,
+    exerciseActions,
   };
 }

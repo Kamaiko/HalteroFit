@@ -3,7 +3,7 @@
  * Extracted for testability and readability.
  */
 
-import type { DayExercise } from '@/components/workout/DayExerciseCard';
+import type { DayExercise } from '@/services/database/operations/plans';
 import type { PickedExercise } from '@/stores/exercises/exercisePickerStore';
 import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS } from '@/constants';
 

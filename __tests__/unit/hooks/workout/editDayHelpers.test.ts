@@ -13,7 +13,7 @@ import {
 } from '@/hooks/workout/editDayHelpers';
 import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS } from '@/constants';
 import type { PickedExercise } from '@/stores/exercises/exercisePickerStore';
-import type { DayExercise } from '@/components/workout/DayExerciseCard';
+import type { DayExercise } from '@/services/database/operations/plans';
 
 // ── Factories ───────────────────────────────────────────────────────────
 

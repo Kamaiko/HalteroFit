@@ -7,7 +7,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
-import type { DayExercise } from '@/components/workout/DayExerciseCard';
 import type { PickedExercise } from '@/stores/exercises/exercisePickerStore';
 import { useExercisePickerStore } from '@/stores/exercises/exercisePickerStore';
 import { MAX_EXERCISES_PER_DAY, MAX_DAY_NAME_LENGTH } from '@/constants';
@@ -18,6 +17,7 @@ import {
   getPlanDayWithExercises,
   savePlanDayEdits,
   deletePlanDay,
+  type DayExercise,
 } from '@/services/database/operations/plans';
 import {
   isTempExerciseId,
