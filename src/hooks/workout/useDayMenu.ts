@@ -5,23 +5,18 @@
  * Extracted from useWorkoutScreen for single-responsibility.
  */
 
-import { type RefObject, useCallback, useState } from 'react';
+import { type RefObject, useCallback, useRef, useState } from 'react';
 import { router } from 'expo-router';
 
 import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { deletePlanDay, type PlanDay } from '@/services/database/operations/plans';
 
-export interface UseDayMenuParams {
-  onDayDeleted: (dayId: string) => void;
-  /** Ref owned by the compositor — useDayMenu uses it in handlers but doesn't create it */
-  sheetRef: RefObject<BottomSheetRef | null>;
-}
-
 export interface UseDayMenuReturn {
   menuDay: PlanDay | null;
   showDeleteConfirm: boolean;
   isDeleting: boolean;
+  menuSheetRef: RefObject<BottomSheetRef | null>;
   setShowDeleteConfirm: (show: boolean) => void;
   handleDayMenuPress: (day: PlanDay) => void;
   handleEditDay: () => void;
@@ -29,13 +24,14 @@ export interface UseDayMenuReturn {
   handleConfirmDelete: () => Promise<void>;
 }
 
-export function useDayMenu(params: UseDayMenuParams): UseDayMenuReturn {
+export function useDayMenu(params: { onDayDeleted: (dayId: string) => void }): UseDayMenuReturn {
   const { handleError } = useErrorHandler();
-  const { onDayDeleted, sheetRef: menuSheetRef } = params;
+  const { onDayDeleted } = params;
 
   const [menuDay, setMenuDay] = useState<PlanDay | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const menuSheetRef = useRef<BottomSheetRef>(null);
 
   const handleDayMenuPress = useCallback((day: PlanDay) => {
     setMenuDay(day);
@@ -75,6 +71,7 @@ export function useDayMenu(params: UseDayMenuParams): UseDayMenuReturn {
     menuDay,
     showDeleteConfirm,
     isDeleting,
+    menuSheetRef,
     setShowDeleteConfirm,
     handleDayMenuPress,
     handleEditDay,

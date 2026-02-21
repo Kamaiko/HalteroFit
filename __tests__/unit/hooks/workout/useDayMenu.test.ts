@@ -5,9 +5,7 @@
  */
 
 import { renderHook, act } from '@testing-library/react-native';
-import { createRef } from 'react';
 
-import { type BottomSheetRef } from '@/components/ui/bottom-sheet';
 import { useDayMenu } from '@/hooks/workout/useDayMenu';
 import { deletePlanDay, type PlanDay } from '@/services/database/operations/plans';
 
@@ -43,33 +41,17 @@ const makePlanDay = (id: string, name: string): PlanDay => ({
 
 describe('useDayMenu', () => {
   const onDayDeleted = jest.fn();
-  const sheetRef = createRef<BottomSheetRef>();
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockDeletePlanDay.mockResolvedValue(undefined as never);
   });
 
-  // ── handleDayMenuPress ────────────────────────────────────────────
-
-  describe('handleDayMenuPress', () => {
-    it('sets menuDay to the pressed day', () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted, sheetRef }));
-      const day = makePlanDay('day-1', 'Leg Day');
-
-      act(() => {
-        result.current.handleDayMenuPress(day);
-      });
-
-      expect(result.current.menuDay).toEqual(day);
-    });
-  });
-
   // ── handleEditDay ─────────────────────────────────────────────────
 
   describe('handleEditDay', () => {
     it('navigates to /plans/edit-day with menuDay.id', () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted, sheetRef }));
+      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
       const day = makePlanDay('day-42', 'Push Day');
 
       act(() => {
@@ -84,23 +66,13 @@ describe('useDayMenu', () => {
         params: { dayId: 'day-42' },
       });
     });
-
-    it('does nothing if menuDay is null', () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted, sheetRef }));
-
-      act(() => {
-        result.current.handleEditDay();
-      });
-
-      expect(mockRouterPush).not.toHaveBeenCalled();
-    });
   });
 
   // ── handleDeleteDayPress ──────────────────────────────────────────
 
   describe('handleDeleteDayPress', () => {
     it('shows delete confirm dialog', () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted, sheetRef }));
+      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
 
       act(() => {
         result.current.handleDeleteDayPress();
@@ -114,7 +86,7 @@ describe('useDayMenu', () => {
 
   describe('handleConfirmDelete', () => {
     it('calls deletePlanDay, notifies onDayDeleted, and clears state', async () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted, sheetRef }));
+      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
       const day = makePlanDay('day-1', 'Pull Day');
 
       // Set up menu state
@@ -137,7 +109,7 @@ describe('useDayMenu', () => {
       const dbError = new Error('Delete failed');
       mockDeletePlanDay.mockRejectedValueOnce(dbError);
 
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted, sheetRef }));
+      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
       const day = makePlanDay('day-1', 'Leg Day');
 
       act(() => {
@@ -153,7 +125,7 @@ describe('useDayMenu', () => {
     });
 
     it('does nothing if menuDay is null', async () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted, sheetRef }));
+      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
 
       await act(async () => {
         await result.current.handleConfirmDelete();

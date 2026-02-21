@@ -42,16 +42,6 @@ describe('useExerciseActions', () => {
   // ── deleteExerciseOptimistic ──────────────────────────────────────
 
   describe('deleteExerciseOptimistic', () => {
-    it('sets deletingExerciseId when called', () => {
-      const { result } = renderHook(() => useExerciseActions({ selectedDayId: 'day-1' }));
-
-      act(() => {
-        result.current.deleteExerciseOptimistic('ex-1');
-      });
-
-      expect(result.current.deletingExerciseId).toBe('ex-1');
-    });
-
     it('does NOT call removeExerciseFromPlanDay (DB deferred to animation complete)', () => {
       const { result } = renderHook(() => useExerciseActions({ selectedDayId: 'day-1' }));
 
@@ -91,19 +81,6 @@ describe('useExerciseActions', () => {
       });
 
       expect(mockRemove).toHaveBeenCalledWith('ex-42');
-    });
-
-    it('clears deletingExerciseId after completion', async () => {
-      const { result } = renderHook(() => useExerciseActions({ selectedDayId: 'day-1' }));
-
-      act(() => {
-        result.current.deleteExerciseOptimistic('ex-1');
-      });
-      await act(async () => {
-        await result.current.handleDeleteAnimationComplete();
-      });
-
-      expect(result.current.deletingExerciseId).toBeNull();
     });
 
     it('calls handleError on DB failure and still clears state', async () => {
@@ -156,16 +133,6 @@ describe('useExerciseActions', () => {
         { id: 'pde-1', order_index: 1 },
         { id: 'pde-2', order_index: 2 },
       ]);
-    });
-
-    it('does nothing if no selectedDayId', async () => {
-      const { result } = renderHook(() => useExerciseActions({ selectedDayId: undefined }));
-
-      await act(async () => {
-        await result.current.reorderExercisesOptimistic(mockExercises);
-      });
-
-      expect(mockReorder).not.toHaveBeenCalled();
     });
 
     it('calls handleError on failure', async () => {

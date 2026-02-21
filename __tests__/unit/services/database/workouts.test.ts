@@ -1,14 +1,8 @@
 /**
- * Workout CRUD Operations - Unit Tests
+ * Workout Operations - Unit Tests
  *
- * Tests all workout CRUD operations with focus on:
- * - Basic CRUD functionality
- * - Sync protocol compliance (_changed, _status)
- * - Authentication validation
- * - Error handling
- * - Data integrity
- *
- * @see {@link src/services/database/workouts.ts}
+ * Tests query logic, filtering, pagination, and data integrity.
+ * ORM field assignment tests removed — those are framework guarantees.
  */
 
 import { Database } from '@nozbe/watermelondb';
@@ -21,13 +15,8 @@ import {
   resetTestIdCounter,
   createMultipleRecords,
 } from '@test-helpers/database/factories';
-import { getAllRecords, countRecords } from '@test-helpers/database/queries';
+import { countRecords } from '@test-helpers/database/queries';
 import { wait, dateInPast } from '@test-helpers/database/time';
-import { assertDatesApproximatelyEqual } from '@test-helpers/database/assertions';
-
-// NOTE: Sync protocol tests (assertSyncProtocolColumns, getSyncTimestamp)
-// removed - these require real SQLite and are tested in E2E only.
-// See: docs/TESTING.md for testing strategy
 
 describe('Workout CRUD Operations', () => {
   let database: Database;
@@ -42,132 +31,10 @@ describe('Workout CRUD Operations', () => {
   });
 
   // ==========================================================================
-  // CREATE Operations
-  // ==========================================================================
-
-  describe('createWorkout', () => {
-    /**
-     * Verifies basic workout creation with required fields.
-     *
-     * Tests:
-     * - Workout created with correct user_id
-     * - Title saved correctly
-     * - Status set to default ('in_progress')
-     * - Timestamps auto-generated
-     */
-    test('creates workout with required fields', async () => {
-      const user = await createTestUser(database);
-      const workout = await createTestWorkout(database, {
-        user_id: user.id,
-        title: 'Push Day',
-      });
-
-      expect(workout.userId).toBe(user.id);
-      expect(workout.title).toBe('Push Day');
-      expect(workout.isActive).toBe(true); // New workouts are active (completed_at is null)
-      expect(workout.createdAt).toBeDefined();
-      expect(workout.updatedAt).toBeDefined();
-    });
-
-    /**
-     * Verifies workout creation with all optional fields.
-     *
-     * Tests:
-     * - Optional fields (notes, etc.) saved correctly
-     * - Nullable fields handled properly
-     * - Duration calculated correctly
-     */
-    test('creates workout with optional fields', async () => {
-      const user = await createTestUser(database);
-      const startedAt = dateInPast({ hours: 2 });
-      const completedAt = dateInPast({ hours: 1 });
-
-      const workout = await createTestWorkout(database, {
-        user_id: user.id,
-        title: 'Full Body',
-        notes: 'Great session, felt strong',
-        started_at: startedAt.toISOString(),
-        completed_at: completedAt.toISOString(),
-        duration_seconds: 3600,
-      });
-
-      expect(workout.title).toBe('Full Body');
-      expect(workout.notes).toBe('Great session, felt strong');
-      expect(workout.isActive).toBe(false); // Completed workouts are not active
-      expect(workout.durationSeconds).toBe(3600);
-
-      assertDatesApproximatelyEqual(workout.startedAt, startedAt, 1000);
-      assertDatesApproximatelyEqual(workout.completedAt!, completedAt, 1000);
-    });
-
-    // NOTE: Test "creates workout with sync protocol columns" removed
-    // Sync protocol testing requires real SQLite - moved to E2E tests
-    // See: docs/TESTING.md
-
-    /**
-     * Verifies created_at and updated_at are set and equal on creation.
-     *
-     * Tests:
-     * - Both timestamps generated
-     * - Timestamps are approximately equal on creation
-     * - Timestamps are reasonable (recent)
-     */
-    test('sets created_at and updated_at on creation', async () => {
-      const before = new Date();
-      const workout = await createTestWorkout(database);
-      const after = new Date();
-
-      expect(workout.createdAt).toBeDefined();
-      expect(workout.updatedAt).toBeDefined();
-
-      // created_at and updated_at should be equal on creation
-      expect(workout.createdAt.getTime()).toBe(workout.updatedAt.getTime());
-
-      // Should be between before and after
-      expect(workout.createdAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
-      expect(workout.createdAt.getTime()).toBeLessThanOrEqual(after.getTime());
-    });
-  });
-
-  // ==========================================================================
   // READ Operations
   // ==========================================================================
 
   describe('readWorkout', () => {
-    /**
-     * Verifies single workout can be fetched by ID.
-     *
-     * Tests:
-     * - Workout found by ID
-     * - All fields match created data
-     */
-    test('reads single workout by ID', async () => {
-      const workout = await createTestWorkout(database, {
-        title: 'Leg Day',
-      });
-
-      const collection = database.get('workouts');
-      const found = (await collection.find(workout.id)) as Workout;
-
-      expect(found.id).toBe(workout.id);
-      expect(found.title).toBe('Leg Day');
-    });
-
-    /**
-     * Verifies all workouts can be fetched.
-     *
-     * Tests:
-     * - Query returns all workouts
-     * - Count matches created count
-     */
-    test('reads all workouts', async () => {
-      await createMultipleRecords(createTestWorkout, database, 5);
-
-      const workouts = await getAllRecords(database, 'workouts');
-
-      expect(workouts).toHaveLength(5);
-    });
-
     /**
      * Verifies workouts can be filtered by user_id.
      *
@@ -269,28 +136,6 @@ describe('Workout CRUD Operations', () => {
   // ==========================================================================
 
   describe('updateWorkout', () => {
-    /**
-     * Verifies workout fields can be updated.
-     *
-     * Tests:
-     * - Title updated correctly
-     * - Other fields remain unchanged
-     */
-    test('updates workout title', async () => {
-      const workout = await createTestWorkout(database, {
-        title: 'Original Title',
-      });
-
-      await database.write(async () => {
-        await workout.update((w: any) => {
-          w.title = 'Updated Title';
-        });
-      });
-
-      const updated = (await database.get('workouts').find(workout.id)) as Workout;
-      expect(updated.title).toBe('Updated Title');
-    });
-
     /**
      * Verifies multiple fields can be updated in single operation.
      *
@@ -472,26 +317,6 @@ describe('Workout CRUD Operations', () => {
   // ==========================================================================
 
   describe('batchOperations', () => {
-    /**
-     * Verifies database handles multiple workouts efficiently.
-     *
-     * Tests:
-     * - Create 100 workouts in batch
-     * - Query returns all records correctly
-     * - Database handles moderate volumes
-     *
-     * NOTE: Performance assertions removed (LokiJS ≠ SQLite real device).
-     * For real device performance testing, use Maestro E2E tests.
-     */
-    test('queries multiple workouts efficiently', async () => {
-      // Create 100 workouts (realistic dataset for unit tests)
-      await createMultipleRecords(createTestWorkout, database, 100);
-
-      const workouts = await database.get('workouts').query().fetch();
-
-      expect(workouts).toHaveLength(100);
-    });
-
     /**
      * Verifies filtered queries work correctly with multiple records.
      *

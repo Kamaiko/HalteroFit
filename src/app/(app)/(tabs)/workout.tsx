@@ -39,13 +39,31 @@ export default function WorkoutScreen() {
     exerciseCounts,
     dominantMuscleGroups,
     canStartWorkout,
-    setActiveTabIndex,
-    handleDayPress,
+    menuDay,
+    showDeleteConfirm,
+    isDeleting,
     menuSheetRef,
+    setActiveTabIndex,
+    setShowDeleteConfirm,
+    handleDayPress,
+    handleDayMenuPress,
+    handleEditDay,
+    handleDeleteDayPress,
+    handleConfirmDelete,
+    handleAddDayPress,
+    showAddDayDialog,
+    addDayName,
+    setAddDayName,
+    isAddingDay,
+    handleConfirmAddDay,
+    handleCancelAddDay,
+    addDayAlert,
+    clearAddDayAlert,
+    deletingExerciseId,
+    deleteExerciseOptimistic,
+    handleDeleteAnimationComplete,
+    reorderExercisesOptimistic,
     reorderDaysOptimistic,
-    dayMenu,
-    addDay,
-    exerciseActions,
   } = useWorkoutScreen();
 
   const handleAddExercisePress = useCallback(() => {
@@ -73,9 +91,9 @@ export default function WorkoutScreen() {
 
   const handleDeleteExercise = useCallback(
     (exercise: DayExercise) => {
-      exerciseActions.deleteExerciseOptimistic(exercise.id);
+      deleteExerciseOptimistic(exercise.id);
     },
-    [exerciseActions]
+    [deleteExerciseOptimistic]
   );
 
   // Render scene for swipeable tabs
@@ -89,8 +107,8 @@ export default function WorkoutScreen() {
             dominantMuscleGroups={dominantMuscleGroups}
             selectedDayId={selectedDay?.id}
             onDayPress={handleDayPress}
-            onDayMenuPress={dayMenu.handleDayMenuPress}
-            onAddDayPress={addDay.handleAddDayPress}
+            onDayMenuPress={handleDayMenuPress}
+            onAddDayPress={handleAddDayPress}
             onReorder={reorderDaysOptimistic}
           />
         );
@@ -107,9 +125,9 @@ export default function WorkoutScreen() {
             onImagePress={handleExercisePress}
             onEditExercise={handleEditExercise}
             onDeleteExercise={handleDeleteExercise}
-            onReorder={exerciseActions.reorderExercisesOptimistic}
-            deletingExerciseId={exerciseActions.deletingExerciseId}
-            onDeleteAnimationComplete={exerciseActions.handleDeleteAnimationComplete}
+            onReorder={reorderExercisesOptimistic}
+            deletingExerciseId={deletingExerciseId}
+            onDeleteAnimationComplete={handleDeleteAnimationComplete}
           />
         );
       }
@@ -122,16 +140,18 @@ export default function WorkoutScreen() {
       dominantMuscleGroups,
       selectedDay,
       handleDayPress,
-      dayMenu,
-      addDay,
+      handleDayMenuPress,
+      handleAddDayPress,
       selectedDayExercises,
       loadingExercises,
       handleAddExercisePress,
       handleExercisePress,
       handleEditExercise,
       handleDeleteExercise,
-      exerciseActions,
+      reorderExercisesOptimistic,
       reorderDaysOptimistic,
+      deletingExerciseId,
+      handleDeleteAnimationComplete,
     ]
   );
 
@@ -183,17 +203,17 @@ export default function WorkoutScreen() {
         </View>
       )}
 
-      <BottomSheet ref={menuSheetRef} title={dayMenu.menuDay?.name ?? 'Options'}>
+      <BottomSheet ref={menuSheetRef} title={menuDay?.name ?? 'Options'}>
         <View className="gap-2 pb-6">
           <Pressable
-            onPress={dayMenu.handleEditDay}
+            onPress={handleEditDay}
             className="flex-row items-center px-4 py-3 active:opacity-60"
           >
             <Ionicons name="pencil-outline" size={ICON_SIZE_SM} color={Colors.foreground.DEFAULT} />
             <Text className="text-foreground text-base ml-3">Edit</Text>
           </Pressable>
           <Pressable
-            onPress={dayMenu.handleDeleteDayPress}
+            onPress={handleDeleteDayPress}
             className="flex-row items-center px-4 py-3 active:opacity-60"
           >
             <Ionicons name="trash-outline" size={ICON_SIZE_SM} color={Colors.destructive} />
@@ -203,30 +223,30 @@ export default function WorkoutScreen() {
       </BottomSheet>
 
       <ConfirmDialog
-        open={dayMenu.showDeleteConfirm}
-        onOpenChange={dayMenu.setShowDeleteConfirm}
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
         title="Delete this workout day?"
         confirmLabel="Confirm"
-        onConfirm={dayMenu.handleConfirmDelete}
-        loading={dayMenu.isDeleting}
+        onConfirm={handleConfirmDelete}
+        loading={isDeleting}
       />
 
       <InputDialog
-        open={addDay.showAddDayDialog}
-        onClose={addDay.handleCancelAddDay}
+        open={showAddDayDialog}
+        onClose={handleCancelAddDay}
         title="Add a Day"
         placeholder="New day"
-        value={addDay.addDayName}
-        onChangeText={addDay.setAddDayName}
-        onConfirm={addDay.handleConfirmAddDay}
-        loading={addDay.isAddingDay}
+        value={addDayName}
+        onChangeText={setAddDayName}
+        onConfirm={handleConfirmAddDay}
+        loading={isAddingDay}
       />
 
       <AlertDialog
-        open={!!addDay.alert}
-        onOpenChange={addDay.clearAlert}
-        title={addDay.alert?.title ?? ''}
-        description={addDay.alert?.description}
+        open={!!addDayAlert}
+        onOpenChange={clearAddDayAlert}
+        title={addDayAlert?.title ?? ''}
+        description={addDayAlert?.description}
       />
     </ScreenContainer>
   );
