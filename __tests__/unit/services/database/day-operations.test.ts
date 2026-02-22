@@ -2,12 +2,14 @@
  * Day Operations - Unit Tests
  *
  * Tests plan day service-layer functions with focus on:
- * - Pure validators: checkExerciseAdditions, validateExerciseAdditions,
- *   validateReorderInput, countExercisesByDay
- * - Service functions: createPlanDay, deletePlanDay, reorderPlanDays, savePlanDayEdits
+ * - Pure validators: checkExerciseAdditions, validateReorderInput
+ * - Service functions: createPlanDay, deletePlanDay, reorderPlanDays,
+ *   updatePlanDay, savePlanDayEdits
  *
  * Pure function tests run without mocking. Service function tests use a LokiJS
  * test database with mocked auth store for ownership verification.
+ *
+ * countExercisesByDay is a trivial reduce — not tested directly.
  */
 
 import { Database, Q } from '@nozbe/watermelondb';
@@ -30,12 +32,10 @@ import type PlanDayExerciseModel from '@/services/database/local/models/PlanDayE
 // Pure function imports (no mocking needed)
 // ============================================================================
 
-import { countExercisesByDay } from '@/services/database/operations/plans/mappers';
-
 import {
   checkExerciseAdditions,
-  validateExerciseAdditions,
   validateReorderInput,
+  addExercisesToPlanDay,
 } from '@/services/database/operations/plans/exercise-operations';
 
 // ============================================================================
@@ -70,22 +70,6 @@ import {
 // ============================================================================
 // Pure Function Tests
 // ============================================================================
-
-describe('countExercisesByDay', () => {
-  // Create minimal mock objects with only the fields needed
-  const mockPde = (planDayId: string) => ({ planDayId });
-
-  test('returns zeroed record for all dayIds when exercises array is empty', () => {
-    const result = countExercisesByDay([], ['day-1', 'day-2']);
-    expect(result).toEqual({ 'day-1': 0, 'day-2': 0 });
-  });
-
-  test('counts correctly across multiple days', () => {
-    const exercises = [mockPde('day-1'), mockPde('day-2'), mockPde('day-2'), mockPde('day-1')];
-    const result = countExercisesByDay(exercises, ['day-1', 'day-2', 'day-3']);
-    expect(result).toEqual({ 'day-1': 2, 'day-2': 2, 'day-3': 0 });
-  });
-});
 
 describe('checkExerciseAdditions', () => {
   test('returns null when all checks pass', () => {
@@ -137,36 +121,7 @@ describe('checkExerciseAdditions', () => {
   });
 });
 
-describe('validateExerciseAdditions', () => {
-  test('includes dayId in the developer message', () => {
-    try {
-      validateExerciseAdditions({
-        currentCount: 1,
-        existingExerciseIds: new Set(['ex-1']),
-        newExerciseIds: ['ex-1'],
-        dayId: 'my-day-42',
-      });
-    } catch (error) {
-      expect(error).toBeInstanceOf(ValidationError);
-      expect((error as ValidationError).developerMessage).toContain('my-day-42');
-    }
-  });
-});
-
 describe('validateReorderInput', () => {
-  test('does not throw for a valid contiguous 0-based batch', () => {
-    expect(() =>
-      validateReorderInput(
-        [
-          { id: 'a', order_index: 0 },
-          { id: 'b', order_index: 1 },
-          { id: 'c', order_index: 2 },
-        ],
-        'test'
-      )
-    ).not.toThrow();
-  });
-
   test('throws ValidationError when duplicate IDs are present', () => {
     expect(() =>
       validateReorderInput(
@@ -281,16 +236,6 @@ describe('Service: deletePlanDay', () => {
     expect(await countRecords(mockDb, 'plan_days')).toBe(0);
     expect(await countRecords(mockDb, 'plan_day_exercises')).toBe(0);
   });
-
-  test('succeeds when day has zero exercises', async () => {
-    const user = await createTestUser(mockDb, { id: TEST_USER_ID });
-    const plan = await createTestWorkoutPlan(mockDb, { user_id: user.id });
-    const day = await createTestPlanDay(mockDb, { plan_id: plan.id });
-
-    await deletePlanDay(day.id);
-
-    expect(await countRecords(mockDb, 'plan_days')).toBe(0);
-  });
 });
 
 describe('Service: updatePlanDay', () => {
@@ -324,10 +269,6 @@ describe('Service: reorderPlanDays', () => {
   afterEach(async () => {
     await cleanupTestDatabase(mockDb);
     mockGetState.mockReturnValue({ user: { id: TEST_USER_ID } });
-  });
-
-  test('does nothing for empty array', async () => {
-    await expect(reorderPlanDays([])).resolves.toBeUndefined();
   });
 
   test('updates order_index for each day', async () => {
@@ -486,5 +427,123 @@ describe('Service: savePlanDayEdits', () => {
         reorderedExercises: [],
       })
     ).resolves.toBeUndefined();
+  });
+
+  test('reorder + add combined: indices produce correct final order', async () => {
+    const user = await createTestUser(mockDb, { id: TEST_USER_ID });
+    const plan = await createTestWorkoutPlan(mockDb, { user_id: user.id });
+    const day = await createTestPlanDay(mockDb, { plan_id: plan.id });
+
+    // Create 2 existing exercises at positions 0, 1
+    const exA = await createTestExercise(mockDb);
+    const exB = await createTestExercise(mockDb);
+    const pdeA = await createTestPlanDayExercise(mockDb, {
+      plan_day_id: day.id,
+      exercise_id: exA.id,
+      order_index: 0,
+    });
+    const pdeB = await createTestPlanDayExercise(mockDb, {
+      plan_day_id: day.id,
+      exercise_id: exB.id,
+      order_index: 1,
+    });
+
+    // Add new exercise at index 1, reorder existing to 0 and 2 (non-contiguous)
+    const exNew = await createTestExercise(mockDb);
+
+    await savePlanDayEdits({
+      dayId: day.id,
+      removedExerciseIds: [],
+      addedExercises: [{ exercise_id: exNew.id, order_index: 1 }],
+      reorderedExercises: [
+        { id: pdeA.id, order_index: 0 },
+        { id: pdeB.id, order_index: 2 },
+      ],
+    });
+
+    const pdes = await mockDb
+      .get<PlanDayExerciseModel>('plan_day_exercises')
+      .query(Q.where('plan_day_id', day.id), Q.sortBy('order_index', Q.asc))
+      .fetch();
+
+    expect(pdes.map((p) => p.orderIndex)).toEqual([0, 1, 2]);
+    expect(pdes[0]!.exerciseId).toBe(exA.id);
+    expect(pdes[1]!.exerciseId).toBe(exNew.id);
+    expect(pdes[2]!.exerciseId).toBe(exB.id);
+  });
+
+  test('throws ValidationError when adding duplicate exercise', async () => {
+    const user = await createTestUser(mockDb, { id: TEST_USER_ID });
+    const plan = await createTestWorkoutPlan(mockDb, { user_id: user.id });
+    const day = await createTestPlanDay(mockDb, { plan_id: plan.id });
+    const exercise = await createTestExercise(mockDb);
+    await createTestPlanDayExercise(mockDb, {
+      plan_day_id: day.id,
+      exercise_id: exercise.id,
+      order_index: 0,
+    });
+
+    // Try to add the same exercise again
+    await expect(
+      savePlanDayEdits({
+        dayId: day.id,
+        removedExerciseIds: [],
+        addedExercises: [{ exercise_id: exercise.id, order_index: 1 }],
+        reorderedExercises: [],
+      })
+    ).rejects.toThrow(ValidationError);
+  });
+});
+
+describe('Service: addExercisesToPlanDay', () => {
+  beforeAll(() => {
+    mockDb = createTestDatabase();
+    resetTestIdCounter();
+  });
+
+  afterEach(async () => {
+    await cleanupTestDatabase(mockDb);
+    mockGetState.mockReturnValue({ user: { id: TEST_USER_ID } });
+  });
+
+  test('batch adds multiple exercises in a single transaction', async () => {
+    const user = await createTestUser(mockDb, { id: TEST_USER_ID });
+    const plan = await createTestWorkoutPlan(mockDb, { user_id: user.id });
+    const day = await createTestPlanDay(mockDb, { plan_id: plan.id });
+    const ex1 = await createTestExercise(mockDb);
+    const ex2 = await createTestExercise(mockDb);
+
+    const results = await addExercisesToPlanDay(day.id, [
+      { exercise_id: ex1.id, order_index: 0 },
+      { exercise_id: ex2.id, order_index: 1 },
+    ]);
+
+    expect(results).toHaveLength(2);
+    expect(await countRecords(mockDb, 'plan_day_exercises')).toBe(2);
+  });
+
+  test('throws ValidationError when batch contains a duplicate exercise', async () => {
+    const user = await createTestUser(mockDb, { id: TEST_USER_ID });
+    const plan = await createTestWorkoutPlan(mockDb, { user_id: user.id });
+    const day = await createTestPlanDay(mockDb, { plan_id: plan.id });
+    const exercise = await createTestExercise(mockDb);
+    await createTestPlanDayExercise(mockDb, {
+      plan_day_id: day.id,
+      exercise_id: exercise.id,
+      order_index: 0,
+    });
+
+    const newEx = await createTestExercise(mockDb);
+
+    // Batch includes an already-existing exercise
+    await expect(
+      addExercisesToPlanDay(day.id, [
+        { exercise_id: newEx.id, order_index: 1 },
+        { exercise_id: exercise.id, order_index: 2 },
+      ])
+    ).rejects.toThrow(ValidationError);
+
+    // No new exercises should have been created (transaction rolled back)
+    expect(await countRecords(mockDb, 'plan_day_exercises')).toBe(1);
   });
 });

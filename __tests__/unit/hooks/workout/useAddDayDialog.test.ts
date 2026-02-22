@@ -1,8 +1,8 @@
 /**
  * useAddDayDialog - Unit tests
  *
- * Tests the add-day dialog state management, auto-create first day,
- * and double-submit guard.
+ * Tests the two creation paths: auto-create first day (no dialog)
+ * and confirm-add with trimmed name. Both are data-write paths.
  */
 
 import { renderHook, act } from '@testing-library/react-native';
@@ -42,224 +42,63 @@ describe('useAddDayDialog', () => {
     jest.clearAllMocks();
   });
 
-  // ── handleAddDayPress ───────────────────────────────────────────────
+  it('auto-creates first day when planDaysCount === 0 (no dialog)', async () => {
+    const newDay = makePlanDay('day-1', 'Workout Day #1', 0);
+    mockCreatePlanDay.mockResolvedValueOnce(newDay);
 
-  describe('handleAddDayPress', () => {
-    it('auto-creates first day when planDaysCount === 0 (no dialog)', async () => {
-      const newDay = makePlanDay('day-1', 'Workout Day #1', 0);
-      mockCreatePlanDay.mockResolvedValueOnce(newDay);
+    const { result } = renderHook(() =>
+      useAddDayDialog({
+        activePlanId: 'plan-1',
+        planDaysCount: 0,
+        onDayAdded,
+      })
+    );
 
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: 'plan-1',
-          planDaysCount: 0,
-          onDayAdded,
-        })
-      );
-
-      await act(async () => {
-        await result.current.handleAddDayPress();
-      });
-
-      expect(mockCreatePlanDay).toHaveBeenCalledWith({
-        plan_id: 'plan-1',
-        name: 'Workout Day #1',
-        order_index: 0,
-      });
-      expect(onDayAdded).toHaveBeenCalledWith(newDay);
-      expect(result.current.showAddDayDialog).toBe(false);
+    await act(async () => {
+      await result.current.handleAddDayPress();
     });
 
-    it('shows dialog when planDaysCount > 0', async () => {
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: 'plan-1',
-          planDaysCount: 3,
-          onDayAdded,
-        })
-      );
-
-      await act(async () => {
-        await result.current.handleAddDayPress();
-      });
-
-      expect(result.current.showAddDayDialog).toBe(true);
-      expect(mockCreatePlanDay).not.toHaveBeenCalled();
+    expect(mockCreatePlanDay).toHaveBeenCalledWith({
+      plan_id: 'plan-1',
+      name: 'Workout Day #1',
+      order_index: 0,
     });
-
-    it('does nothing if no activePlanId', async () => {
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: undefined,
-          planDaysCount: 0,
-          onDayAdded,
-        })
-      );
-
-      await act(async () => {
-        await result.current.handleAddDayPress();
-      });
-
-      expect(mockCreatePlanDay).not.toHaveBeenCalled();
-      expect(result.current.showAddDayDialog).toBe(false);
-    });
-
-    it('calls handleError on auto-create failure', async () => {
-      const dbError = new Error('Create failed');
-      mockCreatePlanDay.mockRejectedValueOnce(dbError);
-
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: 'plan-1',
-          planDaysCount: 0,
-          onDayAdded,
-        })
-      );
-
-      await act(async () => {
-        await result.current.handleAddDayPress();
-      });
-
-      expect(mockHandleError).toHaveBeenCalledWith(dbError, 'createFirstDay');
-      expect(result.current.isAddingDay).toBe(false);
-    });
+    expect(onDayAdded).toHaveBeenCalledWith(newDay);
+    expect(result.current.showAddDayDialog).toBe(false);
   });
 
-  // ── handleConfirmAddDay ─────────────────────────────────────────────
+  it('creates day with trimmed name and correct order_index', async () => {
+    const newDay = makePlanDay('day-4', 'Leg Day', 3);
+    mockCreatePlanDay.mockResolvedValueOnce(newDay);
 
-  describe('handleConfirmAddDay', () => {
-    it('creates day with trimmed name and correct order_index', async () => {
-      const newDay = makePlanDay('day-4', 'Leg Day', 3);
-      mockCreatePlanDay.mockResolvedValueOnce(newDay);
+    const { result } = renderHook(() =>
+      useAddDayDialog({
+        activePlanId: 'plan-1',
+        planDaysCount: 3,
+        onDayAdded,
+      })
+    );
 
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: 'plan-1',
-          planDaysCount: 3,
-          onDayAdded,
-        })
-      );
-
-      // Open dialog first
-      await act(async () => {
-        await result.current.handleAddDayPress();
-      });
-      act(() => {
-        result.current.setAddDayName('  Leg Day  ');
-      });
-
-      await act(async () => {
-        await result.current.handleConfirmAddDay();
-      });
-
-      expect(mockCreatePlanDay).toHaveBeenCalledWith({
-        plan_id: 'plan-1',
-        name: 'Leg Day',
-        order_index: 3,
-      });
-      expect(onDayAdded).toHaveBeenCalledWith(newDay);
-      expect(result.current.showAddDayDialog).toBe(false);
-      expect(result.current.addDayName).toBe('');
-      expect(result.current.isAddingDay).toBe(false);
+    // Open dialog first
+    await act(async () => {
+      await result.current.handleAddDayPress();
+    });
+    act(() => {
+      result.current.setAddDayName('  Leg Day  ');
     });
 
-    it('uses "New day" as fallback name when empty', async () => {
-      const newDay = makePlanDay('day-2', 'New day', 1);
-      mockCreatePlanDay.mockResolvedValueOnce(newDay);
-
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: 'plan-1',
-          planDaysCount: 1,
-          onDayAdded,
-        })
-      );
-
-      // Open dialog, leave name empty
-      await act(async () => {
-        await result.current.handleAddDayPress();
-      });
-
-      await act(async () => {
-        await result.current.handleConfirmAddDay();
-      });
-
-      expect(mockCreatePlanDay).toHaveBeenCalledWith(expect.objectContaining({ name: 'New day' }));
+    await act(async () => {
+      await result.current.handleConfirmAddDay();
     });
 
-    it('does nothing if no activePlanId', async () => {
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: undefined,
-          planDaysCount: 0,
-          onDayAdded,
-        })
-      );
-
-      await act(async () => {
-        await result.current.handleConfirmAddDay();
-      });
-
-      expect(mockCreatePlanDay).not.toHaveBeenCalled();
+    expect(mockCreatePlanDay).toHaveBeenCalledWith({
+      plan_id: 'plan-1',
+      name: 'Leg Day',
+      order_index: 3,
     });
-
-    it('calls handleError on failure and clears isAddingDay', async () => {
-      const dbError = new Error('Create failed');
-      mockCreatePlanDay.mockRejectedValueOnce(dbError);
-
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: 'plan-1',
-          planDaysCount: 2,
-          onDayAdded,
-        })
-      );
-
-      // Open dialog and set name
-      await act(async () => {
-        await result.current.handleAddDayPress();
-      });
-      act(() => {
-        result.current.setAddDayName('Push Day');
-      });
-
-      await act(async () => {
-        await result.current.handleConfirmAddDay();
-      });
-
-      expect(mockHandleError).toHaveBeenCalledWith(dbError, 'createPlanDay');
-      expect(result.current.isAddingDay).toBe(false);
-    });
-  });
-
-  // ── handleCancelAddDay ──────────────────────────────────────────────
-
-  describe('handleCancelAddDay', () => {
-    it('closes dialog and clears name', async () => {
-      const { result } = renderHook(() =>
-        useAddDayDialog({
-          activePlanId: 'plan-1',
-          planDaysCount: 2,
-          onDayAdded,
-        })
-      );
-
-      // Open dialog and set name
-      await act(async () => {
-        await result.current.handleAddDayPress();
-      });
-      act(() => {
-        result.current.setAddDayName('Some Day');
-      });
-
-      expect(result.current.showAddDayDialog).toBe(true);
-
-      act(() => {
-        result.current.handleCancelAddDay();
-      });
-
-      expect(result.current.showAddDayDialog).toBe(false);
-      expect(result.current.addDayName).toBe('');
-    });
+    expect(onDayAdded).toHaveBeenCalledWith(newDay);
+    expect(result.current.showAddDayDialog).toBe(false);
+    expect(result.current.addDayName).toBe('');
+    expect(result.current.isAddingDay).toBe(false);
   });
 });

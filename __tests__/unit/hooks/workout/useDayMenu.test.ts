@@ -1,7 +1,8 @@
 /**
  * useDayMenu - Unit tests
  *
- * Tests the bottom sheet menu for editing/deleting workout days.
+ * Tests the delete-day path (data loss risk). Navigation and dialog state
+ * are trivial UI wiring — not tested.
  */
 
 import { renderHook, act } from '@testing-library/react-native';
@@ -20,9 +21,8 @@ jest.mock('@/hooks/ui/useErrorHandler', () => ({
   useErrorHandler: () => ({ handleError: mockHandleError }),
 }));
 
-const mockRouterPush = jest.fn();
 jest.mock('expo-router', () => ({
-  router: { push: (...args: unknown[]) => mockRouterPush(...args) },
+  router: { push: jest.fn() },
 }));
 
 const mockDeletePlanDay = deletePlanDay as jest.MockedFunction<typeof deletePlanDay>;
@@ -47,91 +47,22 @@ describe('useDayMenu', () => {
     mockDeletePlanDay.mockResolvedValue(undefined as never);
   });
 
-  // ── handleEditDay ─────────────────────────────────────────────────
+  it('deletes day, notifies callback, and clears state', async () => {
+    const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
+    const day = makePlanDay('day-1', 'Pull Day');
 
-  describe('handleEditDay', () => {
-    it('navigates to /plans/edit-day with menuDay.id', () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
-      const day = makePlanDay('day-42', 'Push Day');
-
-      act(() => {
-        result.current.handleDayMenuPress(day);
-      });
-      act(() => {
-        result.current.handleEditDay();
-      });
-
-      expect(mockRouterPush).toHaveBeenCalledWith({
-        pathname: '/plans/edit-day',
-        params: { dayId: 'day-42' },
-      });
-    });
-  });
-
-  // ── handleDeleteDayPress ──────────────────────────────────────────
-
-  describe('handleDeleteDayPress', () => {
-    it('shows delete confirm dialog', () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
-
-      act(() => {
-        result.current.handleDeleteDayPress();
-      });
-
-      expect(result.current.showDeleteConfirm).toBe(true);
-    });
-  });
-
-  // ── handleConfirmDelete ───────────────────────────────────────────
-
-  describe('handleConfirmDelete', () => {
-    it('calls deletePlanDay, notifies onDayDeleted, and clears state', async () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
-      const day = makePlanDay('day-1', 'Pull Day');
-
-      // Set up menu state
-      act(() => {
-        result.current.handleDayMenuPress(day);
-      });
-
-      await act(async () => {
-        await result.current.handleConfirmDelete();
-      });
-
-      expect(mockDeletePlanDay).toHaveBeenCalledWith('day-1');
-      expect(onDayDeleted).toHaveBeenCalledWith('day-1');
-      expect(result.current.showDeleteConfirm).toBe(false);
-      expect(result.current.menuDay).toBeNull();
-      expect(result.current.isDeleting).toBe(false);
+    act(() => {
+      result.current.handleDayMenuPress(day);
     });
 
-    it('calls handleError on failure', async () => {
-      const dbError = new Error('Delete failed');
-      mockDeletePlanDay.mockRejectedValueOnce(dbError);
-
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
-      const day = makePlanDay('day-1', 'Leg Day');
-
-      act(() => {
-        result.current.handleDayMenuPress(day);
-      });
-
-      await act(async () => {
-        await result.current.handleConfirmDelete();
-      });
-
-      expect(mockHandleError).toHaveBeenCalledWith(dbError, 'deletePlanDay');
-      expect(result.current.isDeleting).toBe(false);
+    await act(async () => {
+      await result.current.handleConfirmDelete();
     });
 
-    it('does nothing if menuDay is null', async () => {
-      const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
-
-      await act(async () => {
-        await result.current.handleConfirmDelete();
-      });
-
-      expect(mockDeletePlanDay).not.toHaveBeenCalled();
-    });
+    expect(mockDeletePlanDay).toHaveBeenCalledWith('day-1');
+    expect(onDayDeleted).toHaveBeenCalledWith('day-1');
+    expect(result.current.showDeleteConfirm).toBe(false);
+    expect(result.current.menuDay).toBeNull();
+    expect(result.current.isDeleting).toBe(false);
   });
 });

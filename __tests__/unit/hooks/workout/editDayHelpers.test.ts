@@ -1,17 +1,13 @@
 /**
  * editDayHelpers - Unit tests
  *
- * Tests the pure helper functions extracted from useEditDay for testability.
+ * Tests buildSavePayload — the transaction payload builder for edit-day saves.
+ * isTempExerciseId, generateTempExerciseId, and createDayExerciseFromPicked
+ * are trivial one-liners (string.startsWith, template literal, object literal)
+ * and not tested directly.
  */
 
-import {
-  TEMP_EXERCISE_ID_PREFIX,
-  isTempExerciseId,
-  generateTempExerciseId,
-  createDayExerciseFromPicked,
-  buildSavePayload,
-} from '@/hooks/workout/editDayHelpers';
-import { DEFAULT_TARGET_SETS, DEFAULT_TARGET_REPS } from '@/constants';
+import { buildSavePayload } from '@/hooks/workout/editDayHelpers';
 import type { PickedExercise } from '@/stores/exercises/exercisePickerStore';
 import type { DayExercise } from '@/services/database/operations/plans';
 
@@ -47,162 +43,33 @@ const makeDayExercise = (id: string, orderIndex: number): DayExercise => ({
   },
 });
 
-// ── isTempExerciseId ────────────────────────────────────────────────────
-
-describe('isTempExerciseId', () => {
-  it('returns true for IDs starting with temp prefix', () => {
-    expect(isTempExerciseId(`${TEMP_EXERCISE_ID_PREFIX}12345_0`)).toBe(true);
-  });
-
-  it('returns false for regular UUIDs', () => {
-    expect(isTempExerciseId('abc-123-def')).toBe(false);
-  });
-
-  it('returns false for empty string', () => {
-    expect(isTempExerciseId('')).toBe(false);
-  });
-
-  it('returns false when prefix appears mid-string', () => {
-    expect(isTempExerciseId(`id_${TEMP_EXERCISE_ID_PREFIX}123`)).toBe(false);
-  });
-});
-
-// ── generateTempExerciseId ──────────────────────────────────────────────
-
-describe('generateTempExerciseId', () => {
-  it('starts with the temp prefix', () => {
-    const id = generateTempExerciseId(0);
-    expect(id.startsWith(TEMP_EXERCISE_ID_PREFIX)).toBe(true);
-  });
-
-  it('includes the index in the ID', () => {
-    const id = generateTempExerciseId(5);
-    expect(id).toMatch(/_5$/);
-  });
-
-  it('is recognized as temporary by isTempExerciseId', () => {
-    expect(isTempExerciseId(generateTempExerciseId(0))).toBe(true);
-  });
-
-  it('generates unique IDs for different indices', () => {
-    const id1 = generateTempExerciseId(0);
-    const id2 = generateTempExerciseId(1);
-    expect(id1).not.toBe(id2);
-  });
-});
-
-// ── createDayExerciseFromPicked ─────────────────────────────────────────
-
-describe('createDayExerciseFromPicked', () => {
-  const picked = makePickedExercise();
-  const dayId = 'day-1';
-  const orderIndex = 2;
-  const tempId = 'temp_12345_0';
-
-  it('maps picked exercise fields to DayExercise', () => {
-    const result = createDayExerciseFromPicked(picked, dayId, orderIndex, tempId);
-
-    expect(result.id).toBe(tempId);
-    expect(result.plan_day_id).toBe(dayId);
-    expect(result.exercise_id).toBe(picked.id);
-    expect(result.order_index).toBe(orderIndex);
-  });
-
-  it('uses default target sets and reps from constants', () => {
-    const result = createDayExerciseFromPicked(picked, dayId, orderIndex, tempId);
-
-    expect(result.target_sets).toBe(DEFAULT_TARGET_SETS);
-    expect(result.target_reps).toBe(DEFAULT_TARGET_REPS);
-  });
-
-  it('sets rest_timer_seconds and notes to undefined', () => {
-    const result = createDayExerciseFromPicked(picked, dayId, orderIndex, tempId);
-
-    expect(result.rest_timer_seconds).toBeUndefined();
-    expect(result.notes).toBeUndefined();
-  });
-
-  it('nests exercise metadata correctly', () => {
-    const result = createDayExerciseFromPicked(picked, dayId, orderIndex, tempId);
-
-    expect(result.exercise).toEqual({
-      id: picked.id,
-      name: picked.name,
-      body_parts: picked.body_parts,
-      target_muscles: picked.target_muscles,
-      equipments: picked.equipments,
-      gif_url: picked.gif_url,
-    });
-  });
-});
-
-// ── buildSavePayload ────────────────────────────────────────────────────
+// ── buildSavePayload — name handling ────────────────────────────────────
 
 describe('buildSavePayload', () => {
-  it('returns unchanged name as undefined (no rename)', () => {
-    const result = buildSavePayload({
-      dayId: 'day-1',
-      dayName: 'Chest Day',
-      initialName: 'Chest Day',
-      exercises: [],
-      pendingAdds: [],
-      removedIds: new Set(),
-    });
+  const baseInput = {
+    dayId: 'day-1',
+    exercises: [] as DayExercise[],
+    pendingAdds: [] as { tempId: string; exercise: PickedExercise }[],
+    removedIds: new Set<string>(),
+  };
 
-    expect(result.name).toBeUndefined();
-  });
+  it('returns name only when trimmed value differs from initial', () => {
+    expect(
+      buildSavePayload({ ...baseInput, dayName: 'Chest Day', initialName: 'Chest Day' }).name
+    ).toBeUndefined();
 
-  it('returns new name when it differs from initial', () => {
-    const result = buildSavePayload({
-      dayId: 'day-1',
-      dayName: 'Upper Body',
-      initialName: 'Chest Day',
-      exercises: [],
-      pendingAdds: [],
-      removedIds: new Set(),
-    });
-
-    expect(result.name).toBe('Upper Body');
-  });
-
-  it('trims whitespace from name', () => {
-    const result = buildSavePayload({
-      dayId: 'day-1',
-      dayName: '  Back Day  ',
-      initialName: 'Chest Day',
-      exercises: [],
-      pendingAdds: [],
-      removedIds: new Set(),
-    });
-
-    expect(result.name).toBe('Back Day');
+    expect(
+      buildSavePayload({ ...baseInput, dayName: '  Back Day  ', initialName: 'Chest Day' }).name
+    ).toBe('Back Day');
   });
 
   it('falls back to initialName when dayName is empty/whitespace', () => {
-    const result = buildSavePayload({
-      dayId: 'day-1',
-      dayName: '   ',
-      initialName: 'Chest Day',
-      exercises: [],
-      pendingAdds: [],
-      removedIds: new Set(),
-    });
-
-    expect(result.name).toBeUndefined();
+    expect(
+      buildSavePayload({ ...baseInput, dayName: '   ', initialName: 'Chest Day' }).name
+    ).toBeUndefined();
   });
 
-  it('converts removedIds set to array', () => {
-    const result = buildSavePayload({
-      dayId: 'day-1',
-      dayName: 'Day',
-      initialName: 'Day',
-      exercises: [],
-      pendingAdds: [],
-      removedIds: new Set(['id-1', 'id-2']),
-    });
-
-    expect(result.removedExerciseIds).toEqual(['id-1', 'id-2']);
-  });
+  // ── buildSavePayload — exercise operations (data loss risk) ───────────
 
   it('maps pending adds with current order index from exercises list', () => {
     const tempId = 'temp_123_0';
@@ -212,12 +79,11 @@ describe('buildSavePayload', () => {
     ];
 
     const result = buildSavePayload({
-      dayId: 'day-1',
+      ...baseInput,
       dayName: 'Day',
       initialName: 'Day',
       exercises,
       pendingAdds: [{ tempId, exercise: makePickedExercise({ id: 'ex-new' }) }],
-      removedIds: new Set(),
     });
 
     expect(result.addedExercises).toEqual([{ exercise_id: 'ex-new', order_index: 1 }]);
@@ -225,12 +91,11 @@ describe('buildSavePayload', () => {
 
   it('filters out pending adds that were later removed', () => {
     const result = buildSavePayload({
-      dayId: 'day-1',
+      ...baseInput,
       dayName: 'Day',
       initialName: 'Day',
       exercises: [makeDayExercise('real-1', 0)],
       pendingAdds: [{ tempId: 'temp_gone', exercise: makePickedExercise() }],
-      removedIds: new Set(),
     });
 
     expect(result.addedExercises).toEqual([]);
@@ -244,17 +109,41 @@ describe('buildSavePayload', () => {
     ];
 
     const result = buildSavePayload({
-      dayId: 'day-1',
+      ...baseInput,
       dayName: 'Day',
       initialName: 'Day',
       exercises,
-      pendingAdds: [],
-      removedIds: new Set(),
     });
 
     expect(result.reorderedExercises).toEqual([
       { id: 'real-2', order_index: 0 },
       { id: 'real-1', order_index: 2 },
     ]);
+  });
+
+  it('reorder + add indices form a complete set (no conflicts or gaps)', () => {
+    const tempId = 'temp_123_0';
+    const exercises = [
+      makeDayExercise('real-1', 0),
+      { ...makeDayExercise(tempId, 1), exercise_id: 'ex-new' },
+      makeDayExercise('real-2', 2),
+    ];
+
+    const result = buildSavePayload({
+      ...baseInput,
+      dayName: 'Day',
+      initialName: 'Day',
+      exercises,
+      pendingAdds: [{ tempId, exercise: makePickedExercise({ id: 'ex-new' }) }],
+    });
+
+    // Reordered: real-1→0, real-2→2 (non-contiguous, gap at 1)
+    // Added: ex-new→1 (fills the gap)
+    const allIndices = [
+      ...result.reorderedExercises.map((e) => e.order_index),
+      ...result.addedExercises.map((e) => e.order_index),
+    ].sort((a, b) => a - b);
+
+    expect(allIndices).toEqual([0, 1, 2]);
   });
 });

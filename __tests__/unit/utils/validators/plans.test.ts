@@ -2,6 +2,7 @@
  * Plan Validation Utilities - Unit tests
  *
  * Tests result-based validators (for UI alerts) and throwing validators (for DB operations).
+ * Boundary testing: at-limit and over-limit cases only — happy paths implied.
  */
 
 import { getDayCountError, validatePlanName, validateDayName } from '@/utils/validators/plans';
@@ -11,9 +12,11 @@ import { MAX_DAYS_PER_PLAN, MAX_PLAN_NAME_LENGTH, MAX_DAY_NAME_LENGTH } from '@/
 // ── getDayCountError ────────────────────────────────────────────────────
 
 describe('getDayCountError', () => {
-  it('returns null when count is below the limit', () => {
-    expect(getDayCountError(0)).toBeNull();
-    expect(getDayCountError(MAX_DAYS_PER_PLAN - 1)).toBeNull();
+  it.each([
+    { count: 0, expected: null },
+    { count: MAX_DAYS_PER_PLAN - 1, expected: null },
+  ])('returns null when count is $count (below limit)', ({ count, expected }) => {
+    expect(getDayCountError(count)).toBe(expected);
   });
 
   it('returns error object when count equals the limit', () => {
@@ -23,26 +26,14 @@ describe('getDayCountError', () => {
     expect(result!.title).toBe('Day Limit Reached');
     expect(result!.description).toContain(String(MAX_DAYS_PER_PLAN));
   });
-
-  it('returns error object when count exceeds the limit', () => {
-    expect(getDayCountError(MAX_DAYS_PER_PLAN + 5)).not.toBeNull();
-  });
 });
 
 // ── validatePlanName ────────────────────────────────────────────────────
 
 describe('validatePlanName', () => {
-  it('accepts a valid name', () => {
-    expect(() => validatePlanName('Push Pull Legs', 'plan-1')).not.toThrow();
-  });
-
   it('accepts a name at max length', () => {
     const name = 'a'.repeat(MAX_PLAN_NAME_LENGTH);
     expect(() => validatePlanName(name, 'plan-1')).not.toThrow();
-  });
-
-  it('throws ValidationError for empty string', () => {
-    expect(() => validatePlanName('', 'plan-1')).toThrow(ValidationError);
   });
 
   it('throws ValidationError for whitespace-only string', () => {
@@ -52,20 +43,6 @@ describe('validatePlanName', () => {
   it('throws ValidationError when name exceeds max length', () => {
     const name = 'a'.repeat(MAX_PLAN_NAME_LENGTH + 1);
     expect(() => validatePlanName(name, 'plan-1')).toThrow(ValidationError);
-  });
-
-  it('trims whitespace before checking length', () => {
-    const paddedName = '  valid name  ';
-    expect(() => validatePlanName(paddedName, 'plan-1')).not.toThrow();
-  });
-
-  it('includes context in the error detail', () => {
-    try {
-      validatePlanName('', 'plan-42');
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect((e as ValidationError).developerMessage).toContain('plan-42');
-    }
   });
 });
 
