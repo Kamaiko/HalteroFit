@@ -78,7 +78,7 @@ export const Tabs = memo(function Tabs({ tabs, activeIndex, onChange, renderScen
       <View style={styles.tabBar}>
         {tabs.map((tab, index) => (
           <Pressable
-            key={index}
+            key={tab}
             style={styles.tab}
             onPress={() => onChange(index)}
             accessibilityRole="tab"
