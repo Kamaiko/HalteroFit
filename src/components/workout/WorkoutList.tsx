@@ -120,10 +120,6 @@ export function WorkoutList({
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       showsVerticalScrollIndicator={false}
-      // FIXME: Remove @ts-expect-error when @shopify/flash-list types include estimatedItemSize
-      // See: https://shopify.github.io/flash-list/docs/usage#estimateditemsize
-      // @ts-expect-error FlashList v2.0.2 supports this prop but types are incomplete
-      estimatedItemSize={88}
       // NOTE: contentContainerStyle doesn't work reliably with FlashList
       // Use wrapper View or ListHeaderComponent/ListFooterComponent instead
       ListFooterComponent={<View className="h-4" />}
