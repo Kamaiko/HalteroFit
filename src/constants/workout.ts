@@ -29,9 +29,6 @@ export const MAX_DAY_NAME_LENGTH = 50;
 /** Maximum length for workout plan names */
 export const MAX_PLAN_NAME_LENGTH = 100;
 
-/** Maximum length for exercise notes (Phase 3+) */
-export const MAX_EXERCISE_NOTES_LENGTH = 500;
-
 /** Style applied to exercise cards during drag-and-drop */
 export const CARD_ACTIVE_STYLE = { transform: [{ scale: 1.02 }], opacity: 0.9 } as const;
 

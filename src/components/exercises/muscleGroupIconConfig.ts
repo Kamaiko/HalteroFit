@@ -195,7 +195,10 @@ for (const [id, config] of Object.entries(MUSCLE_ICON_CONFIGS)) {
 }
 
 // Inject overlay paths for special icons
-precomputedData.get('cardio')!.overlayPath = HEART_OVERLAY_PATH;
+const cardioData = precomputedData.get('cardio');
+if (cardioData) {
+  cardioData.overlayPath = HEART_OVERLAY_PATH;
+}
 
 // ============================================================================
 // Public API
