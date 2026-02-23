@@ -194,12 +194,12 @@ export async function checkUnsyncedChanges(): Promise<boolean> {
  * Get sync status (for UI display)
  */
 export async function getSyncStatus(): Promise<SyncStatus> {
-  // TODO: Store lastSyncedAt in MMKV (Phase 1)
+  // TODO: Store lastSyncedAt in MMKV
 
   const hasUnsynced = await checkUnsyncedChanges();
 
   return {
-    lastSyncedAt: null, // Will implement in Phase 1
+    lastSyncedAt: null,
     hasUnsyncedChanges: hasUnsynced,
     isOnline: true, // Will implement connectivity check later
   };

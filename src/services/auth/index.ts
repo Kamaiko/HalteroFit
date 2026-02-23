@@ -7,4 +7,4 @@
  * No separate service layer needed for simple user session persistence.
  */
 
-// Auth services will be added here in Phase 1 (e.g., Supabase auth helpers)
+// Auth services will be added here in Phase 4 (e.g., Supabase auth helpers)

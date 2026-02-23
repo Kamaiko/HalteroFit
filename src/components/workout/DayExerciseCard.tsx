@@ -83,10 +83,10 @@ export const DayExerciseCard = memo(function DayExerciseCard({
   useEffect(() => {
     if (!isDeleting || cardHeight === 0) return;
 
-    // Phase 1: Slide card off-screen to the left
+    // Step 1: Slide card off-screen to the left
     translateX.value = withTiming(-500, { duration: DURATION_STANDARD });
 
-    // Phase 2: Collapse height + margin (delayed for sequential feel)
+    // Step 2: Collapse height + margin (delayed for sequential feel)
     animHeight.value = cardHeight;
     animHeight.value = withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_STANDARD }));
     animMargin.value = withDelay(

@@ -32,8 +32,8 @@ export function useExerciseActions(params: {
 
   const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
 
-  // Phase 1: Mark exercise as deleting (triggers slide + collapse animation ONLY)
-  // DB mutation is deferred to Phase 2 so the card stays mounted during animation.
+  // Step 1: Mark exercise as deleting (triggers slide + collapse animation ONLY)
+  // DB mutation is deferred to Step 2 so the card stays mounted during animation.
   const deleteExerciseOptimistic = useCallback(
     (exerciseId: string) => {
       if (deletingExerciseId) return;
@@ -42,7 +42,7 @@ export function useExerciseActions(params: {
     [deletingExerciseId]
   );
 
-  // Phase 2: Animation finished — now perform the actual DB deletion.
+  // Step 2: Animation finished — now perform the actual DB deletion.
   // The observable will auto-remove the exercise from the list (already invisible).
   const handleDeleteAnimationComplete = useCallback(async () => {
     const exerciseId = deletingExerciseId;

@@ -44,7 +44,7 @@ export default function RootLayout() {
         initSentry();
 
         // DEV MODE: mock user for UI testing without Supabase auth
-        // Remove when implementing real auth (Phase 1)
+        // Remove when implementing real auth (Phase 4)
         if (__DEV__) {
           enableDevMode();
         }
