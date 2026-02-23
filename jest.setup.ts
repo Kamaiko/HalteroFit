@@ -9,11 +9,6 @@ declare global {
 
 global.__ExpoImportMetaRegistry = new Map();
 
-// Polyfill structuredClone for older Node.js versions (< 17)
-if (typeof global.structuredClone === 'undefined') {
-  global.structuredClone = <T>(val: T): T => JSON.parse(JSON.stringify(val));
-}
-
 // Mock environment variables for Supabase (prevents errors during module loading)
 process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
 process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
