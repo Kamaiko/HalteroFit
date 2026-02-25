@@ -56,14 +56,19 @@ export const useWorkoutStore = create<WorkoutState>()(
         currentWorkoutId: state.currentWorkoutId,
       }),
       // Handle rehydration errors gracefully
+      // NOTE: MMKV hydrates synchronously during create(), so useWorkoutStore
+      // isn't assigned yet when this callback runs. setTimeout defers
+      // setState to right after create() returns.
       onRehydrateStorage: () => (_state, error) => {
         if (error) {
           if (__DEV__) console.error('Workout rehydration failed:', error);
-          useWorkoutStore.setState({
-            isWorkoutActive: false,
-            workoutStartTime: null,
-            currentWorkoutId: null,
-          });
+          setTimeout(() =>
+            useWorkoutStore.setState({
+              isWorkoutActive: false,
+              workoutStartTime: null,
+              currentWorkoutId: null,
+            })
+          );
           return;
         }
         if (__DEV__ && _state?.isWorkoutActive) {

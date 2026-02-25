@@ -68,18 +68,22 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       // Handle rehydration errors gracefully
+      // NOTE: MMKV hydrates synchronously during create(), so useAuthStore
+      // isn't assigned yet when this callback runs. setTimeout defers
+      // setState to right after create() returns.
       onRehydrateStorage: () => (_state, error) => {
         if (error) {
           if (__DEV__) console.error('Auth rehydration failed:', error);
-          useAuthStore.setState({
-            user: null,
-            isLoading: false,
-            isAuthenticated: false,
-          });
+          setTimeout(() =>
+            useAuthStore.setState({
+              user: null,
+              isLoading: false,
+              isAuthenticated: false,
+            })
+          );
           return;
         }
-        // Successfully rehydrated - set loading to false
-        useAuthStore.setState({ isLoading: false });
+        setTimeout(() => useAuthStore.setState({ isLoading: false }));
       },
     }
   )
