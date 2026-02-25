@@ -14,7 +14,7 @@
  * @see https://github.com/HichamELBSI/react-native-body-highlighter
  */
 
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Path } from 'react-native-svg';
 import { Colors } from '@/constants/colors';
 
@@ -85,30 +85,34 @@ const Body = ({
   onBodyPartPress,
   border = '#dfdfdf',
 }: BodyProps) => {
+  // Pre-compute O(1) lookup map from data array — avoids O(n×m) find() in render
+  const dataMap = useMemo(() => {
+    const map = new Map<string, ExtendedBodyPart>();
+    for (const d of data) {
+      if (d.slug) map.set(d.slug, d);
+    }
+    return map;
+  }, [data]);
+
   const mergedBodyParts = useCallback(
     (dataSource: ReadonlyArray<BodyPart>) => {
       const innerData = data
-        .map((d) => {
-          const foundBodyPart = dataSource.find((e) => e.slug === d.slug);
-          return foundBodyPart;
-        })
+        .map((d) => dataSource.find((e) => e.slug === d.slug))
         .filter(Boolean) as BodyPart[];
 
       const coloredBodyParts = innerData.map((d) => {
-        const bodyPart = data.find((e) => e.slug === d.slug);
-        let colorIntensity = 1;
-        if (bodyPart?.intensity) colorIntensity = bodyPart.intensity;
+        const bodyPart = d.slug ? dataMap.get(d.slug) : undefined;
+        const colorIntensity = bodyPart?.intensity ?? 1;
         return { ...d, color: colors[colorIntensity - 1] };
       });
 
-      // Elements in dataSource that have no matching slug in data (replaces ramda differenceWith)
       const unmatched = dataSource.filter(
-        (a) => !data.some((b) => a.slug === b.slug),
+        (a) => !a.slug || !dataMap.has(a.slug),
       );
 
       return [...unmatched, ...coloredBodyParts];
     },
-    [data, colors],
+    [data, dataMap, colors],
   );
 
   const getColorToFill = (bodyPart: ExtendedBodyPart) => {
@@ -124,51 +128,37 @@ const Body = ({
     return (
       <SvgWrapper side={side} scale={scale} border={border}>
         {mergedBodyParts(bodyToRender).map((bodyPart: ExtendedBodyPart) => {
-          const commonPaths = (bodyPart.path?.common ?? []).map((path) => {
-            const dataCommonPath = data.find((d) => d.slug === bodyPart.slug)
-              ?.path?.common;
+          const dataEntry = bodyPart.slug ? dataMap.get(bodyPart.slug) : undefined;
 
-            return (
-              <Path
-                key={path}
-                onPress={() => onBodyPartPress?.(bodyPart)}
-                id={bodyPart.slug}
-                fill={
-                  dataCommonPath ? getColorToFill(bodyPart) : bodyPart.color
-                }
-                d={path}
-              />
-            );
-          });
+          const commonPaths = (bodyPart.path?.common ?? []).map((path) => (
+            <Path
+              key={path}
+              onPress={() => onBodyPartPress?.(bodyPart)}
+              id={bodyPart.slug}
+              fill={dataEntry?.path?.common ? getColorToFill(bodyPart) : bodyPart.color}
+              d={path}
+            />
+          ));
 
-          const leftPaths = (bodyPart.path?.left ?? []).map((path) => {
-            const isOnlyRight =
-              data.find((d) => d.slug === bodyPart.slug)?.side === 'right';
+          const leftPaths = (bodyPart.path?.left ?? []).map((path) => (
+            <Path
+              key={path}
+              onPress={() => onBodyPartPress?.(bodyPart, 'left')}
+              id={bodyPart.slug}
+              fill={dataEntry?.side === 'right' ? Colors.muscle.dimBody : getColorToFill(bodyPart)}
+              d={path}
+            />
+          ));
 
-            return (
-              <Path
-                key={path}
-                onPress={() => onBodyPartPress?.(bodyPart, 'left')}
-                id={bodyPart.slug}
-                fill={isOnlyRight ? Colors.muscle.dimBody : getColorToFill(bodyPart)}
-                d={path}
-              />
-            );
-          });
-          const rightPaths = (bodyPart.path?.right ?? []).map((path) => {
-            const isOnlyLeft =
-              data.find((d) => d.slug === bodyPart.slug)?.side === 'left';
-
-            return (
-              <Path
-                key={path}
-                onPress={() => onBodyPartPress?.(bodyPart, 'right')}
-                id={bodyPart.slug}
-                fill={isOnlyLeft ? Colors.muscle.dimBody : getColorToFill(bodyPart)}
-                d={path}
-              />
-            );
-          });
+          const rightPaths = (bodyPart.path?.right ?? []).map((path) => (
+            <Path
+              key={path}
+              onPress={() => onBodyPartPress?.(bodyPart, 'right')}
+              id={bodyPart.slug}
+              fill={dataEntry?.side === 'left' ? Colors.muscle.dimBody : getColorToFill(bodyPart)}
+              d={path}
+            />
+          ));
 
           return [...commonPaths, ...leftPaths, ...rightPaths];
         })}

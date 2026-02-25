@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 import type { PickedExercise } from '@/stores/exercises/exercisePickerStore';
 import { useExercisePickerStore } from '@/stores/exercises/exercisePickerStore';
 import { MAX_EXERCISES_PER_DAY, MAX_DAY_NAME_LENGTH } from '@/constants';
-import { useAlertState, type AlertState } from '@/hooks/ui/useAlertState';
+import { useAlertState } from '@/hooks/ui/useAlertState';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { isOperationalError } from '@/utils/errors';
 import {
@@ -32,51 +32,10 @@ interface PendingExercise {
   exercise: PickedExercise;
 }
 
-export interface UseEditDayReturn {
-  // State
-  dayName: string;
-  exercises: DayExercise[];
-  loading: boolean;
-  isDirty: boolean;
-  isSaving: boolean;
+/** Inferred from the hook return — no manual maintenance needed. */
+export type UseEditDayReturn = ReturnType<typeof useEditDay>;
 
-  // Day name
-  setDayName: (name: string) => void;
-
-  // Exercise operations (local only)
-  removeExercise: (exerciseId: string) => void;
-  reorderExercises: (reordered: DayExercise[]) => void;
-
-  // Persistence
-  handleSave: () => Promise<void>;
-
-  // Delete day
-  showDeleteConfirm: boolean;
-  setShowDeleteConfirm: (show: boolean) => void;
-  handleDeleteDay: () => Promise<void>;
-  isDeleting: boolean;
-
-  // Discard / navigation guard
-  showDiscardConfirm: boolean;
-  setShowDiscardConfirm: (show: boolean) => void;
-  handleConfirmDiscard: () => void;
-
-  // Navigation
-  handleBack: () => void;
-
-  // Add exercises
-  navigateToExercisePicker: () => void;
-  consumePickerResult: () => void;
-
-  // Navigate to exercise detail
-  navigateToExerciseDetail: (exercise: DayExercise) => void;
-
-  // Alert dialog state
-  alert: AlertState | null;
-  clearAlert: () => void;
-}
-
-export function useEditDay(dayId: string): UseEditDayReturn {
+export function useEditDay(dayId: string) {
   // ── State ──────────────────────────────────────────────────────────────
   const [dayName, setDayName] = useState('');
   const [exercises, setExercises] = useState<DayExercise[]>([]);

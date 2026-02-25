@@ -18,7 +18,8 @@
  * - Smooth animations
  */
 
-import { View, Text, Dimensions } from 'react-native';
+import { memo, useMemo } from 'react';
+import { View, Text, useWindowDimensions } from 'react-native';
 import { CartesianChart, Bar } from 'victory-native';
 import {
   Colors,
@@ -56,7 +57,7 @@ interface BarChartProps {
   showValues?: boolean;
 }
 
-export function BarChart({
+export const BarChart = memo(function BarChart({
   data,
   labels,
   title,
@@ -65,16 +66,10 @@ export function BarChart({
   barColor = Colors.primary.DEFAULT,
   showValues = false,
 }: BarChartProps) {
-  // Calculate default width as 90% of screen width
-  const defaultWidth = Dimensions.get('window').width * CHART_WIDTH_RATIO;
-  const chartWidth = width || defaultWidth;
+  const { width: windowWidth } = useWindowDimensions();
+  const chartWidth = width || windowWidth * CHART_WIDTH_RATIO;
 
-  // Transform data for Victory Native
-  // Victory expects array of {x, y} objects
-  const chartData = data.map((y, index) => ({
-    x: index,
-    y,
-  }));
+  const chartData = useMemo(() => data.map((y, index) => ({ x: index, y })), [data]);
 
   return (
     <View className="items-center mb-4">
@@ -134,4 +129,4 @@ export function BarChart({
       )}
     </View>
   );
-}
+});

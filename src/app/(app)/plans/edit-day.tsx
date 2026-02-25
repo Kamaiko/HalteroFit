@@ -15,9 +15,9 @@ import DraggableFlatList, {
   type RenderItemParams,
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { ActivityIndicator, BackHandler, Pressable, TextInput, View } from 'react-native';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AlertDialog } from '@/components/ui/alert-dialog';
@@ -32,6 +32,7 @@ import type { DayExercise } from '@/components/workout/DayExerciseCard';
 export default function EditDayScreen() {
   const params = useLocalSearchParams<{ dayId: string }>();
   const { dayId } = params;
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
@@ -57,7 +58,7 @@ export default function EditDayScreen() {
     handleBack,
     alert,
     clearAlert,
-  } = useEditDay(dayId!);
+  } = useEditDay(dayId ?? '');
 
   // ── Consume picker results on focus ────────────────────────────────────
   useEffect(() => {
@@ -100,6 +101,39 @@ export default function EditDayScreen() {
   );
 
   const keyExtractor = useCallback((item: DayExercise) => item.id, []);
+
+  const listFooter = useMemo(
+    () => (
+      <View>
+        {/* Add exercise row */}
+        <Pressable
+          onPress={navigateToExercisePicker}
+          className="mx-4 mb-2 flex-row items-center rounded-xl px-4 py-2"
+        >
+          <View style={{ width: 20 }} />
+          <View
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full"
+            style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
+          >
+            <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.DEFAULT} />
+          </View>
+          <Text className="text-base font-medium text-foreground">Add exercise</Text>
+        </Pressable>
+
+        {/* Delete this day */}
+        <Pressable onPress={() => setShowDeleteConfirm(true)} className="items-center py-6">
+          <Text className="text-base font-medium text-destructive">Delete this day</Text>
+        </Pressable>
+      </View>
+    ),
+    [navigateToExercisePicker, setShowDeleteConfirm]
+  );
+
+  // ── Guard: invalid navigation (no dayId) ──────────────────────────────
+  if (!dayId) {
+    router.back();
+    return null;
+  }
 
   // ── Loading state ──────────────────────────────────────────────────────
   if (loading) {
@@ -169,29 +203,7 @@ export default function EditDayScreen() {
         keyExtractor={keyExtractor}
         onDragEnd={({ data }) => reorderExercises(data)}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 120 }}
-        ListFooterComponent={
-          <View>
-            {/* Add exercise row */}
-            <Pressable
-              onPress={navigateToExercisePicker}
-              className="mx-4 mb-2 flex-row items-center rounded-xl px-4 py-2"
-            >
-              <View style={{ width: 20 }} />
-              <View
-                className="mr-3 h-10 w-10 items-center justify-center rounded-full"
-                style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
-              >
-                <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.DEFAULT} />
-              </View>
-              <Text className="text-base font-medium text-foreground">Add exercise</Text>
-            </Pressable>
-
-            {/* Delete this day */}
-            <Pressable onPress={() => setShowDeleteConfirm(true)} className="items-center py-6">
-              <Text className="text-base font-medium text-destructive">Delete this day</Text>
-            </Pressable>
-          </View>
-        }
+        ListFooterComponent={listFooter}
       />
 
       {/* Discard changes dialog */}

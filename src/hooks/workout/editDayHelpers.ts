@@ -79,7 +79,7 @@ export function buildSavePayload(input: SavePayloadInput) {
 
   const reorderedExercises = input.exercises
     .filter((e) => !isTempExerciseId(e.id))
-    .map((e, _i, arr) => ({
+    .map((e) => ({
       id: e.id,
       order_index: input.exercises.indexOf(e),
     }));

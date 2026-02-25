@@ -81,13 +81,10 @@ export default function WorkoutScreen() {
     });
   }, []);
 
-  const handleEditExercise = useCallback(
-    (_exercise: DayExercise) => {
-      if (!selectedDay) return;
-      router.push({ pathname: '/plans/edit-day', params: { dayId: selectedDay.id } });
-    },
-    [selectedDay]
-  );
+  const handleEditExercise = useCallback(() => {
+    if (!selectedDay) return;
+    router.push({ pathname: '/plans/edit-day', params: { dayId: selectedDay.id } });
+  }, [selectedDay]);
 
   const handleDeleteExercise = useCallback(
     (exercise: DayExercise) => {

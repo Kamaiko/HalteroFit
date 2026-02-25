@@ -84,6 +84,25 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
   );
 
   const keyExtractor = useCallback((item: DayExercise) => item.id, []);
+
+  const addExerciseFooter = useMemo(
+    () => (
+      <Pressable
+        onPress={handleAddExercisePress}
+        className="mx-4 mb-2 flex-row items-center rounded-xl px-4 py-2"
+      >
+        <View style={{ width: 20 }} />
+        <View
+          className="mr-3 h-10 w-10 items-center justify-center rounded-full"
+          style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
+        >
+          <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.DEFAULT} />
+        </View>
+        <Text className="text-base font-medium text-foreground">Add Exercise</Text>
+      </Pressable>
+    ),
+    [handleAddExercisePress]
+  );
   if (!selectedDay) {
     return (
       <EmptyState
@@ -122,21 +141,7 @@ export const WorkoutDayDetailsContent = memo(function WorkoutDayDetailsContent({
           keyExtractor={keyExtractor}
           onDragEnd={({ data }) => onReorder?.(data)}
           contentContainerStyle={{ paddingTop: 8, paddingBottom: 160 }}
-          ListFooterComponent={
-            <Pressable
-              onPress={handleAddExercisePress}
-              className="mx-4 mb-2 flex-row items-center rounded-xl px-4 py-2"
-            >
-              <View style={{ width: 20 }} />
-              <View
-                className="mr-3 h-10 w-10 items-center justify-center rounded-full"
-                style={{ backgroundColor: Colors.primary.DEFAULT + '20' }}
-              >
-                <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.DEFAULT} />
-              </View>
-              <Text className="text-base font-medium text-foreground">Add Exercise</Text>
-            </Pressable>
-          }
+          ListFooterComponent={addExerciseFooter}
           ListEmptyComponent={null}
         />
       </View>

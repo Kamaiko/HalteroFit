@@ -71,8 +71,7 @@
       "favicon": "./assets/favicon.png"
     },
     "experiments": {
-      "typedRoutes": true,
-      "tsconfigPaths": true
+      "typedRoutes": true
     },
     "developmentClient": {
       "silentLaunch": true

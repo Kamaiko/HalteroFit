@@ -13,7 +13,7 @@ if git diff --cached --name-only | grep -qE "supabase/migrations/.*\.sql"; then
     echo "   1. Open: src/services/database/local/schema.ts"
     echo "   2. Increment version: version: X → version: X+1"
     echo ""
-    echo "📚 Documentation: docs/CONTRIBUTING.md § Database Schema Changes (step 5)"
+    echo "📚 Documentation: docs/DATABASE.md § Schema Changes"
     echo ""
     echo "⚠️  Bypass (if migration doesn't change schema): git commit --no-verify"
     echo ""

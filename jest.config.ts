@@ -17,7 +17,7 @@ const config: Config = {
   testMatch: ['<rootDir>/__tests__/unit/**/*.test.{ts,tsx}'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 
-  testTimeout: 30000,
+  testTimeout: 10000,
   maxWorkers: '50%',
   verbose: process.env.CI === 'true',
 

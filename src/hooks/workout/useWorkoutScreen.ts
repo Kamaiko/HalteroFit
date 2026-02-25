@@ -10,7 +10,7 @@
  * - Exercise delete/reorder (useExerciseActions)
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
@@ -44,13 +44,13 @@ export function useWorkoutScreen() {
   // ── Plan observation ────────────────────────────────────────────────
   const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [creatingDefaultPlan, setCreatingDefaultPlan] = useState(false);
+  const creatingDefaultPlanRef = useRef(false);
 
   // Create default plan if none exists
   const createDefaultPlanFn = useCallback(async () => {
-    if (!user?.id || creatingDefaultPlan) return;
+    if (!user?.id || creatingDefaultPlanRef.current) return;
 
-    setCreatingDefaultPlan(true);
+    creatingDefaultPlanRef.current = true;
     try {
       const newPlan = await createPlan({
         user_id: user.id,
@@ -67,10 +67,10 @@ export function useWorkoutScreen() {
     } catch (error) {
       handleError(error, 'createDefaultPlan');
     } finally {
-      setCreatingDefaultPlan(false);
+      creatingDefaultPlanRef.current = false;
       setLoading(false);
     }
-  }, [user?.id, creatingDefaultPlan, handleError]);
+  }, [user?.id, handleError]);
 
   // Subscribe to active plan
   useEffect(() => {
@@ -82,7 +82,7 @@ export function useWorkoutScreen() {
     const subscription = observeActivePlan(user.id).subscribe({
       next: (plan) => {
         setActivePlan(plan);
-        if (!plan && !creatingDefaultPlan) {
+        if (!plan && !creatingDefaultPlanRef.current) {
           createDefaultPlanFn();
         } else {
           setLoading(false);
@@ -95,7 +95,7 @@ export function useWorkoutScreen() {
     });
 
     return () => subscription.unsubscribe();
-  }, [user?.id, creatingDefaultPlan, handleError, createDefaultPlanFn]);
+  }, [user?.id, handleError, createDefaultPlanFn]);
 
   // ── Plan days observation (reactive) ────────────────────────────────
   const planDaysObs = useMemo(

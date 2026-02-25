@@ -201,7 +201,7 @@ export async function getSyncStatus(): Promise<SyncStatus> {
   return {
     lastSyncedAt: null,
     hasUnsyncedChanges: hasUnsynced,
-    isOnline: true, // Will implement connectivity check later
+    isOnline: true, // TODO: Implement connectivity check
   };
 }
 

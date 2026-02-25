@@ -8,7 +8,7 @@ import DraggableFlatList, {
   type RenderItemParams,
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { EmptyState } from '@/components/ui';
@@ -60,6 +60,21 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
 
   const keyExtractor = useCallback((item: PlanDay) => item.id, []);
 
+  const listFooter = useMemo(
+    () => (
+      <Pressable onPress={onAddDayPress} className="flex-row items-center mx-4 ml-16 py-3">
+        <View
+          className="w-8 h-8 rounded-full items-center justify-center mr-3"
+          style={{ backgroundColor: Colors.primary.DEFAULT }}
+        >
+          <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.foreground} />
+        </View>
+        <Text className="text-primary font-medium">Add a day</Text>
+      </Pressable>
+    ),
+    [onAddDayPress]
+  );
+
   if (planDays.length === 0) {
     return (
       <EmptyState
@@ -79,17 +94,7 @@ export const WorkoutOverviewContent = memo(function WorkoutOverviewContent({
         keyExtractor={keyExtractor}
         onDragEnd={({ data }) => onReorder(data)}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
-        ListFooterComponent={
-          <Pressable onPress={onAddDayPress} className="flex-row items-center mx-4 ml-16 py-3">
-            <View
-              className="w-8 h-8 rounded-full items-center justify-center mr-3"
-              style={{ backgroundColor: Colors.primary.DEFAULT }}
-            >
-              <Ionicons name="add" size={ICON_SIZE_SM} color={Colors.primary.foreground} />
-            </View>
-            <Text className="text-primary font-medium">Add a day</Text>
-          </Pressable>
-        }
+        ListFooterComponent={listFooter}
       />
     </View>
   );

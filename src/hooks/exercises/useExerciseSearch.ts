@@ -20,20 +20,10 @@ export interface UseExerciseSearchOptions {
   initialFilters?: ExerciseFilterOptions;
 }
 
-export interface UseExerciseSearchReturn {
-  exercises: Exercise[];
-  search: string;
-  setSearch: (search: string) => void;
-  loading: boolean;
-  loadingMore: boolean;
-  totalCount: number;
-  hasMore: boolean;
-  error: string | null;
-  loadMore: () => void;
-  refresh: () => void;
-}
+/** Inferred from the hook return — no manual maintenance needed. */
+export type UseExerciseSearchReturn = ReturnType<typeof useExerciseSearch>;
 
-export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseExerciseSearchReturn {
+export function useExerciseSearch(options: UseExerciseSearchOptions = {}) {
   const { initialFilters } = options;
   const { handleError } = useErrorHandler();
 

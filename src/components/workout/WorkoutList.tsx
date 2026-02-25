@@ -24,7 +24,7 @@
  * - Filters (date range, nutrition phase)
  */
 
-import { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { EmptyState } from '@/components/ui';
@@ -74,7 +74,7 @@ function LoadingState() {
  * Optimized FlashList wrapper for displaying workout history.
  * Uses FlashList for efficient recycling with 100+ items.
  */
-export function WorkoutList({
+export const WorkoutList = memo(function WorkoutList({
   workouts,
   onWorkoutPress,
   loading = false,
@@ -120,9 +120,7 @@ export function WorkoutList({
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       showsVerticalScrollIndicator={false}
-      // NOTE: contentContainerStyle doesn't work reliably with FlashList
-      // Use wrapper View or ListHeaderComponent/ListFooterComponent instead
       ListFooterComponent={<View className="h-4" />}
     />
   );
-}
+});

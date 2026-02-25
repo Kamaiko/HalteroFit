@@ -179,11 +179,3 @@ export async function getExerciseCount(options?: {
     );
   }
 }
-
-/**
- * Search exercises by name (Promise)
- * Convenience wrapper around getExercises
- */
-export async function searchExercises(query: string, limit = 50): Promise<Exercise[]> {
-  return getExercises({ search: query, limit });
-}

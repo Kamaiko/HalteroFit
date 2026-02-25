@@ -36,34 +36,8 @@ export interface UseExercisePickerOptions {
   existingExerciseIdsParam?: string;
 }
 
-export interface UseExercisePickerReturn {
-  // Search (from useExerciseSearch)
-  exercises: Exercise[];
-  search: string;
-  setSearch: (value: string) => void;
-  loading: boolean;
-  loadingMore: boolean;
-  totalCount: number;
-  loadMore: () => void;
-
-  // Selection state
-  selectedIds: Set<string>;
-  selectedCount: number;
-  hasSelection: boolean;
-  isAdding: boolean;
-  isButtonDisabled: boolean;
-  buttonText: string;
-
-  // Alert state
-  alert: { title: string; description?: string } | null;
-  clearAlert: () => void;
-
-  // Actions
-  handleExercisePress: (exercise: Exercise) => void;
-  handleExerciseImagePress: (exercise: Exercise) => void;
-  handleBack: () => void;
-  handleAddExercises: () => Promise<void>;
-}
+/** Inferred from the hook return — no manual maintenance needed. */
+export type UseExercisePickerReturn = ReturnType<typeof useExercisePicker>;
 
 // ============================================================================
 // Hook
@@ -73,7 +47,7 @@ export function useExercisePicker({
   dayId,
   mode = 'add',
   existingExerciseIdsParam,
-}: UseExercisePickerOptions): UseExercisePickerReturn {
+}: UseExercisePickerOptions) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAdding, setIsAdding] = useState(false);
   const { alert, setAlert, clearAlert } = useAlertState();

@@ -56,21 +56,20 @@ export const useWorkoutStore = create<WorkoutState>()(
         currentWorkoutId: state.currentWorkoutId,
       }),
       // Handle rehydration errors gracefully
-      onRehydrateStorage: () => (state, error) => {
+      onRehydrateStorage: () => (_state, error) => {
         if (error) {
-          console.error('Workout rehydration failed:', error);
-          // Reset to safe initial state on error
-          return {
+          if (__DEV__) console.error('Workout rehydration failed:', error);
+          useWorkoutStore.setState({
             isWorkoutActive: false,
             workoutStartTime: null,
             currentWorkoutId: null,
-          };
+          });
+          return;
         }
-        // Successfully rehydrated
-        if (state && state.isWorkoutActive) {
+        if (__DEV__ && _state?.isWorkoutActive) {
           console.log('Workout session restored:', {
-            started: state.workoutStartTime,
-            id: state.currentWorkoutId,
+            started: _state.workoutStartTime,
+            id: _state.currentWorkoutId,
           });
         }
       },

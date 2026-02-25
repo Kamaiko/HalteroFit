@@ -52,7 +52,7 @@
  */
 
 import { Image, ImageSource, ImageErrorEventData } from 'expo-image';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { StyleSheet, StyleProp, ImageStyle } from 'react-native';
 import {
   BORDER_RADIUS_LG,
@@ -147,20 +147,16 @@ export function CachedImage({
   // If image failed and we have a fallback, show fallback
   const imageSource = hasError && fallback ? fallback : source;
 
-  // Handle image load errors
-  const handleError = (event: ImageErrorEventData) => {
-    setHasError(true);
-
-    // Call user's error handler if provided
-    if (onError) {
-      onError(event);
-    }
-
-    // Log to console in development
-    if (__DEV__) {
-      console.warn('[CachedImage] Failed to load image:', event.error);
-    }
-  };
+  const handleError = useCallback(
+    (event: ImageErrorEventData) => {
+      setHasError(true);
+      onError?.(event);
+      if (__DEV__) {
+        console.warn('[CachedImage] Failed to load image:', event.error);
+      }
+    },
+    [onError]
+  );
 
   return (
     <Image

@@ -108,29 +108,3 @@ export const mmkvStorage = {
     return storage.getAllKeys();
   },
 };
-
-/**
- * Helper functions for JSON storage
- */
-export const mmkvJSONStorage = {
-  /**
-   * Set a JSON object
-   */
-  setJSON<T>(key: string, value: T): void {
-    mmkvStorage.set(key, JSON.stringify(value));
-  },
-
-  /**
-   * Get a JSON object
-   * Returns null if key doesn't exist or JSON is invalid
-   */
-  getJSON<T>(key: string): T | null {
-    const value = mmkvStorage.get(key);
-    if (!value) return null;
-    try {
-      return JSON.parse(value) as T;
-    } catch {
-      return null;
-    }
-  },
-};

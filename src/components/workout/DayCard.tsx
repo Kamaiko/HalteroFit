@@ -13,7 +13,7 @@
  */
 
 import { memo, useCallback } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
 import { BrandIcon } from '@/components/ui/brand-icon';
@@ -80,11 +80,8 @@ export const DayCard = memo(function DayCard({
       onPress={handlePress}
       className="flex-row items-center bg-background-surface rounded-xl overflow-hidden mb-3 mx-4"
       style={[
-        {
-          minHeight: 80,
-          borderWidth: 2,
-          borderColor: isSelected ? Colors.primary.DEFAULT : 'transparent',
-        },
+        styles.card,
+        { borderColor: isSelected ? Colors.primary.DEFAULT : 'transparent' },
         isActive ? CARD_ACTIVE_STYLE : undefined,
       ]}
       accessibilityRole="button"
@@ -99,7 +96,7 @@ export const DayCard = memo(function DayCard({
       />
 
       {/* Drag handle */}
-      <View style={{ marginLeft: 4, marginRight: 4 }}>
+      <View style={styles.dragHandleWrapper}>
         <DragHandle onDrag={drag} />
       </View>
 
@@ -147,4 +144,9 @@ export const DayCard = memo(function DayCard({
       </Pressable>
     </Pressable>
   );
+});
+
+const styles = StyleSheet.create({
+  card: { minHeight: 80, borderWidth: 2 },
+  dragHandleWrapper: { marginLeft: 4, marginRight: 4 },
 });

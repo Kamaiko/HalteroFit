@@ -4,7 +4,7 @@
 
 import { Q } from '@nozbe/watermelondb';
 import { Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { database } from '../../local';
 import WorkoutModel from '../../local/models/Workout';
 import type WorkoutExerciseModel from '../../local/models/WorkoutExercise';
@@ -175,20 +175,6 @@ export async function getWorkoutWithDetails(workoutId: string): Promise<WorkoutW
     'Unable to load workout details. Please try again.',
     `Failed to get workout with details for ID ${workoutId}`
   );
-}
-
-/**
- * Observe workout with details (Observable)
- */
-export function observeWorkoutWithDetails(workoutId: string): Observable<WorkoutWithDetails> {
-  return database
-    .get<WorkoutModel>('workouts')
-    .findAndObserve(workoutId)
-    .pipe(
-      switchMap(async () => {
-        return await getWorkoutWithDetails(workoutId);
-      })
-    );
 }
 
 /**

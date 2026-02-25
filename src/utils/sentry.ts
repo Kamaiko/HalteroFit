@@ -22,7 +22,7 @@ import Constants from 'expo-constants';
  */
 export function initSentry() {
   // Get DSN from environment variable
-  const dsn = Constants.expoConfig?.extra?.sentryDsn || process.env.EXPO_PUBLIC_SENTRY_DSN;
+  const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
 
   // Only initialize in production
   if (__DEV__) {

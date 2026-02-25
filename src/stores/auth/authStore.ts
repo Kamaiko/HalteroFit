@@ -32,7 +32,7 @@ export interface AuthState {
   signOut: () => Promise<void>;
 }
 
-// Development mock user - remove before production
+// TODO: Remove mock user when implementing real auth
 const DEV_MOCK_USER: User = {
   id: 'dev-user-123',
   email: 'dev@halterofit.local',
@@ -68,20 +68,18 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       // Handle rehydration errors gracefully
-      onRehydrateStorage: () => (state, error) => {
+      onRehydrateStorage: () => (_state, error) => {
         if (error) {
-          console.error('Auth rehydration failed:', error);
-          // Reset to safe initial state on error
-          return {
+          if (__DEV__) console.error('Auth rehydration failed:', error);
+          useAuthStore.setState({
             user: null,
             isLoading: false,
             isAuthenticated: false,
-          };
+          });
+          return;
         }
         // Successfully rehydrated - set loading to false
-        if (state) {
-          state.isLoading = false;
-        }
+        useAuthStore.setState({ isLoading: false });
       },
     }
   )
