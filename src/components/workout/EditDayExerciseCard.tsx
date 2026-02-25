@@ -59,6 +59,7 @@ export const EditDayExerciseCard = memo(function EditDayExerciseCard({
         <ExerciseThumbnail
           imageUrl={exercise.exercise.gif_url}
           targetMuscles={exercise.exercise.target_muscles}
+          exerciseId={exercise.exercise.id}
           onPress={handleImagePress}
         />
 
