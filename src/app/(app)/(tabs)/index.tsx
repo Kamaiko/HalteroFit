@@ -36,7 +36,7 @@ export default function HomeScreen() {
         </View>
       </Animated.View>
 
-      {/* Weekly Progress Chart */}
+      {/* TODO: Replace ChartEmptyState with real chart when analytics is implemented */}
       <Animated.View
         entering={FadeInUp.duration(DURATION_MODERATE).delay(DURATION_FAST)}
         className="px-6 mb-8"

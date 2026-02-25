@@ -1,6 +1,8 @@
 /**
  * BarChart Component
  *
+ * TODO: Not yet consumed — will be used when analytics is implemented
+ *
  * Abstraction layer for bar charts using Victory Native.
  * Provides a simple, reusable interface that can be easily swapped if we change chart libraries.
  *
@@ -10,30 +12,12 @@
  *     labels={['Mon', 'Tue', 'Wed', 'Thu']}
  *     title="Daily Sets"
  *   />
- *
- * Benefits:
- * - Simple prop interface (library-agnostic)
- * - Dark theme by default (matches app design)
- * - Responsive sizing
- * - Smooth animations
  */
 
-import { memo, useMemo } from 'react';
-import { View, Text, useWindowDimensions } from 'react-native';
+import { View, Text, Dimensions } from 'react-native';
 import { CartesianChart, Bar } from 'victory-native';
-import {
-  Colors,
-  CHART_DEFAULT_HEIGHT,
-  CHART_WIDTH_RATIO,
-  CHART_DOMAIN_PADDING,
-  DURATION_MODERATE,
-} from '@/constants';
+import { Colors, CHART_WIDTH_RATIO, CHART_DOMAIN_PADDING, DURATION_MODERATE } from '@/constants';
 
-/**
- * Props are library-agnostic
- * If we change from Victory Native to another library,
- * we only need to change the implementation, not the interface
- */
 interface BarChartProps {
   /** Y-axis data points (bar heights) */
   data: number[];
@@ -47,9 +31,6 @@ interface BarChartProps {
   /** Chart width (default: 90% of screen width) */
   width?: number;
 
-  /** Chart height (default: CHART_DEFAULT_HEIGHT) */
-  height?: number;
-
   /** Bar color (default: primary color) */
   barColor?: string;
 
@@ -57,19 +38,21 @@ interface BarChartProps {
   showValues?: boolean;
 }
 
-export const BarChart = memo(function BarChart({
+export function BarChart({
   data,
   labels,
   title,
   width,
-  height: _height = CHART_DEFAULT_HEIGHT,
   barColor = Colors.primary.DEFAULT,
   showValues = false,
 }: BarChartProps) {
-  const { width: windowWidth } = useWindowDimensions();
-  const chartWidth = width || windowWidth * CHART_WIDTH_RATIO;
+  const defaultWidth = Dimensions.get('window').width * CHART_WIDTH_RATIO;
+  const chartWidth = width || defaultWidth;
 
-  const chartData = useMemo(() => data.map((y, index) => ({ x: index, y })), [data]);
+  const chartData = data.map((y, index) => ({
+    x: index,
+    y,
+  }));
 
   return (
     <View className="items-center mb-4">
@@ -129,4 +112,4 @@ export const BarChart = memo(function BarChart({
       )}
     </View>
   );
-});
+}

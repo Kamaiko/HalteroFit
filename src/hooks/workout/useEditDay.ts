@@ -57,6 +57,7 @@ export function useEditDay(dayId: string) {
 
   // ── Load initial data ──────────────────────────────────────────────────
   useEffect(() => {
+    if (!dayId) return;
     let cancelled = false;
 
     async function load() {

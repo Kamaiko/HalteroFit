@@ -36,5 +36,3 @@ export type { DialogProps } from './dialog';
 
 export { InputDialog } from './input-dialog';
 export type { InputDialogProps } from './input-dialog';
-
-export { LoadingIndicator } from './loading-indicator';
