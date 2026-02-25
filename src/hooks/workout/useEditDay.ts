@@ -35,7 +35,7 @@ interface PendingExercise {
 /** Inferred from the hook return — no manual maintenance needed. */
 export type UseEditDayReturn = ReturnType<typeof useEditDay>;
 
-export function useEditDay(dayId: string) {
+export function useEditDay(dayId: string | undefined) {
   // ── State ──────────────────────────────────────────────────────────────
   const [dayName, setDayName] = useState('');
   const [exercises, setExercises] = useState<DayExercise[]>([]);
@@ -58,11 +58,12 @@ export function useEditDay(dayId: string) {
   // ── Load initial data ──────────────────────────────────────────────────
   useEffect(() => {
     if (!dayId) return;
+    const id = dayId; // capture for closure narrowing
     let cancelled = false;
 
     async function load() {
       try {
-        const data = await getPlanDayWithExercises(dayId);
+        const data = await getPlanDayWithExercises(id);
         if (cancelled) return;
 
         setDayName(data.name);
@@ -110,6 +111,7 @@ export function useEditDay(dayId: string) {
 
   // ── Exercise picker integration ────────────────────────────────────────
   const navigateToExercisePicker = useCallback(() => {
+    if (!dayId) return;
     const existingIds = exercises.map((e) => e.exercise_id).join(',');
     router.push({
       pathname: '/exercise/picker',
@@ -118,6 +120,7 @@ export function useEditDay(dayId: string) {
   }, [dayId, exercises]);
 
   const consumePickerResult = useCallback(() => {
+    if (!dayId) return;
     const result = useExercisePickerStore.getState().result;
     if (!result || result.length === 0) return;
 
@@ -147,7 +150,7 @@ export function useEditDay(dayId: string) {
 
   // ── Save ───────────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
-    if (isSaving) return;
+    if (!dayId || isSaving) return;
 
     // Validate day name
     const trimmedName = dayName.trim();
@@ -193,7 +196,7 @@ export function useEditDay(dayId: string) {
 
   // ── Delete day ─────────────────────────────────────────────────────────
   const handleDeleteDay = useCallback(async () => {
-    if (isDeleting) return;
+    if (!dayId || isDeleting) return;
     setIsDeleting(true);
 
     try {

@@ -58,7 +58,7 @@ export default function EditDayScreen() {
     handleBack,
     alert,
     clearAlert,
-  } = useEditDay(dayId ?? '');
+  } = useEditDay(dayId);
 
   // ── Consume picker results on focus ────────────────────────────────────
   useEffect(() => {
@@ -129,14 +129,13 @@ export default function EditDayScreen() {
     [navigateToExercisePicker, setShowDeleteConfirm]
   );
 
-  // ── Guard: invalid navigation (no dayId) ──────────────────────────────
-  if (!dayId) {
-    router.back();
-    return null;
-  }
+  // ── Guard: redirect if dayId missing ──────────────────────────────────
+  useEffect(() => {
+    if (!dayId) router.back();
+  }, [dayId, router]);
 
   // ── Loading state ──────────────────────────────────────────────────────
-  if (loading) {
+  if (!dayId || loading) {
     return (
       <View
         className="flex-1 bg-background items-center justify-center"
