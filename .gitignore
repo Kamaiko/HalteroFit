@@ -71,9 +71,11 @@ nul
 .agents/
 
 # ===================
-# Documentation
+# Documentation (local-only subdirectories)
 # ===================
-docs/
+docs/reference/
+docs/examples/
+docs/archives/
 
 # ===================
 # Secrets & Credentials

@@ -13,6 +13,7 @@ export interface User {
   id: string;
   email: string;
   preferred_unit: 'kg' | 'lbs';
+  // TODO: Missing v8 field: default_rest_timer_seconds (number, optional) — added in schema.ts v8
   created_at: number;
   updated_at: number;
 }
@@ -42,6 +43,7 @@ export interface Workout {
   duration_seconds?: number;
   title?: string;
   notes?: string;
+  // TODO: Missing v8 fields: plan_id (string, optional), plan_day_id (string, optional) — added in schema.ts v8
   // synced removed - internal WatermelonDB sync tracking
   created_at: number;
   updated_at: number;
