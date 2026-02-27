@@ -23,7 +23,7 @@ const config: Config = {
 
   // Force exit after tests complete
   // Required for WatermelonDB/LokiJS which keeps worker threads open
-  // See: docs/TESTING.md#troubleshooting for details
+  // See: docs/guides/TESTING.md#troubleshooting
   forceExit: true,
 
   collectCoverageFrom: [
@@ -33,7 +33,7 @@ const config: Config = {
     '!src/**/__mocks__/**',
   ],
 
-  // Coverage thresholds (see TESTING.md for strategy)
+  // Coverage thresholds (see docs/guides/TESTING.md)
   coverageThreshold: {
     global: {
       branches: 0,

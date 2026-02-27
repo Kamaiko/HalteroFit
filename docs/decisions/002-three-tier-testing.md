@@ -30,4 +30,4 @@ Adopt a three-tier testing strategy: Jest with LokiJS for unit tests, manual E2E
 ## References
 
 - Related: [ADR-003](003-watermelondb-offline-first.md) (source of the SQLite constraint)
-- Docs: [../TESTING.md](../TESTING.md)
+- Docs: [TESTING.md](../guides/TESTING.md)

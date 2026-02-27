@@ -694,8 +694,6 @@ InteractionManager.runAfterInteractions(() => {
 - Large lists without FlashList
 - Unoptimized images
 
-**Reference:** [TESTING.md § Performance Testing](./TESTING.md)
-
 ---
 
 ## Getting More Help
