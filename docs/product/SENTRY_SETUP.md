@@ -39,7 +39,7 @@ import { captureSentryException } from '@/utils/sentry';
 captureSentryException(error, { context: 'value' });
 ```
 
-**See:** [TECHNICAL.md - Error Monitoring](TECHNICAL.md#error-monitoring--performance-tracking) for thresholds and best practices.
+**See:** [TECHNICAL.md - Error Monitoring](../reference/TECHNICAL.md#error-monitoring--performance-tracking) for thresholds and best practices.
 
 ---
 
@@ -99,4 +99,4 @@ captureSentryException(error, { context: 'value' });
 
 - **Docs:** https://docs.sentry.io/platforms/react-native/
 - **Dashboard:** https://sentry.io
-- **Troubleshooting:** [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+- **Troubleshooting:** [TROUBLESHOOTING.md](../guides/TROUBLESHOOTING.md)

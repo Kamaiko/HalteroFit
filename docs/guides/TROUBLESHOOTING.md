@@ -189,7 +189,7 @@ import { foo } from '../../../utils/foo';
 import { foo } from '@/utils/foo';
 ```
 
-**Reference:** [TECHNICAL.md § Import Paths](TECHNICAL.md)
+**Reference:** [TECHNICAL.md § Import Paths](../reference/TECHNICAL.md)
 
 ---
 
@@ -368,7 +368,7 @@ export const useStore = create(
 );
 ```
 
-**Reference:** [ARCHITECTURE.md § Storage](ARCHITECTURE.md)
+**Reference:** [ARCHITECTURE.md § Storage](../reference/ARCHITECTURE.md)
 
 ---
 
@@ -413,7 +413,7 @@ import '../../global.css'; // Must be imported in root layout
 <View className="p-5" />
 ```
 
-**Reference:** [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
+**Reference:** [DESIGN_SYSTEM.md](../reference/DESIGN_SYSTEM.md)
 
 ### Theme Colors Not Matching
 
@@ -457,7 +457,7 @@ module.exports = {
 - [ ] Using `Colors` export (not `COLORS`)
 - [ ] Importing from `@/constants`
 
-**Reference:** [DESIGN_SYSTEM.md § Color System](DESIGN_SYSTEM.md)
+**Reference:** [DESIGN_SYSTEM.md § Color System](../reference/DESIGN_SYSTEM.md)
 
 ### Components Render at 0 Size (NativeWind CSS Interop)
 
@@ -599,7 +599,7 @@ import { Colors } from '@/constants/colors';
 import { Colors } from '@/constants';
 ```
 
-**Reference:** [TECHNICAL.md § TypeScript Configuration](TECHNICAL.md)
+**Reference:** [TECHNICAL.md § TypeScript Configuration](../reference/TECHNICAL.md)
 
 ### Type Errors After Code Changes
 
@@ -615,7 +615,7 @@ npm run type-check
 - Incorrect type imports (`import type` vs regular `import`)
 - Circular dependencies
 
-**Reference:** [TECHNICAL.md § Coding Standards](TECHNICAL.md)
+**Reference:** [TECHNICAL.md § Coding Standards](../reference/TECHNICAL.md)
 
 ---
 
@@ -694,7 +694,7 @@ InteractionManager.runAfterInteractions(() => {
 - Large lists without FlashList
 - Unoptimized images
 
-**Reference:** [TESTING.md § Performance Testing](TESTING.md)
+**Reference:** [TESTING.md § Performance Testing](./TESTING.md)
 
 ---
 
@@ -709,8 +709,8 @@ If your issue isn't listed here:
    ```
 3. **Consult related documentation:**
    - [DATABASE.md](DATABASE.md) - Database operations
-   - [TECHNICAL.md](TECHNICAL.md) - Technical decisions
-   - [ARCHITECTURE.md](ARCHITECTURE.md) - Code structure
+   - [TECHNICAL.md](../reference/TECHNICAL.md) - Technical decisions
+   - [ARCHITECTURE.md](../reference/ARCHITECTURE.md) - Code structure
 
 **Community:**
 

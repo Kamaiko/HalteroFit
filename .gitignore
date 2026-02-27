@@ -73,7 +73,7 @@ nul
 # ===================
 # Documentation (local-only subdirectories)
 # ===================
-docs/reference/
+docs/_local/
 docs/examples/
 docs/archives/
 

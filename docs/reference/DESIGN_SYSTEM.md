@@ -307,3 +307,43 @@ Strategic design guidelines and UI/UX patterns for building Halterofit's mobile 
 - Use outlined icons for inactive states
 - Use filled icons for active/selected states
 - Maintain consistent icon family per feature area
+
+---
+
+## UX Patterns
+
+### Core Interaction Patterns
+
+| Feature              | Anti-Pattern                      | Best Practice                                               |
+| -------------------- | --------------------------------- | ----------------------------------------------------------- |
+| **Set Logging**      | 7 taps (modals, confirmations)    | 1-2 taps (auto-fill last, inline edit, quick +/- buttons)   |
+| **Plate Calculator** | Manual math                       | Button next to weight → "Add per side: 20kg + 10kg + 2.5kg" |
+| **Rest Timer**       | Stops when minimized              | Background + push notification + auto-start from history    |
+| **RIR Tracking**     | Prompt after every set (annoying) | End-of-workout summary OR optional inline button            |
+| **Exercise Search**  | Search button + pagination        | Real-time filter (FlashList 500+ exercises, 300ms debounce) |
+| **Workout Start**    | Empty only                        | MVP: Empty + Repeat Last; Phase 2: Templates + Resume       |
+
+### Gym Environment
+
+- Large tap targets (44x44pt minimum) — gloves, sweaty hands
+- High contrast — bright gym lighting
+- Landscape support — phone on bench
+- One-handed operation mode
+
+### Data Reliability
+
+- Never show "No internet" errors during workout
+- Instant save confirmation (local-first)
+- Subtle sync indicator when online
+- Conflict resolution: last write wins
+
+### Error Messages
+
+Contextual, not technical:
+
+```typescript
+// Bad → Good
+"Network request failed" → "Saved locally. Will sync when online."
+"Invalid input"          → "Weight must be between 0-500kg"
+"Error 500"              → "Couldn't load history. Try again?"
+```

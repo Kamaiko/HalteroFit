@@ -326,4 +326,4 @@ function detectPlateauWithContext(exerciseHistory, user) {
 
 ---
 
-**For MVP Roadmap**, see [TASKS.md](./TASKS.md)
+**For MVP Roadmap**, see [TASKS.md](../TASKS.md)

@@ -16,7 +16,7 @@ This document provides an overview of Halterofit's hybrid database architecture 
 
 ## Architecture Overview
 
-**For complete architecture details:** See [ARCHITECTURE.md § Data Flow](./ARCHITECTURE.md#data-flow)
+**For complete architecture details:** See [ARCHITECTURE.md § Data Flow](../reference/ARCHITECTURE.md#data-flow)
 
 | Layer   | Technology            | Purpose                              |
 | ------- | --------------------- | ------------------------------------ |

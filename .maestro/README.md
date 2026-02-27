@@ -49,4 +49,4 @@ Maestro tests are expensive (slow, require device). Use sparingly for:
 2. Sync protocol validation
 3. Regression testing before releases
 
-See [docs/TESTING.md](../docs/TESTING.md) for complete testing strategy.
+See [docs/guides/TESTING.md](../docs/guides/TESTING.md) for complete testing strategy.

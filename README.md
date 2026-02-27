@@ -46,12 +46,80 @@ Comprehensive workout tracker with a 1,300+ exercise library, customizable train
 
 ---
 
-## Development
+<details>
+<summary><strong>Screenshots</strong></summary>
+<br/>
 
-Requires Node.js 18+ and an [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/).
+<!-- TODO: Add app screenshots -->
+
+_Screenshots coming soon — app is in active development (Phase 2)._
+
+</details>
+
+---
+
+## Key Features
+
+- **1,300+ exercises** with animated GIF demonstrations
+- **Custom workout plans** with day-by-day programming
+- **Offline-first** — works without internet, syncs when connected
+- **Dark mode** optimized for gym environments
+- **Fast set logging** — 1–2 taps per set
+
+---
+
+## Architecture Overview
+
+Halterofit is built with React Native + Expo SDK 54. [WatermelonDB](https://watermelondb.dev) powers the offline-first local database — all data is stored on device first and syncs to [Supabase](https://supabase.com) when a connection is available. Styling is handled by [NativeWind v4](https://nativewind.dev) (Tailwind CSS for React Native).
+
+For the full architecture — folder structure, data flow, and design patterns — see [docs/reference/ARCHITECTURE.md](docs/reference/ARCHITECTURE.md).
+
+---
+
+## Quick Start
 
 ```bash
 npm install
 cp .env.example .env.local
 npm start
 ```
+
+Fill in your Supabase credentials in `.env.local` before starting. The app requires an [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/) — it cannot run in Expo Go due to native modules (WatermelonDB, MMKV).
+
+For detailed setup including development builds, environment variables, and first-run troubleshooting, see [docs/getting-started/SETUP.md](docs/getting-started/SETUP.md).
+
+---
+
+## Documentation
+
+All project documentation lives in [`docs/`](docs/README.md), organized by the [Diataxis framework](https://diataxis.fr/).
+
+| Start with                                        | When you need to                  |
+| ------------------------------------------------- | --------------------------------- |
+| [Setup Guide](docs/getting-started/SETUP.md)      | Get the project running           |
+| [Architecture](docs/reference/ARCHITECTURE.md)    | Understand the codebase structure |
+| [ADRs](docs/decisions/README.md)                  | Learn why decisions were made     |
+| [Testing](docs/guides/TESTING.md)                 | Write or run tests                |
+| [Troubleshooting](docs/guides/TROUBLESHOOTING.md) | Fix a broken environment          |
+
+---
+
+## Tech Decisions
+
+All major architectural decisions are documented as Architecture Decision Records (ADRs) in [`docs/decisions/`](docs/decisions/README.md). There are 20 ADRs covering platform, data, UI, performance, state, and monitoring choices.
+
+A few highlights:
+
+- **[ADR-003](docs/decisions/003-watermelondb-offline-first.md)** — Why WatermelonDB for offline-first data (over AsyncStorage, SQLite, or Realm)
+- **[ADR-009](docs/decisions/009-single-dark-mode.md)** — Why the app ships dark mode only (no light/dark toggle)
+- **[ADR-002](docs/decisions/002-three-tier-testing.md)** — The three-tier testing strategy (Jest + WatermelonDB adapter + Maestro E2E)
+
+---
+
+## Project Status
+
+**Current phase: Phase 2 — Plans & Routines** (in progress)
+
+Phase 1 (Exercise Library) is complete. Active work is on workout plan creation, day management, and plan card components.
+
+See [docs/TASKS.md](docs/TASKS.md) for the full kanban board and phase roadmap.

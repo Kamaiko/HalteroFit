@@ -38,8 +38,8 @@ Actionable tasks with Kanban tracking.
 <summary><b>1.0: Documentation & Wireframes</b> • 1 task ✅</summary>
 
 - [x] **1.0.1** Create wireframes documentation from Jefit analysis (L - 6h)
-      Deliverables: [WIREFRAMES.md](./WIREFRAMES.md) (620 lines), 35 screenshots
-      Files: docs/WIREFRAMES.md, docs/reference/jefit/screenshots/
+      Deliverables: [WIREFRAMES.md](./reference/WIREFRAMES.md) (620 lines), 35 screenshots
+      Files: docs/reference/WIREFRAMES.md, docs/\_local/screenshots/
 
 </details>
 
@@ -89,7 +89,7 @@ Actionable tasks with Kanban tracking.
 **Est. Time:** ~25h (3 weeks)
 **Goal:** Create, edit, and manage workout plans with days and exercises
 **Dependencies:** Phase 1 (Exercise Library)
-**Reference:** [WIREFRAMES.md § 3. Workout Tab](./WIREFRAMES.md#3-workout-tab)
+**Reference:** [WIREFRAMES.md § 3. Workout Tab](./reference/WIREFRAMES.md#3-workout-tab)
 
 ### 2.1: Workout Tab Screens
 
@@ -168,7 +168,7 @@ Actionable tasks with Kanban tracking.
 **Est. Time:** ~75h (4 weeks)
 **Goal:** Start workout → Swipe exercises → Log sets → Rest timer → Summary
 **Dependencies:** Phase 2 (Plans & Routines)
-**Reference:** [WIREFRAMES.md § 4. Active Workout](./WIREFRAMES.md#4-active-workout)
+**Reference:** [WIREFRAMES.md § 4. Active Workout](./reference/WIREFRAMES.md#4-active-workout)
 
 ### 3.1: Workout Session State & Flow
 
@@ -453,7 +453,7 @@ Actionable tasks with Kanban tracking.
 **Est. Time:** ~45h (3-4 weeks)
 **Goal:** Authentication, user profile, settings, and basic Progress tab
 **Dependencies:** Phase 1 (Exercise Library); can start parallel to Phase 3
-**Reference:** [WIREFRAMES.md § 6. Settings](./WIREFRAMES.md#6-settings)
+**Reference:** [WIREFRAMES.md § 6. Settings](./reference/WIREFRAMES.md#6-settings)
 
 ### 4.1: Auth Screens
 

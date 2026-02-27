@@ -404,7 +404,7 @@ __tests__/
 - **E2E tests**: `.maestro/**/*.yaml` (Maestro flows, root level)
 - **Helpers import**: `@test-helpers/database/*` (NEVER relative imports)
 - **Mocks**: `__mocks__/` at project root (Jest auto-discovers mocks adjacent to `node_modules`)
-- See [TESTING.md](./TESTING.md) for full strategy and conventions
+- See [TESTING.md](../guides/TESTING.md) for full strategy and conventions
 
 ---
 

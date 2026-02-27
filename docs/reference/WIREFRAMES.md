@@ -6,20 +6,20 @@
 
 ---
 
-## Table des Matières
+## Table of Contents
 
-1. [Navigation Principale](#1-navigation-principale)
+1. [Main Navigation](#1-main-navigation)
 2. [Exercises Tab](#2-exercises-tab)
 3. [Workout Tab](#3-workout-tab)
 4. [Active Workout](#4-active-workout)
 5. [Progress Tab](#5-progress-tab)
 6. [Settings](#6-settings)
-7. [Composants Réutilisables](#7-composants-réutilisables)
-8. [Mapping Halterofit](#8-mapping-halterofit)
+7. [Reusable Components](#7-reusable-components)
+8. [Halterofit Mapping](#8-halterofit-mapping)
 
 ---
 
-## 1. Navigation Principale
+## 1. Main Navigation
 
 ### Bottom Tab Navigation
 
@@ -538,7 +538,7 @@ X Exercises
 
 ---
 
-## 7. Composants Réutilisables
+## 7. Reusable Components
 
 ### 7.1 SwipeableTabs
 
@@ -628,11 +628,11 @@ X Exercises
 
 ---
 
-## 8. Mapping Halterofit
+## 8. Halterofit Mapping
 
-### Écrans Jefit → Halterofit
+### Jefit Screens → Halterofit
 
-| Jefit Screen      | Halterofit Screen              | Fichier                           | MVP           |
+| Jefit Screen      | Halterofit Screen              | File                              | MVP           |
 | ----------------- | ------------------------------ | --------------------------------- | ------------- |
 | Discover          | HomeScreen                     | `(tabs)/index.tsx`                | Simplifié     |
 | Muscle Selector   | ExerciseSelectorScreen         | `(tabs)/exercises/index.tsx`      | Show All only |
