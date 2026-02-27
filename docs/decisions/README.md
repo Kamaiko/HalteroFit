@@ -44,11 +44,11 @@ This directory documents significant technical decisions for Halterofit using a 
 
 ### Performance
 
-| #                            | Decision              | Status   | Date    |
-| ---------------------------- | --------------------- | -------- | ------- |
-| [011](011-flashlist.md)      | FlashList             | Accepted | 2025-10 |
-| [012](012-expo-image.md)     | expo-image Caching    | Accepted | 2025-10 |
-| [013](013-victory-native.md) | Victory Native Charts | Accepted | 2025-10 |
+| #                            | Decision                      | Status   | Date    |
+| ---------------------------- | ----------------------------- | -------- | ------- |
+| [011](011-flashlist.md)      | FlashList + DraggableFlatList | Accepted | 2025-10 |
+| [012](012-expo-image.md)     | expo-image Caching            | Accepted | 2025-10 |
+| [013](013-victory-native.md) | Victory Native Charts         | Accepted | 2025-10 |
 
 ### State
 
