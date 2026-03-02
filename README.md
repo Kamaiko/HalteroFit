@@ -16,33 +16,11 @@
 
 **Track your sets. Follow your plan. See your progress.**
 
-<!-- Tech Stack -->
-
-[![Expo](https://img.shields.io/badge/Expo-000020?style=flat&logo=expo)](https://expo.dev)
-[![React Native](https://img.shields.io/badge/React_Native-20232a?style=flat&logo=react&logoColor=61DAFB)](https://reactnative.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![NativeWind](https://img.shields.io/badge/NativeWind-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://nativewind.dev)
-
-<!-- Backend & Storage -->
-
-[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com)
-[![WatermelonDB](https://img.shields.io/badge/🍉_WatermelonDB-00D9C0?style=flat)](https://watermelondb.dev)
-[![MMKV](https://img.shields.io/badge/MMKV-F59E0B?style=flat)](https://github.com/mrousavy/react-native-mmkv)
-[![Zustand](https://img.shields.io/badge/Zustand-black?style=flat)](https://zustand-demo.pmnd.rs)
-
-<!-- Dev Tools -->
-
-[![Sentry](https://img.shields.io/badge/Sentry-362D59?style=flat&logo=sentry&logoColor=white)](https://sentry.io)
-[![Jest](https://img.shields.io/badge/Jest-C21325?style=flat&logo=jest&logoColor=white)](https://jestjs.io)
-[![Maestro](https://img.shields.io/badge/Maestro-6C47FF?style=flat)](https://maestro.mobile.dev)
-
-<br/>
-
 </div>
 
 ## About
 
-Comprehensive workout tracker with a 1,300+ exercise library, customizable training plans, and fast set logging. Built for lifters who want to track everything without friction.
+Fitness platform: mobile app for workout logging, web app for AI coaching and analytics. 1,300+ exercise library, custom training plans, fast set logging. Offline-first — works without internet, syncs to cloud when connected.
 
 ---
 
@@ -70,7 +48,14 @@ _Screenshots coming soon — app is in active development (Phase 2)._
 
 ## Architecture Overview
 
-Halterofit is built with React Native + Expo SDK 54. [WatermelonDB](https://watermelondb.dev) powers the offline-first local database — all data is stored on device first and syncs to [Supabase](https://supabase.com) when a connection is available. Styling is handled by [NativeWind v4](https://nativewind.dev) (Tailwind CSS for React Native).
+Halterofit is a pnpm + Turborepo monorepo:
+
+| App           | Stack                                                   | Status                     |
+| ------------- | ------------------------------------------------------- | -------------------------- |
+| `apps/mobile` | React Native + Expo SDK 54, WatermelonDB, NativeWind v4 | Phase 2 — Plans & Routines |
+| `apps/web`    | Next.js 16, Tailwind v4, Vercel AI SDK, pgvector        | Planned                    |
+
+The mobile app is offline-first — all data is stored on device via [WatermelonDB](https://watermelondb.dev) and syncs to [Supabase](https://supabase.com) when connected. The web app will provide an AI coach with RAG and analytics dashboard.
 
 For the full architecture — folder structure, data flow, and design patterns — see [docs/reference/ARCHITECTURE.md](docs/reference/ARCHITECTURE.md).
 
@@ -79,12 +64,13 @@ For the full architecture — folder structure, data flow, and design patterns �
 ## Quick Start
 
 ```bash
-npm install
-cp .env.example .env.local
-npm start
+pnpm install
+cd apps/mobile
+cp .env.example .env.local    # fill in Supabase credentials
+pnpm start
 ```
 
-Fill in your Supabase credentials in `.env.local` before starting. The app requires an [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/) — it cannot run in Expo Go due to native modules (WatermelonDB, MMKV).
+The mobile app requires an [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/) — it cannot run in Expo Go due to native modules (WatermelonDB, MMKV).
 
 For detailed setup including development builds, environment variables, and first-run troubleshooting, see [docs/getting-started/SETUP.md](docs/getting-started/SETUP.md).
 
@@ -118,8 +104,8 @@ A few highlights:
 
 ## Project Status
 
-**Current phase: Phase 2 — Plans & Routines** (in progress)
+**Mobile app — Phase 2: Plans & Routines** (in progress). Phase 1 (Exercise Library) is complete.
 
-Phase 1 (Exercise Library) is complete. Active work is on workout plan creation, day management, and plan card components.
+**Web app** — planned. See [docs/HALTEROFIT-WEB.md](docs/HALTEROFIT-WEB.md) for the full planning document.
 
 See [docs/TASKS.md](docs/TASKS.md) for the full kanban board and phase roadmap.

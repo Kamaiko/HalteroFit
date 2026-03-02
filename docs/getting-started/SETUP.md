@@ -21,18 +21,18 @@ This guide walks you through getting Halterofit running on your machine for the 
 
 Install the following before cloning the repo:
 
-| Tool                                                   | Version           | Purpose                     |
-| ------------------------------------------------------ | ----------------- | --------------------------- |
-| [Node.js](https://nodejs.org/)                         | 18+               | JavaScript runtime          |
-| npm                                                    | Bundled with Node | Package management          |
-| [EAS CLI](https://docs.expo.dev/eas/cli/)              | Latest            | Build and submit apps       |
-| [Android Studio](https://developer.android.com/studio) | Latest            | Android emulator (optional) |
-| [Xcode](https://developer.apple.com/xcode/)            | 15+ (macOS only)  | iOS simulator (optional)    |
+| Tool                                                   | Version          | Purpose                     |
+| ------------------------------------------------------ | ---------------- | --------------------------- |
+| [Node.js](https://nodejs.org/)                         | 18+              | JavaScript runtime          |
+| [pnpm](https://pnpm.io/)                               | 10+              | Package management          |
+| [EAS CLI](https://docs.expo.dev/eas/cli/)              | Latest           | Build and submit apps       |
+| [Android Studio](https://developer.android.com/studio) | Latest           | Android emulator (optional) |
+| [Xcode](https://developer.apple.com/xcode/)            | 15+ (macOS only) | iOS simulator (optional)    |
 
-Install EAS CLI globally:
+Install pnpm and EAS CLI globally:
 
 ```bash
-npm install -g eas-cli
+npm install -g pnpm eas-cli
 eas login
 ```
 
@@ -43,7 +43,7 @@ eas login
 ```bash
 git clone https://github.com/your-org/halterofit.git
 cd halterofit
-npm install
+pnpm install
 ```
 
 ### Dependency Tool — Why It Matters
@@ -53,16 +53,16 @@ This project uses two different tools for installing packages, and using the wro
 | Tool               | Use for                                              |
 | ------------------ | ---------------------------------------------------- |
 | `npx expo install` | React Native, Expo, and any package with native code |
-| `npm install`      | Pure JavaScript packages (e.g., `zod`, `lodash`)     |
+| `pnpm add`         | Pure JavaScript packages (e.g., `zod`, `lodash`)     |
 
 **Examples:**
 
 ```bash
-# Native code — use expo install
+# Native code — use expo install (from apps/mobile)
 npx expo install expo-camera react-native-gesture-handler
 
-# Pure JS — use npm install
-npm install zod date-fns
+# Pure JS — use pnpm add (scoped to mobile)
+pnpm --filter @halterofit/mobile add zod date-fns
 ```
 
 When in doubt, use `npx expo install`. It pins the version to what the current Expo SDK expects.
@@ -150,10 +150,10 @@ You do NOT need to rebuild for:
 
 ## Running the App
 
-Start the Metro bundler:
+Start the Metro bundler (from `apps/mobile`):
 
 ```bash
-npm start
+pnpm start
 ```
 
 Then open the Halterofit dev build on your device or emulator and scan the QR code in the terminal, or press `a` to open on a connected Android emulator.
@@ -163,14 +163,14 @@ Then open the Halterofit dev build on your device or emulator and scan the QR co
 ## Running Tests
 
 ```bash
-# Run all Jest tests once
-npm test
+# Run all Jest tests once (from apps/mobile)
+pnpm test
 
 # Watch mode — re-runs tests on file changes
-npm run test:watch
+pnpm run test:watch
 
 # Type checking (no test output — TypeScript errors only)
-npm run type-check
+pnpm run type-check
 ```
 
 **What the tests cover:** Jest runs unit and integration tests using LokiJS as an in-memory database adapter. Tests cover validators, service logic, error handling, and state management.
@@ -181,7 +181,7 @@ npm run type-check
 
 ## Git Hooks
 
-Husky installs git hooks automatically when you run `npm install`. You do not need to configure anything manually.
+Husky installs git hooks automatically when you run `pnpm install`. You do not need to configure anything manually.
 
 ### Pre-commit Hook
 
@@ -230,24 +230,26 @@ Enable format on save in your VS Code settings:
 See [guides/TROUBLESHOOTING.md](../guides/TROUBLESHOOTING.md) for detailed solutions. Common first-run problems:
 
 - **App opens in Expo Go** — Development Build not installed. See [Development Build](#development-build).
-- **App crashes on launch** — Stale dev client state. Run `adb shell pm clear com.halterofit.app`, then `npm start`.
+- **App crashes on launch** — Stale dev client state. Run `adb shell pm clear com.halterofit.app`, then `pnpm start`.
 - **"MMKV native module not found"** — Running in Expo Go. Install the Development Build.
 - **Supabase "Invalid API key"** — Check `.env.local` for missing or quoted values, then restart Metro.
-- **Metro won't start** — Run `npm start -- --clear` to clear the bundler cache.
+- **Metro won't start** — Run `pnpm start --clear` to clear the bundler cache.
 
 ---
 
 ## Useful Commands
 
+All commands below run from `apps/mobile/`:
+
 | Command                                              | Description                                  |
 | ---------------------------------------------------- | -------------------------------------------- |
-| `npm start`                                          | Start Metro bundler                          |
-| `npm start -- --clear`                               | Start Metro and clear cache                  |
-| `npm test`                                           | Run Jest tests                               |
-| `npm run test:watch`                                 | Jest in watch mode                           |
-| `npm run type-check`                                 | TypeScript type check (no emit)              |
-| `npm run lint`                                       | ESLint check                                 |
-| `npm run format`                                     | Prettier format all files                    |
+| `pnpm start`                                         | Start Metro bundler                          |
+| `pnpm start --clear`                                 | Start Metro and clear cache                  |
+| `pnpm test`                                          | Run Jest tests                               |
+| `pnpm run test:watch`                                | Jest in watch mode                           |
+| `pnpm run type-check`                                | TypeScript type check (no emit)              |
+| `pnpm run lint`                                      | ESLint check                                 |
+| `pnpm run format`                                    | Prettier format all files                    |
 | `eas build --profile development --platform android` | Build Android dev build                      |
 | `eas build --profile development --platform ios`     | Build iOS dev build                          |
 | `npx expo install --fix`                             | Fix Expo SDK package version mismatches      |

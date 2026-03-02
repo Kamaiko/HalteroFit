@@ -1,3 +1,4 @@
+#!/bin/sh
 # Check schema.version incremented when creating migrations
 bash .husky/check-schema-version.sh || exit 1
 
