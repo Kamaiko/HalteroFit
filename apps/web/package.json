@@ -1,0 +1,6 @@
+{
+  "name": "@halterofit/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Halterofit web companion app (Next.js)"
+}
