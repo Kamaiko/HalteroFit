@@ -217,7 +217,8 @@ These packages must ONLY be updated via `npx expo install`:
 - `expo`, `expo-*`, `@expo/*` packages
 - `react`, `react-native`
 - `react-native-*`, `@react-native/*` packages
-- Native libraries (@nozbe/watermelondb, @shopify/flash-list, react-native-mmkv)
+- Native libraries (@nozbe/watermelondb, @shopify/flash-list, @shopify/react-native-skia, react-native-mmkv)
+- `babel-preset-expo` (Expo SDK-coupled build tooling)
 - `react-test-renderer` (must match Expo-managed `react` version exactly)
 - `nativewind` + `tailwindcss` (NativeWind v4 requires Tailwind v3 — coordinate upgrade)
 

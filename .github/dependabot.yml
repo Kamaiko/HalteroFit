@@ -26,7 +26,9 @@ updates:
       - dependency-name: '@react-native/*'
       - dependency-name: '@nozbe/watermelondb'
       - dependency-name: '@shopify/flash-list'
+      - dependency-name: '@shopify/react-native-skia'
       - dependency-name: 'react-native-mmkv'
+      - dependency-name: 'babel-preset-expo'
       - dependency-name: 'react-test-renderer'
         # Must match Expo-managed react version — update via expo install
       - dependency-name: 'tailwindcss'
