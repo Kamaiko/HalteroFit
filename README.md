@@ -20,7 +20,7 @@
 
 ## About
 
-Fitness platform: mobile app for workout logging, web app for AI coaching and analytics. 1,300+ exercise library, custom training plans, fast set logging. Offline-first — works without internet, syncs to cloud when connected.
+Fitness platform: mobile app for workout logging, web app for AI coaching and analytics. 1,300+ exercise library, custom training plans, fast set logging. Offline-first, syncs to cloud when connected.
 
 ---
 
@@ -40,7 +40,7 @@ _Screenshots coming soon — app is in active development (Phase 2)._
 
 - **1,300+ exercises** with animated GIF demonstrations
 - **Custom workout plans** with day-by-day programming
-- **Offline-first** — works without internet, syncs when connected
+- **Offline-first** — syncs to cloud when connected
 - **Dark mode** optimized for gym environments
 - **Fast set logging** — 1–2 taps per set
 
