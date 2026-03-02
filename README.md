@@ -90,18 +90,6 @@ All project documentation lives in [`docs/`](docs/README.md), organized by the [
 
 ---
 
-## Tech Decisions
-
-All major architectural decisions are documented as Architecture Decision Records (ADRs) in [`docs/decisions/`](docs/decisions/README.md). There are 20 ADRs covering platform, data, UI, performance, state, and monitoring choices.
-
-A few highlights:
-
-- **[ADR-003](docs/decisions/003-watermelondb-offline-first.md)** — Why WatermelonDB for offline-first data (over AsyncStorage, SQLite, or Realm)
-- **[ADR-009](docs/decisions/009-single-dark-mode.md)** — Why the app ships dark mode only (no light/dark toggle)
-- **[ADR-002](docs/decisions/002-three-tier-testing.md)** — The three-tier testing strategy (Jest + WatermelonDB adapter + Maestro E2E)
-
----
-
 ## Project Status
 
 **Mobile app — Phase 2: Plans & Routines** (in progress). Phase 1 (Exercise Library) is complete.
