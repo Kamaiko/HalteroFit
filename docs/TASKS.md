@@ -13,6 +13,7 @@ Actionable tasks with Kanban tracking.
 5. [Phase 4: Auth, Settings & Progress](#phase-4-auth-settings--progress)
 6. [Phase 5: Home Dashboard & Polish](#phase-5-home-dashboard--polish)
 7. [Phase 6: Post-MVP Analytics & Enhancements](#phase-6-post-mvp-analytics--enhancements)
+8. [Monorepo & Infrastructure](#monorepo--infrastructure)
 
 ## Kanban
 
@@ -770,3 +771,17 @@ Actionable tasks with Kanban tracking.
       Scheduled weekly push: workouts count, volume trend, streak.
       Configurable day/time in Settings.
       Files: src/services/notifications/weeklySummary.ts
+
+---
+
+## Monorepo & Infrastructure
+
+| Status | Task                                  | Notes                                        |
+| ------ | ------------------------------------- | -------------------------------------------- |
+| ✅     | Monorepo migration (pnpm + Turborepo) | March 2026                                   |
+| ✅     | CI updated for monorepo               | pnpm --filter, expo:doctor                   |
+| ⬜     | Expo SDK 55 upgrade                   | All expo-\* packages; use expo install --fix |
+| ⬜     | ESLint 10 upgrade                     | Review flat config compatibility first       |
+| ⬜     | NativeWind + Tailwind CSS v4          | Wait for NativeWind v4 support               |
+| ⬜     | @sentry/react-native 8.x              | Review breaking API changes                  |
+| ⬜     | Web app initialization                | Bootstrap Next.js 16 (see HALTEROFIT-WEB.md) |

@@ -94,6 +94,6 @@ export const useAuthStore = create<AuthState>()(
 export function enableDevMode(): void {
   if (__DEV__) {
     useAuthStore.getState().setUser(DEV_MOCK_USER);
-    console.log('Dev mode enabled - using mock user');
+    console.warn('Dev mode enabled - using mock user');
   }
 }

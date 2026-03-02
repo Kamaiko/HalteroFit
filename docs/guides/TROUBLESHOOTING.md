@@ -696,6 +696,43 @@ InteractionManager.runAfterInteractions(() => {
 
 ---
 
+## Git & Commit Issues
+
+### Pre-commit Hook Fails: "Task failed to spawn"
+
+**Symptoms:**
+
+- `Task failed to spawn: pnpm exec eslint --fix` during `git commit`
+- Pre-commit hook exits immediately with a spawn error
+- Subsequent commit attempts fail even with identical code
+
+**Cause:**
+
+A previous failed lint-staged run left zombie `node.exe` processes. These stale processes hold file handles, preventing new Node processes from spawning when you retry the commit. This is a Windows-specific behavior — on macOS/Linux, child processes are cleaned up automatically.
+
+**Solution:**
+
+```bash
+# 1. Verify with manual checks first (skips lint-staged entirely)
+pnpm --filter @halterofit/mobile run lint:check
+pnpm --filter @halterofit/mobile run format:check
+
+# 2. If checks pass, commit bypassing the hook
+git commit --no-verify -m "your message"
+
+# 3. Or: kill stale node.exe processes, then retry normally
+# Option A: Task Manager → filter by "node.exe" → End Task on suspect processes
+# Option B: Kill ALL node.exe (⚠️ also kills IDE language servers)
+taskkill //F //IM node.exe
+git commit -m "your message"
+```
+
+**Prevention:**
+
+Always run `lint:check` + `format:check` manually before committing if a previous lint-staged run failed. This confirms the code is clean before bypassing the hook.
+
+---
+
 ## Getting More Help
 
 If your issue isn't listed here:

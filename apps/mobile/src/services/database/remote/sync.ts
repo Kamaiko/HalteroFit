@@ -12,6 +12,8 @@
  * - WatermelonDB Sync Docs: https://nozbe.github.io/WatermelonDB/Advanced/Sync.html
  */
 
+/* eslint-disable no-console -- All console usage is guarded by __DEV__ checks */
+
 import { synchronize, hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
 import type { RawRecord } from '@nozbe/watermelondb/RawRecord';
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
@@ -62,7 +64,7 @@ export async function sync(): Promise<SyncResult> {
       database,
 
       // Pull changes from server
-      pullChanges: async ({ lastPulledAt, schemaVersion, migration }) => {
+      pullChanges: async ({ lastPulledAt }) => {
         if (__DEV__) console.log('Pulling changes since:', new Date(lastPulledAt || 0));
 
         const { data, error } = await supabase.rpc('pull_changes', {
@@ -97,7 +99,7 @@ export async function sync(): Promise<SyncResult> {
       },
 
       // Push local changes to server
-      pushChanges: async ({ changes, lastPulledAt }) => {
+      pushChanges: async ({ changes }) => {
         // Count records to push
         let pushCount = 0;
         for (const table of Object.keys(changes)) {

@@ -6,23 +6,39 @@ This document explains how Halterofit's codebase is organized. It covers folder 
 
 - [Overview](#overview)
 - [Detailed Structure](#detailed-structure)
-  - [1. `/app` - Navigation (Expo Router)](#1-app---navigation-expo-router)
-  - [2. `/components` - UI Components](#2-components---ui-components)
-  - [3. `/hooks` - Custom React Hooks](#3-hooks---custom-react-hooks)
-  - [4. `/services` - Business Logic](#4-services---business-logic)
-  - [5. `/stores` - Global State (Zustand)](#5-stores---global-state-zustand)
-  - [6. `/utils` - Pure Utility Functions](#6-utils---pure-utility-functions)
-  - [7. `/lib` - UI Utility Helpers](#7-lib---ui-utility-helpers--vendored-libraries)
+  - [1. `app/` - Navigation (Expo Router)](#1-app---navigation-expo-router)
+  - [2. `components/` - UI Components](#2-components---ui-components)
+  - [3. `hooks/` - Custom React Hooks](#3-hooks---custom-react-hooks)
+  - [4. `services/` - Business Logic](#4-services---business-logic)
+  - [5. `stores/` - Global State (Zustand)](#5-stores---global-state-zustand)
+  - [6. `utils/` - Pure Utility Functions](#6-utils---pure-utility-functions)
+  - [7. `lib/` - UI Utility Helpers](#7-lib---ui-utility-helpers--vendored-libraries)
   - [8. Tests - Testing Infrastructure](#8-tests---testing-infrastructure)
-  - [9. `/constants` - App Constants](#9-constants---app-constants)
+  - [9. `constants/` - App Constants](#9-constants---app-constants)
 - [Data Flow](#data-flow)
   - [Offline-First Sync Flow](#3-offline-first-sync-flow)
 
 ---
 
+## Monorepo Structure
+
+Halterofit is a **pnpm monorepo** managed with Turborepo:
+
+```
+apps/
+├── mobile/       # React Native app (this document)
+packages/
+├── db/           # Shared DB types (stub, Phase 3)
+├── tsconfig/     # Shared TS config (stub, Phase 3)
+└── validators/   # Shared validators (stub, Phase 3)
+```
+
+---
+
 ## Overview
 
-Halterofit uses a **practical modular architecture** inspired by React Native/Expo best practices:
+Halterofit uses a **practical modular architecture** inspired by React Native/Expo best practices.
+All paths below are relative to `apps/mobile/`.
 
 ```
 src/
@@ -48,7 +64,7 @@ src/
 
 ## Detailed Structure
 
-### 1. `/app` - Navigation (Expo Router)
+### 1. `app/` - Navigation (Expo Router)
 
 **Purpose**: File-based routing, screens, layouts
 
@@ -89,7 +105,7 @@ app/
 
 ---
 
-### 2. `/components` - UI Components
+### 2. `components/` - UI Components
 
 **Purpose**: Reusable React components organized by feature and source
 
@@ -163,7 +179,7 @@ import { Button } from '@/components/ui/button'; // ShadCN
 
 ---
 
-### 3. `/hooks` - Custom React Hooks
+### 3. `hooks/` - Custom React Hooks
 
 **Purpose**: Encapsulate business logic and state management for screens
 
@@ -201,7 +217,7 @@ hooks/
 
 ---
 
-### 4. `/services` - Business Logic Layer
+### 4. `services/` - Business Logic Layer
 
 **Purpose**: Database operations, external services, storage
 
@@ -282,7 +298,7 @@ import { supabase } from '@/services/supabase';
 
 ---
 
-### 5. `/stores` - Global State (Zustand)
+### 5. `stores/` - Global State (Zustand)
 
 **Purpose**: Application-wide state management with MMKV persistence
 
@@ -313,7 +329,7 @@ stores/
 
 ---
 
-### 6. `/utils` - Pure Utility Functions
+### 6. `utils/` - Pure Utility Functions
 
 **Purpose**: Pure functions, error classes, validation
 
@@ -339,7 +355,7 @@ import { formatDuration } from '@/utils/formatters';
 
 ---
 
-### 7. `/lib` - UI Utility Helpers & Vendored Libraries
+### 7. `lib/` - UI Utility Helpers & Vendored Libraries
 
 **Purpose**: UI-specific utilities and vendored/forked libraries
 
@@ -366,7 +382,7 @@ lib/
 
 ---
 
-### 8. Tests - Testing Infrastructure
+### 8. `__tests__/` - Testing Infrastructure
 
 **Purpose**: Centralized test infrastructure, E2E automation
 
@@ -408,7 +424,7 @@ __tests__/
 
 ---
 
-### 9. `/constants` - App Constants
+### 9. `constants/` - App Constants
 
 **Purpose**: Configuration values, colors, sizes, limits
 
@@ -520,6 +536,6 @@ UI Component → Hook → Service → Database/API
 | **Conflict**   | Last-write-wins (server timestamp)                                       |
 | **First sync** | Full pull, then incremental                                              |
 
-**Implementation:** [src/services/database/remote/sync.ts](../src/services/database/remote/sync.ts)
+**Implementation:** [apps/mobile/src/services/database/remote/sync.ts](../../apps/mobile/src/services/database/remote/sync.ts)
 
 ---

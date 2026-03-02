@@ -2,4 +2,4 @@
 bash .husky/check-schema-version.sh || exit 1
 
 # Run lint-staged (format + lint)
-npx lint-staged
+pnpm exec lint-staged

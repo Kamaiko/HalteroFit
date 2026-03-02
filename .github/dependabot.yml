@@ -27,6 +27,12 @@ updates:
       - dependency-name: '@nozbe/watermelondb'
       - dependency-name: '@shopify/flash-list'
       - dependency-name: 'react-native-mmkv'
+      - dependency-name: 'react-test-renderer'
+        # Must match Expo-managed react version — update via expo install
+      - dependency-name: 'tailwindcss'
+        # Governed by nativewind — NativeWind v4 requires Tailwind v3
+      - dependency-name: 'nativewind'
+        # Upgrade requires coordinated tailwindcss testing
 
   # ── GitHub Actions ────────────────────────────────────────────
   - package-ecosystem: github-actions

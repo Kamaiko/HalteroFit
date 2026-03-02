@@ -120,3 +120,9 @@ expo-env.d.ts
 # @end expo-cli
 android/
 ios/
+
+# ===================
+# Next.js
+# ===================
+.next/
+apps/web/.vercel/
