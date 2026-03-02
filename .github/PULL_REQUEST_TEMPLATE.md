@@ -12,9 +12,9 @@
 
 <!-- How was this tested? -->
 
-- [ ] Unit tests pass (`npm test`)
-- [ ] Lint passes (`npm run lint`)
-- [ ] Type check passes (`npm run typecheck`)
+- [ ] Unit tests pass (`pnpm test`)
+- [ ] Lint passes (`pnpm run lint`)
+- [ ] Type check passes (`pnpm run type-check`)
 - [ ] Manually tested on device/simulator
 
 ## Checklist

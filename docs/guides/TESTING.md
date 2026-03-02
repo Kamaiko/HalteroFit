@@ -5,9 +5,9 @@ Testing strategy and conventions for Halterofit. Risk-calibrated test density, L
 ## Quick Start
 
 ```bash
-npm test                       # Run all tests
-npm test -- --coverage         # Coverage report
-npm test -- filename.test      # Run specific file
+pnpm test                       # Run all tests (from apps/mobile)
+pnpm test -- --coverage         # Coverage report
+pnpm test -- filename.test      # Run specific file
 ```
 
 E2E tests (Maestro) are planned for Phase 3+ when sync protocol testing begins. See `.maestro/README.md`.

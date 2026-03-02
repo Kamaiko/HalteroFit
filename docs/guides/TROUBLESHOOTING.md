@@ -2,7 +2,7 @@
 
 Solutions to common development issues with Halterofit. This guide covers the Development Build stack (WatermelonDB, MMKV, Victory Native, NativeWind) and typical error scenarios encountered during development.
 
-**Quick Start**: Most issues are solved by clearing cache (`npm start -- --clear`) or rebuilding the Development Build.
+**Quick Start**: Most issues are solved by clearing cache (`pnpm start --clear` from `apps/mobile`) or rebuilding the Development Build.
 
 ## Table of Contents
 
@@ -68,8 +68,8 @@ Stale Dev Client state on the emulator. Happens after hot reload, dev server res
 # Clear app data (keeps app installed)
 adb shell pm clear com.halterofit.app
 
-# Then relaunch
-npm start
+# Then relaunch (from apps/mobile)
+pnpm start
 ```
 
 If that doesn't work:
@@ -84,7 +84,7 @@ eas build --profile development --platform android
 
 You need to rebuild when:
 
-- Adding npm packages with native code (e.g., `react-native-*`, `expo-*`)
+- Adding packages with native code (e.g., `react-native-*`, `expo-*`)
 - Modifying native configuration in `app.json`
 - Updating Expo SDK version
 - Changing native module settings
@@ -103,15 +103,15 @@ You need to rebuild when:
 
 **Symptoms:**
 
-- `npm start` fails
+- `pnpm start` fails
 - "Port already in use" error
 - Metro bundler shows persistent errors
 
 **Solutions:**
 
 ```bash
-# 1. Clear Metro cache
-npm start -- --clear
+# 1. Clear Metro cache (from apps/mobile)
+pnpm start --clear
 
 # 2. Kill process using port 8081
 # Windows:
@@ -124,10 +124,10 @@ lsof -ti:8081 | xargs kill -9
 # 3. Clear watchman cache (if installed)
 watchman watch-del-all
 
-# 4. Nuclear option - full clean
-rm -rf node_modules
-npm install
-npm start -- --clear
+# 4. Nuclear option - full clean (from repo root)
+rm -rf node_modules apps/mobile/node_modules
+pnpm install
+cd apps/mobile && pnpm start --clear
 ```
 
 ### White Screen or "Unable to Connect"
@@ -141,15 +141,15 @@ npm start -- --clear
 **Solutions:**
 
 ```bash
-# 1. Ensure Metro bundler is running
-npm start
+# 1. Ensure Metro bundler is running (from apps/mobile)
+pnpm start
 
 # 2. Reload app
 # Shake device → "Reload"
 # Or close app completely and reopen
 
 # 3. Clear cache
-npm start -- --clear
+pnpm start --clear
 ```
 
 **Checklist:**
@@ -169,12 +169,12 @@ npm start -- --clear
 **Solutions:**
 
 ```bash
-# 1. Restart Metro with cache clear
-npm start -- --clear
+# 1. Restart Metro with cache clear (from apps/mobile)
+pnpm start --clear
 
-# 2. If still failing, reinstall dependencies
-rm -rf node_modules
-npm install
+# 2. If still failing, reinstall dependencies (from repo root)
+rm -rf node_modules apps/mobile/node_modules
+pnpm install
 
 # 3. Verify import paths use @/ alias
 ```
@@ -332,8 +332,8 @@ Using Expo Go instead of Development Build. MMKV is a native module.
 # 2. Rebuild Development Build if needed
 eas build --profile development --platform android
 
-# 3. Clear cache and restart
-npm start -- --clear
+# 3. Clear cache and restart (from apps/mobile)
+pnpm start --clear
 ```
 
 ### Data Not Persisting Across Restarts
@@ -385,8 +385,8 @@ export const useStore = create(
 **Solutions:**
 
 ```bash
-# 1. Restart Metro with cache clear
-npm start -- --clear
+# 1. Restart Metro with cache clear (from apps/mobile)
+pnpm start --clear
 
 # 2. Verify global.css is imported
 # Check src/app/_layout.tsx
@@ -520,9 +520,9 @@ ls -la .env
 # Dashboard → Settings → API
 # Copy EXACT values (no spaces, quotes, etc.)
 
-# 3. Restart Metro (env changes require restart)
+# 3. Restart Metro (env changes require restart, from apps/mobile)
 # Kill Metro (Ctrl+C)
-npm start -- --clear
+pnpm start --clear
 ```
 
 **Common Mistakes:**
@@ -585,8 +585,8 @@ If `userId` is null after login, check MMKV configuration.
 # Cmd+Shift+P (macOS) or Ctrl+Shift+P (Windows)
 # → "TypeScript: Restart TS Server"
 
-# 2. Run type check
-npm run type-check
+# 2. Run type check (from apps/mobile)
+pnpm run type-check
 
 # 3. Verify import paths
 ```
@@ -606,7 +606,7 @@ import { Colors } from '@/constants';
 **Always run after making changes:**
 
 ```bash
-npm run type-check
+pnpm run type-check
 ```
 
 **Common Issues:**
@@ -631,33 +631,27 @@ npm run type-check
 **Solutions:**
 
 ```bash
-# 1. Clear cache and reinstall
-npm cache clean --force
-rm -rf node_modules package-lock.json
-npm install
+# 1. Clear cache and reinstall (from repo root)
+rm -rf node_modules apps/mobile/node_modules
+pnpm install
 
-# 2. Restart Metro
-npm start -- --clear
+# 2. Restart Metro (from apps/mobile)
+pnpm start --clear
 
 # 3. Verify package in package.json
-cat package.json | grep "package-name"
+cat apps/mobile/package.json | grep "package-name"
 ```
 
 ### Peer Dependency Warnings
 
 **Symptoms:**
 
-- `npm install` shows peer dependency warnings
+- `pnpm install` shows peer dependency warnings
 - Version conflicts
 
 **Solution:**
 
-```bash
-# Use legacy peer deps (safe for Expo projects)
-npm install --legacy-peer-deps
-
-# Expo manages React Native version internally
-```
+pnpm resolves peer dependencies differently than npm. The project `.npmrc` at the repo root configures `node-linker=hoisted` for native module compatibility. If you see peer dependency warnings, they are typically non-blocking. Run `npx expo install --fix` to align Expo-managed packages.
 
 ---
 
