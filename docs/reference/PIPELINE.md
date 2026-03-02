@@ -73,17 +73,17 @@ Developer Workflow
 
 ### Technology Stack
 
-| Component         | Technology            | Purpose                        |
-| ----------------- | --------------------- | ------------------------------ |
-| Git Hooks         | Husky                 | Pre-commit validation          |
-| Code Formatting   | Prettier              | Code style consistency         |
-| Linting           | ESLint                | Code quality checks            |
-| Type Checking     | TypeScript            | Static type validation         |
-| Testing           | Jest                  | Unit/integration tests         |
-| CI                | GitHub Actions        | Automated testing              |
-| Security Scanning | pnpm audit, TruffleHog | Vulnerability detection       |
-| Dep Updates       | Dependabot            | Grouped PRs + patch auto-merge |
-| Dep Monitoring    | dep-check.yml         | Monthly Expo package report    |
+| Component         | Technology             | Purpose                        |
+| ----------------- | ---------------------- | ------------------------------ |
+| Git Hooks         | Husky                  | Pre-commit validation          |
+| Code Formatting   | Prettier               | Code style consistency         |
+| Linting           | ESLint                 | Code quality checks            |
+| Type Checking     | TypeScript             | Static type validation         |
+| Testing           | Jest                   | Unit/integration tests         |
+| CI                | GitHub Actions         | Automated testing              |
+| Security Scanning | pnpm audit, TruffleHog | Vulnerability detection        |
+| Dep Updates       | Dependabot             | Grouped PRs + patch auto-merge |
+| Dep Monitoring    | dep-check.yml          | Monthly Expo package report    |
 
 ---
 
@@ -218,6 +218,8 @@ These packages must ONLY be updated via `npx expo install`:
 - `react`, `react-native`
 - `react-native-*`, `@react-native/*` packages
 - Native libraries (@nozbe/watermelondb, @shopify/flash-list, react-native-mmkv)
+- `react-test-renderer` (must match Expo-managed `react` version exactly)
+- `nativewind` + `tailwindcss` (NativeWind v4 requires Tailwind v3 — coordinate upgrade)
 
 Never use `pnpm add` or `pnpm update` directly for these — they may install SDK-incompatible versions.
 

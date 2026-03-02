@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-03-02
+
+### Added
+
+- pnpm workspace + Turborepo monorepo (apps/mobile active, apps/web stub, packages/)
+- apps/mobile/.claude/CLAUDE.md and apps/web/.claude/CLAUDE.md per-app Claude instructions
+- CI: pnpm-aware workflows, Expo-compatible dep-check.yml, per-app .prettierignore files
+
+### Changed
+
+- Mobile source code moved to apps/mobile/ (import paths unchanged via tsconfig aliases)
+- Dependabot ignore list expanded: react-test-renderer, nativewind, tailwindcss
+
+### Fixed
+
+- metro.config.js watchFolders was replacing (now extends) Expo defaults
+- react-native-safe-area-context pinned to Expo SDK 54 compatible ~5.6.0
+- icon.tsx TypeScript error (AnyIconName union → per-pack if/else branches)
+- dep-check.yml npm → pnpm commands
+- 8 ESLint no-console warnings (exercises.ts disable, authStore/workoutStore → console.warn)
+
 ## [0.10.0] - 2026-02-21
 
 ### Changed
@@ -167,7 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FlashList configured for optimized list rendering
 - Jest testing infrastructure
 
-[Unreleased]: https://github.com/ppmusic/halterofit/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/ppmusic/halterofit/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/ppmusic/halterofit/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/ppmusic/halterofit/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ppmusic/halterofit/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/ppmusic/halterofit/compare/v0.7.0...v0.8.0
