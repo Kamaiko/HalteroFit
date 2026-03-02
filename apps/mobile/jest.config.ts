@@ -9,8 +9,8 @@ const config: Config = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@test-helpers/(.*)$': '<rootDir>/__tests__/__helpers__/$1',
     '^@tests/(.*)$': '<rootDir>/__tests__/$1',
-    // msw v2 uses conditional exports - point Jest to the correct Node.js entry
-    '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
+    // msw v2 uses conditional exports - use require.resolve for pnpm hoisting compat
+    '^msw/node$': require.resolve('msw/node'),
   },
   testPathIgnorePatterns: ['/node_modules/'],
   cacheDirectory: '.jest-cache',

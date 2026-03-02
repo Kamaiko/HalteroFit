@@ -2,16 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, feat/monorepo-migration]
   pull_request:
     branches: [master]
 
-# Cancel in-progress runs when a new commit is pushed to the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Default permissions (read-only)
 permissions:
   contents: read
 
@@ -22,56 +20,59 @@ jobs:
   code-quality:
     name: Lint
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
 
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      # TypeScript Incremental Build Cache
-      # .tsbuildinfo enables faster subsequent type-checks
       - name: Cache TypeScript build info
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
-          path: .tsbuildinfo
-          key: ${{ runner.os }}-tsbuildinfo-${{ hashFiles('**/tsconfig.json', 'src/**/*.ts', 'src/**/*.tsx') }}
+          path: apps/mobile/.tsbuildinfo
+          key: ${{ runner.os }}-tsbuildinfo-${{ hashFiles('apps/mobile/tsconfig.json', 'apps/mobile/src/**/*.ts', 'apps/mobile/src/**/*.tsx') }}
           restore-keys: |
             ${{ runner.os }}-tsbuildinfo-
 
-      # ESLint Cache for faster linting
       - name: Cache ESLint
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
-          path: .eslintcache
-          key: ${{ runner.os }}-eslintcache-${{ hashFiles('eslint.config.js', 'src/**/*.ts', 'src/**/*.tsx') }}
+          path: apps/mobile/.eslintcache
+          key: ${{ runner.os }}-eslintcache-${{ hashFiles('apps/mobile/eslint.config.js', 'apps/mobile/src/**/*.ts', 'apps/mobile/src/**/*.tsx') }}
           restore-keys: |
             ${{ runner.os }}-eslintcache-
 
       - name: TypeScript type-check
-        run: npm run type-check
+        run: pnpm --filter @halterofit/mobile run type-check
 
       - name: ESLint
-        run: npm run lint:check
+        run: pnpm --filter @halterofit/mobile run lint:check
 
       - name: Prettier format check
-        run: npm run format:check
+        run: pnpm --filter @halterofit/mobile run format:check
 
       - name: Security audit
         # Only fail on CRITICAL vulnerabilities
-        # Rationale: glob (HIGH) is CLI-only, doesn't affect React Native runtime
-        run: npm audit --audit-level=critical
+        run: pnpm audit --audit-level critical
 
       - name: Expo SDK compatibility
-        run: npx expo-doctor
+        run: pnpm --filter @halterofit/mobile run expo:doctor
 
   # ============================================================================
   # Job 2: Test (Jest with Coverage)
@@ -79,32 +80,38 @@ jobs:
   unit-tests:
     name: Test
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
 
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      # Jest Cache for faster test runs
       - name: Cache Jest
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
-          path: .jest-cache
-          key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.ts', 'src/**/*.test.ts', 'src/**/*.test.tsx') }}
+          path: apps/mobile/.jest-cache
+          key: ${{ runner.os }}-jest-${{ hashFiles('apps/mobile/jest.config.ts', 'apps/mobile/src/**/*.test.ts') }}
           restore-keys: |
             ${{ runner.os }}-jest-
 
       - name: Run tests with coverage
-        run: npm run test:ci
+        run: pnpm --filter @halterofit/mobile run test:ci
 
   # ============================================================================
   # Job 3: Secrets (TruffleHog) - Informational only, not a required check
@@ -118,7 +125,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 10 # Recent commits sufficient, scan runs on every push
+          fetch-depth: 10
 
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@041f07e9df901a1038a528e5525b0226d04dd5ea # v3.93.6
