@@ -11,9 +11,9 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "apps/mobile/**/*.{ts,tsx}": ["eslint --fix", "prettier --write"],
-    "apps/web/**/*.{ts,tsx}": ["eslint --fix", "prettier --write"],
-    "**/*.{json,md,css,yml,yaml}": ["prettier --write"]
+    "apps/mobile/**/*.{ts,tsx}": ["pnpm exec eslint --fix", "pnpm exec prettier --write"],
+    "apps/web/**/*.{ts,tsx}": ["pnpm exec eslint --fix", "pnpm exec prettier --write"],
+    "**/*.{json,md,css,yml,yaml}": ["pnpm exec prettier --write"]
   },
   "devDependencies": {
     "turbo": "latest",

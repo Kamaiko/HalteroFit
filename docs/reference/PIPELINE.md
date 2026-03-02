@@ -19,7 +19,7 @@ This document defines the CI/CD pipeline configuration, including git hooks, Git
 
 **CI Jobs (3 parallel):**
 
-1. `Lint` - TypeScript, ESLint, Prettier, npm audit, Expo Doctor
+1. `Lint` - TypeScript, ESLint, Prettier, pnpm audit, Expo Doctor
 2. `Test` - Jest with coverage
 3. `Secrets` - TruffleHog (informational, not a required check)
 
@@ -53,7 +53,7 @@ Developer Workflow
 │  │ TypeScript   │  │ Jest   │                │
 │  │ ESLint       │  │        │                │
 │  │ Prettier     │  │        │                │
-│  │ npm audit    │  │        │                │
+│  │ pnpm audit   │  │        │                │
 │  │ Expo Doctor  │  │        │                │
 │  └──────────────┘  └────────┘                │
 │                                              │
@@ -81,7 +81,7 @@ Developer Workflow
 | Type Checking     | TypeScript            | Static type validation         |
 | Testing           | Jest                  | Unit/integration tests         |
 | CI                | GitHub Actions        | Automated testing              |
-| Security Scanning | npm audit, TruffleHog | Vulnerability detection        |
+| Security Scanning | pnpm audit, TruffleHog | Vulnerability detection       |
 | Dep Updates       | Dependabot            | Grouped PRs + patch auto-merge |
 | Dep Monitoring    | dep-check.yml         | Monthly Expo package report    |
 
@@ -153,7 +153,7 @@ git commit -m "message"
 
 #### Job 1: Code Quality (Lint)
 
-TypeScript type-check, ESLint, Prettier validation, npm audit (critical only), and Expo SDK compatibility check. Uses intelligent caching for TypeScript and ESLint.
+TypeScript type-check, ESLint, Prettier validation, pnpm audit (critical only), and Expo SDK compatibility check. Uses intelligent caching for TypeScript and ESLint.
 
 #### Job 2: Unit Tests (Test)
 
@@ -161,7 +161,7 @@ Jest tests with coverage reporting.
 
 #### Job 3: Secrets Scanning (informational)
 
-TruffleHog OSS scans for API keys, credentials, private keys, and tokens. Uses `--only-verified` flag to reduce false positives. Lightweight job (no npm ci needed). Does not block pushes.
+TruffleHog OSS scans for API keys, credentials, private keys, and tokens. Uses `--only-verified` flag to reduce false positives. Lightweight job (no install step needed). Does not block pushes.
 
 ---
 
@@ -173,8 +173,8 @@ TruffleHog OSS scans for API keys, credentials, private keys, and tokens. Uses `
 
 **What it reports:**
 
-- `npm outdated` - packages with available updates
-- `npm audit` - security vulnerabilities
+- `pnpm outdated -r` - packages with available updates (all workspace packages)
+- `pnpm audit` - security vulnerabilities
 - Recommended update steps
 
 ---
@@ -204,10 +204,10 @@ Dependabot creates grouped PRs:
 The `dep-check.yml` workflow creates an issue monthly for packages Dependabot doesn't handle:
 
 ```bash
-npm outdated                # Review what's available
-npx expo install --fix      # Fix Expo SDK compatibility
-npm test                    # Verify nothing broke
-npm run type-check          # Verify types
+pnpm outdated -r                                           # Review what's available
+pnpm --filter @halterofit/mobile exec expo install --fix  # Fix Expo SDK compatibility
+pnpm test                                                  # Verify nothing broke
+pnpm --filter @halterofit/mobile run type-check            # Verify types
 ```
 
 ### Expo-Locked Packages
@@ -219,7 +219,7 @@ These packages must ONLY be updated via `npx expo install`:
 - `react-native-*`, `@react-native/*` packages
 - Native libraries (@nozbe/watermelondb, @shopify/flash-list, react-native-mmkv)
 
-Never use `npm install` or `npm update` for these — they may install SDK-incompatible versions.
+Never use `pnpm add` or `pnpm update` directly for these — they may install SDK-incompatible versions.
 
 ---
 
@@ -255,22 +255,22 @@ Never use `npm install` or `npm update` for these — they may install SDK-incom
 
 ```bash
 # Option 1: Increment schema version (recommended)
-# Edit src/services/database/local/schema.ts
+# Edit apps/mobile/src/services/database/local/schema.ts
 # Increment: version: N → version: N+1
 
 # Option 2: Bypass validation (if migration doesn't affect schema)
 git commit --no-verify
 ```
 
-### CI Failures: npm audit
+### CI Failures: pnpm audit
 
 **Symptom:** Lint job fails at security audit step
 
 **Fix:**
 
 ```bash
-npm audit --audit-level=critical    # Same level as CI
-npm audit fix                       # Try automatic fix
+pnpm audit --audit-level critical   # Same level as CI
+pnpm audit --fix                    # Try automatic fix
 ```
 
 ---
@@ -301,4 +301,4 @@ gh api repos/OWNER/REPO/branches/master/protection/required_status_checks \
 
 - [Husky Documentation](https://typicode.github.io/husky/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [npm audit Documentation](https://docs.npmjs.com/cli/v10/commands/npm-audit)
+- [pnpm audit Documentation](https://pnpm.io/cli/audit)

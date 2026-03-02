@@ -1,6 +1,12 @@
 import { MaterialIcons, Ionicons, FontAwesome } from '@expo/vector-icons';
 import { cva, type VariantProps } from 'class-variance-authority';
+import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
+
+type AnyIconName =
+  | ComponentProps<typeof MaterialIcons>['name']
+  | ComponentProps<typeof Ionicons>['name']
+  | ComponentProps<typeof FontAwesome>['name'];
 
 /**
  * Icon size and color variants using CVA
@@ -86,7 +92,7 @@ export function Icon({ name, pack = 'material', size, variant, className }: Icon
 
   return (
     <IconComponent
-      name={name as any} // Type assertion needed due to @expo/vector-icons typing
+      name={name as AnyIconName}
       className={cn(iconVariants({ size, variant }), className)}
     />
   );
