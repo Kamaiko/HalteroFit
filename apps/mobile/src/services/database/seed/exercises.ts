@@ -7,6 +7,7 @@
  * @see docs/DATABASE.md § ExerciseDB Dataset
  */
 
+/* eslint-disable no-console -- All console usage is guarded by __DEV__ checks */
 import { database } from '../local';
 import ExerciseModel from '../local/models/Exercise';
 import { mmkvStorage } from '@/services/storage';

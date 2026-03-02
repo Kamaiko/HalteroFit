@@ -63,7 +63,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           return;
         }
         if (__DEV__ && _hydratedState?.isWorkoutActive) {
-          console.log('Workout session restored:', {
+          console.warn('Workout session restored:', {
             started: _hydratedState.workoutStartTime,
             id: _hydratedState.currentWorkoutId,
           });
