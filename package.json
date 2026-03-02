@@ -11,14 +11,22 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "apps/mobile/**/*.{ts,tsx}": ["pnpm exec eslint --fix", "pnpm exec prettier --write"],
-    "apps/web/**/*.{ts,tsx}": ["pnpm exec eslint --fix", "pnpm exec prettier --write"],
-    "**/*.{json,md,css,yml,yaml}": ["pnpm exec prettier --write"]
+    "apps/mobile/**/*.{ts,tsx}": [
+      "pnpm exec eslint --fix",
+      "pnpm exec prettier --write"
+    ],
+    "apps/web/**/*.{ts,tsx}": [
+      "pnpm exec eslint --fix",
+      "pnpm exec prettier --write"
+    ],
+    "**/*.{json,md,css,yml,yaml}": [
+      "pnpm exec prettier --write"
+    ]
   },
   "devDependencies": {
-    "turbo": "latest",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
-    "prettier": "^3.7.4"
+    "lint-staged": "^16.3.1",
+    "prettier": "^3.7.4",
+    "turbo": "latest"
   }
 }
