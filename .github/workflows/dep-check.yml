@@ -30,30 +30,74 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check outdated packages
-        id: outdated
+      - name: Generate report
         run: |
-          echo "## Outdated Packages" > report.md
-          echo '```' >> report.md
-          pnpm outdated -r 2>&1 || true
-          pnpm outdated -r >> report.md 2>&1 || echo "All packages are up to date." >> report.md
-          echo '```' >> report.md
+          # --- Section 1: Expo SDK Status ---
+          CURRENT_EXPO=$(node -e "console.log(require('./apps/mobile/node_modules/expo/package.json').version)")
+          LATEST_EXPO=$(pnpm view expo version 2>/dev/null || echo "unknown")
+
+          echo "## Expo SDK Status" > report.md
+          echo "" >> report.md
+          if [ "$CURRENT_EXPO" = "$LATEST_EXPO" ]; then
+            echo "✅ **On latest SDK** — \`expo@${CURRENT_EXPO}\`" >> report.md
+          else
+            CURRENT_MAJOR=$(echo "$CURRENT_EXPO" | cut -d. -f1)
+            LATEST_MAJOR=$(echo "$LATEST_EXPO" | cut -d. -f1)
+            if [ "$CURRENT_MAJOR" = "$LATEST_MAJOR" ]; then
+              echo "✅ **On latest SDK** — \`expo@${CURRENT_EXPO}\` (latest patch: \`${LATEST_EXPO}\`)" >> report.md
+            else
+              echo "⬆️ **New SDK available** — Current: \`expo@${CURRENT_EXPO}\` → Latest: \`expo@${LATEST_EXPO}\`" >> report.md
+              echo "" >> report.md
+              echo "Upgrade guide: https://docs.expo.dev/workflow/upgrading-expo-sdk/" >> report.md
+            fi
+          fi
+
+          # --- Section 2: Safe Updates (wanted > current, excludes Expo-managed) ---
+          echo "" >> report.md
+          echo "## Safe to Update" >> report.md
+          echo "" >> report.md
+          echo "Packages where a newer version is available within the current semver range." >> report.md
+          echo "Expo-managed packages are excluded (use \`npx expo install --fix\` for those)." >> report.md
+          echo "" >> report.md
+
+          # Expo-managed package patterns to exclude
+          EXCLUDE='(^expo|^@expo/|^react-native$|^react$|^react-native-|^@react-native/|^@nozbe/watermelondb|^@shopify/flash-list|^@shopify/react-native-skia|^react-native-mmkv|^babel-preset-expo|^react-test-renderer|^jest-expo|^nativewind|^tailwindcss)'
+
+          SAFE_UPDATES=$(pnpm outdated -r --format json 2>/dev/null | node -e "
+            const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
+            const exclude = new RegExp('$EXCLUDE');
+            const results = {};
+            // pnpm outdated JSON: keys are package paths, or it may be an object with package names
+            for (const [pkg, info] of Object.entries(data)) {
+              if (exclude.test(pkg)) continue;
+              if (info.current !== info.wanted) {
+                results[pkg] = { current: info.current, wanted: info.wanted, latest: info.latest };
+              }
+            }
+            if (Object.keys(results).length === 0) {
+              console.log('_none_');
+            } else {
+              console.log('| Package | Current | Wanted | Latest |');
+              console.log('|---------|---------|--------|--------|');
+              for (const [pkg, v] of Object.entries(results)) {
+                console.log('| ' + pkg + ' | ' + v.current + ' | ' + v.wanted + ' | ' + v.latest + ' |');
+              }
+            }
+          " 2>/dev/null) || SAFE_UPDATES="_Could not parse outdated packages._"
+
+          echo "$SAFE_UPDATES" >> report.md
+
+          # --- Section 3: Security Audit ---
           echo "" >> report.md
           echo "## Security Audit" >> report.md
+          echo "" >> report.md
           echo '```' >> report.md
           pnpm audit 2>&1 >> report.md || true
-          echo '```' >> report.md
-          echo "" >> report.md
-          echo "## Recommended Update Steps" >> report.md
-          echo '```bash' >> report.md
-          echo "pnpm update -r                                           # Update within semver ranges" >> report.md
-          echo "pnpm --filter @halterofit/mobile exec expo install --fix # Fix Expo SDK compatibility" >> report.md
-          echo "pnpm test                                                # Verify nothing broke" >> report.md
           echo '```' >> report.md
 
       - name: Create issue
         uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710 # v6.0.0
         with:
-          title: 'Monthly dependency update report'
+          title: 'Monthly dependency report'
           content-filepath: report.md
           labels: dependencies
