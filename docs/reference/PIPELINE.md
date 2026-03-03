@@ -23,7 +23,7 @@ This document defines the CI/CD pipeline configuration, including git hooks, Git
 2. `Test` - Jest with coverage
 3. `Secrets` - TruffleHog (informational, not a required check)
 
-**Git Hook:** pre-commit only (lint-staged + schema version check)
+**Git Hook:** pre-commit only (lint-staged)
 
 **Dependency Updates:** Dependabot monthly grouped PRs (patches auto-merge) + `dep-check.yml` for Expo packages
 
@@ -39,7 +39,7 @@ Developer Workflow
        ▼
 ┌─────────────────────────────────────────────┐
 │              GIT HOOKS (Husky)               │
-│  pre-commit: schema-check + lint-staged      │
+│  pre-commit: lint-staged (format + lint)     │
 └─────────────────────────────────────────────┘
        │
        ▼
@@ -93,8 +93,7 @@ Developer Workflow
 
 ```
 .husky/
-├── pre-commit                       # lint-staged + schema version check
-├── check-schema-version.sh          # Database schema version validator
+├── pre-commit                       # lint-staged (format + lint)
 └── _/                               # Husky internal files (auto-generated)
 ```
 
@@ -104,8 +103,7 @@ Developer Workflow
 git commit -m "message"
     │
     └─► pre-commit hook (FAST - staged files only)
-        ├─► 1. check-schema-version.sh (if SQL migration staged)
-        └─► 2. lint-staged (format + lint staged files)
+        └─► lint-staged (ESLint --fix + Prettier --write)
 ```
 
 **Configuration files:** See [.husky/](../.husky/) for hook implementations.
@@ -130,26 +128,35 @@ git commit -m "message"
 ### 3.2 CI Workflow (ci.yml)
 
 **File:** `.github/workflows/ci.yml`
-**Trigger:** `push` to `master`, `pull_request` to `master`
+**Trigger:** `push` to `master` (code paths only), `pull_request` to `master`
 **Concurrency:** Cancel in-progress runs when new commit pushed
+**Path filtering:** Uses `dorny/paths-filter` to skip Lint/Test on docs-only changes
 
 ### Job Dependency Graph
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                 PARALLEL JOBS (Independent)           │
-│                                                       │
-│  Required:                                            │
-│  ┌────────────┐  ┌────────┐                           │
-│  │    Lint    │  │  Test  │                           │
-│  └────────────┘  └────────┘                           │
-│                                                       │
-│  Informational:                                       │
-│  ┌──────────┐                                         │
-│  │ Secrets  │                                         │
-│  └──────────┘                                         │
-└──────────────────────────────────────────────────────┘
+│  Detect Changes (dorny/paths-filter)                  │
+│  Determines if code paths changed                     │
+└───────────────────────┬──────────────────────────────┘
+                        │
+          ┌─────────────┼─────────────┐
+          ▼             ▼             ▼
+  ┌────────────┐  ┌────────┐  ┌──────────┐
+  │    Lint    │  │  Test  │  │ Secrets  │
+  │ (if code)  │  │(if code)│  │ (always) │
+  └────────────┘  └────────┘  └──────────┘
+          │             │             │
+          └─────────────┼─────────────┘
+                        ▼
+              ┌───────────────┐
+              │   CI Status   │  ← Branch protection check
+              │   (gate job)  │
+              └───────────────┘
 ```
+
+**Docs-only PRs:** Lint + Test are skipped → CI Status passes immediately (~10s).
+**Code PRs:** Lint + Test run normally → CI Status passes/fails based on results.
 
 #### Job 1: Code Quality (Lint)
 
@@ -236,8 +243,7 @@ Never use `pnpm add` or `pnpm update` directly for these — they may install SD
 
 **Required Checks:**
 
-1. `Lint`
-2. `Test`
+1. `CI Status` (gate job — aggregates Lint + Test results)
 
 ### Other Rules
 
@@ -249,21 +255,6 @@ Never use `pnpm add` or `pnpm update` directly for these — they may install SD
 ---
 
 ## 6. Troubleshooting Guide
-
-### check-schema-version.sh Failures
-
-**Symptom:** Commit blocked with "schema.version not incremented"
-
-**Fix:**
-
-```bash
-# Option 1: Increment schema version (recommended)
-# Edit apps/mobile/src/services/database/local/schema.ts
-# Increment: version: N → version: N+1
-
-# Option 2: Bypass validation (if migration doesn't affect schema)
-git commit --no-verify
-```
 
 ### CI Failures: pnpm audit
 
