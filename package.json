@@ -3,10 +3,12 @@
   "private": true,
   "packageManager": "pnpm@10.26.2",
   "scripts": {
-    "dev": "turbo dev",
+    "dev:mobile": "pnpm --filter @halterofit/mobile start",
+    "dev:web": "pnpm --filter @halterofit/web dev",
+    "test:mobile": "pnpm --filter @halterofit/mobile test",
+    "test:web": "pnpm --filter @halterofit/web test",
     "build": "turbo build",
     "lint": "turbo lint",
-    "test": "turbo test",
     "type-check": "turbo type-check",
     "prepare": "husky"
   },
