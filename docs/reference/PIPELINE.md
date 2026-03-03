@@ -176,13 +176,11 @@ TruffleHog OSS scans for API keys, credentials, private keys, and tokens. Uses `
 
 **File:** `.github/workflows/dep-check.yml`
 **Trigger:** Scheduled (1st of each month at 6 AM EST) + manual dispatch
-**Output:** Creates a GitHub issue with outdated packages report and security audit
+**Output:** Creates a GitHub issue with 3 sections:
 
-**What it reports:**
-
-- `pnpm outdated -r` - packages with available updates (all workspace packages)
-- `pnpm audit` - security vulnerabilities
-- Recommended update steps
+1. **Expo SDK Status** — signals when a new SDK major version is available
+2. **Safe to Update** — packages within semver range (excludes Expo-managed)
+3. **Security Audit** — `pnpm audit` vulnerability report
 
 ---
 
@@ -206,9 +204,9 @@ Dependabot creates grouped PRs:
 
 **Expo packages are ignored** — Dependabot can't ensure SDK compatibility. These are caught by `dep-check.yml` instead.
 
-### Monthly Expo Update (dep-check.yml)
+### Monthly Dependency Report (dep-check.yml)
 
-The `dep-check.yml` workflow creates an issue monthly for packages Dependabot doesn't handle:
+The `dep-check.yml` workflow creates a monthly issue with Expo SDK status, safe-to-update packages, and security audit. Expo-managed packages are filtered out (use `npx expo install --fix` for those):
 
 ```bash
 pnpm outdated -r                                           # Review what's available
