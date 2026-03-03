@@ -2,7 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [master, feat/monorepo-migration]
+    branches: [master]
+    paths-ignore:
+      - 'docs/**'
+      - 'assets/**'
+      - '**.md'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
   pull_request:
     branches: [master]
 
@@ -15,10 +21,40 @@ permissions:
 
 jobs:
   # ============================================================================
+  # Job 0: Detect which files changed (for conditional job execution)
+  # ============================================================================
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check for code changes
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            code:
+              - 'apps/**'
+              - 'packages/**'
+              - 'supabase/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+              - '.github/workflows/ci.yml'
+
+  # ============================================================================
   # Job 1: Lint (TypeScript + ESLint + Prettier + Audit + Expo Doctor)
   # ============================================================================
   code-quality:
     name: Lint
+    needs: detect-changes
+    if: needs.detect-changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 8
 
@@ -77,6 +113,8 @@ jobs:
   # ============================================================================
   unit-tests:
     name: Test
+    needs: detect-changes
+    if: needs.detect-changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 8
 
@@ -127,3 +165,21 @@ jobs:
         uses: trufflesecurity/trufflehog@041f07e9df901a1038a528e5525b0226d04dd5ea # v3.93.6
         with:
           extra_args: --only-verified
+
+  # ============================================================================
+  # Job 4: Gate (aggregates results for branch protection)
+  # ============================================================================
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [code-quality, unit-tests, secrets-scan]
+    steps:
+      - name: Check job results
+        run: |
+          if [[ "${{ needs.code-quality.result }}" == "failure" || \
+                "${{ needs.unit-tests.result }}" == "failure" ]]; then
+            echo "::error::CI failed — check Lint and Test jobs above"
+            exit 1
+          fi
+          echo "CI passed"

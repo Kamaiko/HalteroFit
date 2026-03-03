@@ -4,9 +4,9 @@
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
     "dev": { "persistent": true, "cache": false },
-    "lint": { "dependsOn": ["^lint"] },
-    "type-check": { "dependsOn": ["^build"] },
-    "test": { "dependsOn": ["^build"] },
-    "test:ci": { "dependsOn": ["^build"] }
+    "lint": {},
+    "type-check": {},
+    "test": {},
+    "test:ci": {}
   }
 }
