@@ -13,11 +13,11 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "apps/mobile/**/*.{ts,tsx}": [
+    "apps/mobile/**/*.{ts,tsx,js}": [
       "pnpm exec eslint --fix",
       "pnpm exec prettier --write"
     ],
-    "apps/web/**/*.{ts,tsx}": [
+    "apps/web/**/*.{ts,tsx,js}": [
       "pnpm exec eslint --fix",
       "pnpm exec prettier --write"
     ],
