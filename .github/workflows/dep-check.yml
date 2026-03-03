@@ -33,7 +33,11 @@ jobs:
       - name: Generate report
         run: |
           # --- Section 1: Expo SDK Status ---
-          CURRENT_EXPO=$(node -e "console.log(require('./apps/mobile/node_modules/expo/package.json').version)")
+          CURRENT_EXPO=$(pnpm --filter @halterofit/mobile ls expo --json 2>/dev/null | node -e "
+            const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+            const deps = d[0]?.dependencies || d[0]?.devDependencies || {};
+            console.log(deps.expo?.version || 'unknown');
+          " 2>/dev/null || echo "unknown")
           LATEST_EXPO=$(pnpm view expo version 2>/dev/null || echo "unknown")
 
           echo "## Expo SDK Status" > report.md
@@ -63,7 +67,7 @@ jobs:
           # Expo-managed package patterns to exclude
           EXCLUDE='(^expo|^@expo/|^react-native$|^react$|^react-native-|^@react-native/|^@nozbe/watermelondb|^@shopify/flash-list|^@shopify/react-native-skia|^react-native-mmkv|^babel-preset-expo|^react-test-renderer|^jest-expo|^nativewind|^tailwindcss)'
 
-          SAFE_UPDATES=$(pnpm outdated -r --format json 2>/dev/null | node -e "
+          SAFE_UPDATES=$(pnpm outdated -r --json 2>/dev/null | node -e "
             const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
             const exclude = new RegExp('$EXCLUDE');
             const results = {};
