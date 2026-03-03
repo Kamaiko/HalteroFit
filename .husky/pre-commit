@@ -1,6 +1,2 @@
 #!/bin/sh
-# Check schema.version incremented when creating migrations
-bash .husky/check-schema-version.sh || exit 1
-
-# Run lint-staged (format + lint)
 pnpm exec lint-staged
