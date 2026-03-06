@@ -11,7 +11,7 @@ const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase credentials. Please check your .env file.');
+  console.warn('Missing Supabase credentials — auth/sync features unavailable.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
