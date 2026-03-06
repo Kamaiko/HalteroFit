@@ -31,28 +31,26 @@ export default function SignInScreen() {
           Authentication coming in Phase 4
         </Text>
 
-        {__DEV__ && (
-          <Pressable
-            onPress={handleDevMode}
+        <Pressable
+          onPress={handleDevMode}
+          style={{
+            backgroundColor: Colors.dev.banner,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: BORDER_RADIUS_MD,
+            marginTop: 32,
+          }}
+        >
+          <Text
             style={{
-              backgroundColor: Colors.dev.banner,
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: BORDER_RADIUS_MD,
-              marginTop: 32,
+              color: Colors.primary.foreground,
+              fontWeight: '600',
+              fontSize: 14,
             }}
           >
-            <Text
-              style={{
-                color: Colors.primary.foreground,
-                fontWeight: '600',
-                fontSize: 14,
-              }}
-            >
-              Continue as Dev User
-            </Text>
-          </Pressable>
-        )}
+            Continue as Dev User
+          </Text>
+        </Pressable>
       </View>
     </ScreenContainer>
   );

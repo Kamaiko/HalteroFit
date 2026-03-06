@@ -43,10 +43,8 @@ export default function RootLayout() {
         // Initialize Sentry
         initSentry();
 
-        // TODO: Remove enableDevMode() when implementing real auth
-        if (__DEV__) {
-          enableDevMode();
-        }
+        // TODO: Remove enableDevMode() when implementing real auth (Phase 4)
+        enableDevMode();
 
         // Seed exercises on first launch
         await initializeExercises();
