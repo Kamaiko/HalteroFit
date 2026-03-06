@@ -16,6 +16,7 @@
     "expo:doctor": "npx expo-doctor"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@halterofit/db": "workspace:*",
     "@halterofit/validators": "workspace:*",
