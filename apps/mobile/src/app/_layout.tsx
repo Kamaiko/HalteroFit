@@ -44,7 +44,9 @@ export default function RootLayout() {
         initSentry();
 
         // TODO: Remove enableDevMode() when implementing real auth (Phase 4)
-        enableDevMode();
+        if (__DEV__ || process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH === 'true') {
+          enableDevMode();
+        }
 
         // Seed exercises on first launch
         await initializeExercises();
