@@ -31,26 +31,28 @@ export default function SignInScreen() {
           Authentication coming in Phase 4
         </Text>
 
-        <Pressable
-          onPress={handleDevMode}
-          style={{
-            backgroundColor: Colors.dev.banner,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: BORDER_RADIUS_MD,
-            marginTop: 32,
-          }}
-        >
-          <Text
+        {(__DEV__ || process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH === 'true') && (
+          <Pressable
+            onPress={handleDevMode}
             style={{
-              color: Colors.primary.foreground,
-              fontWeight: '600',
-              fontSize: 14,
+              backgroundColor: Colors.dev.banner,
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: BORDER_RADIUS_MD,
+              marginTop: 32,
             }}
           >
-            Continue as Dev User
-          </Text>
-        </Pressable>
+            <Text
+              style={{
+                color: Colors.primary.foreground,
+                fontWeight: '600',
+                fontSize: 14,
+              }}
+            >
+              Continue as Dev User
+            </Text>
+          </Pressable>
+        )}
       </View>
     </ScreenContainer>
   );
