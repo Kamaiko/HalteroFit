@@ -67,6 +67,7 @@ export async function sync(): Promise<SyncResult> {
       pullChanges: async ({ lastPulledAt }) => {
         if (__DEV__) console.log('Pulling changes since:', new Date(lastPulledAt || 0));
 
+        if (!supabase) throw new DatabaseError('Supabase not configured', 'pull');
         const { data, error } = await supabase.rpc('pull_changes', {
           last_pulled_at: lastPulledAt || 0,
         });
@@ -121,6 +122,7 @@ export async function sync(): Promise<SyncResult> {
 
         if (__DEV__) console.log('Pushing', pushCount, 'changes');
 
+        if (!supabase) throw new DatabaseError('Supabase not configured', 'push');
         const { error } = await supabase.rpc('push_changes', {
           changes: changes,
         });
