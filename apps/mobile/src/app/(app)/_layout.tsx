@@ -23,7 +23,7 @@ export default function AppLayout() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.background.DEFAULT }}>
+    <View style={{ flex: 1 }}>
       {emailVerified === false && <EmailVerificationBanner />}
       <Stack
         screenOptions={{

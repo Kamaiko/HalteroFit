@@ -232,9 +232,22 @@ export function setupAuthListener(): () => void {
   const {
     data: { subscription },
   } = sb.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
       if (session?.user) {
+        // Set immediately from cached session (fast, no loading flash)
         useAuthStore.getState().setUser(mapUser(session.user));
+        // Refresh from server — email verification status may differ from cached JWT
+        // (per Supabase docs: dispatch after callback via setTimeout)
+        setTimeout(() => {
+          sb.auth.getUser().then(({ data }) => {
+            if (data.user) {
+              useAuthStore.getState().setUser(mapUser(data.user));
+            }
+          });
+        }, 0);
+      } else if (event === 'INITIAL_SESSION') {
+        // No session at startup → clear any stale persisted state
+        useAuthStore.getState().setUser(null);
       }
     } else if (event === 'SIGNED_OUT') {
       useAuthStore.getState().setUser(null);

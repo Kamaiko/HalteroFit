@@ -64,17 +64,8 @@ export default function RootLayout() {
       try {
         initSentry();
 
-        if (supabase) {
-          const { data } = await supabase.auth.getSession();
-          if (data.session?.user) {
-            // Only update if listener hasn't already set the user
-            if (!useAuthStore.getState().user) {
-              useAuthStore.getState().setUser(mapUser(data.session.user));
-            }
-          } else {
-            useAuthStore.getState().setLoading(false);
-          }
-        } else {
+        // Auth state is handled by setupAuthListener (INITIAL_SESSION event)
+        if (!supabase) {
           useAuthStore.getState().setLoading(false);
         }
 
@@ -90,13 +81,24 @@ export default function RootLayout() {
     return () => unsubscribe?.();
   }, []);
 
-  // Handle deep links (password reset flow)
+  // Handle deep links (password reset + email verification)
   const url = Linking.useURL();
   useEffect(() => {
     if (url) {
       createSessionFromUrl(url).catch((error) => {
         if (__DEV__) console.warn('Deep link session error:', error);
       });
+
+      // Refresh user data after deep link — handles email verification
+      // (verify redirect has no access_token, so createSessionFromUrl returns null,
+      // but the email IS confirmed server-side — getUser() fetches the updated state)
+      if (supabase) {
+        supabase.auth.getUser().then(({ data }) => {
+          if (data.user) {
+            useAuthStore.getState().setUser(mapUser(data.user));
+          }
+        });
+      }
     }
   }, [url]);
 
