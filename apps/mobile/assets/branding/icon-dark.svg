@@ -1,0 +1,14 @@
+<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer thin bars -->
+  <rect x="17" y="38" width="4" height="24" rx="2" fill="#1a1a1a"/>
+  <rect x="99" y="38" width="4" height="24" rx="2" fill="#1a1a1a"/>
+  <!-- Inner weight plates -->
+  <rect x="24" y="30" width="7" height="40" rx="2.5" fill="#1a1a1a"/>
+  <rect x="89" y="30" width="7" height="40" rx="2.5" fill="#1a1a1a"/>
+  <!-- H left upright -->
+  <rect x="35" y="22" width="12" height="56" rx="1.5" fill="#1a1a1a"/>
+  <!-- H right upright -->
+  <rect x="73" y="22" width="12" height="56" rx="1.5" fill="#1a1a1a"/>
+  <!-- H crossbar (flush with uprights) -->
+  <rect x="35" y="45" width="50" height="10" rx="1.5" fill="#1a1a1a"/>
+</svg>

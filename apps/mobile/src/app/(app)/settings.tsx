@@ -1,10 +1,24 @@
-import { Pressable, View, Text } from 'react-native';
+import { useState } from 'react';
+import { Pressable, View, Text, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons } from '@/components/ui/icon';
 import { Colors, ICON_SIZE_MD, ICON_SIZE_3XL } from '@/constants';
+import { useAuthStore } from '@/stores/auth/authStore';
 
 export default function SettingsScreen() {
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await useAuthStore.getState().signOut();
+      router.replace('/sign-in');
+    } catch {
+      setIsSigningOut(false);
+    }
+  };
+
   return (
     <ScreenContainer>
       <View className="px-6 pt-4">
@@ -21,6 +35,26 @@ export default function SettingsScreen() {
         <Ionicons name="cog-outline" size={ICON_SIZE_3XL} color={Colors.foreground.tertiary} />
         <Text className="text-3xl font-bold text-foreground mt-4 mb-2">Settings</Text>
         <Text className="text-base text-foreground-secondary">Customize your experience</Text>
+      </View>
+      <View className="px-6 pb-8">
+        <Pressable
+          onPress={handleSignOut}
+          disabled={isSigningOut}
+          className="flex-row items-center justify-center gap-2 py-3 rounded-xl border border-destructive"
+          accessibilityRole="button"
+          accessibilityLabel="Sign out"
+        >
+          {isSigningOut ? (
+            <ActivityIndicator color={Colors.destructive} />
+          ) : (
+            <>
+              <Ionicons name="log-out-outline" size={ICON_SIZE_MD} color={Colors.destructive} />
+              <Text style={{ color: Colors.destructive }} className="text-base font-semibold">
+                Sign Out
+              </Text>
+            </>
+          )}
+        </Pressable>
       </View>
     </ScreenContainer>
   );

@@ -7,6 +7,7 @@
 import { useRef, useState } from 'react';
 import {
   View,
+  Image,
   TextInput,
   KeyboardAvoidingView,
   Platform,
@@ -16,14 +17,18 @@ import {
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons } from '@/components/ui/icon';
+import { BrandIcon } from '@/components/ui/brand-icon';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Input } from '@/components/ui/input';
-import { Colors, ICON_SIZE_3XL, BORDER_RADIUS_MD } from '@/constants';
+import { Colors, BORDER_RADIUS_MD } from '@/constants';
 import { enableDevMode } from '@/stores/auth/authStore';
 import { signIn } from '@/services/auth';
 import { getEmailError, getPasswordError } from '@/utils/validators';
 import { isOperationalError } from '@/utils/errors';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const wordmark = require('../../../assets/branding/wordmark.png') as number;
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -72,10 +77,13 @@ export default function SignInScreen() {
         className="flex-1"
       >
         <View className="flex-1 items-center justify-center px-6">
-          <Ionicons name="barbell-outline" size={ICON_SIZE_3XL} color={Colors.primary.DEFAULT} />
-          <Text variant="h3" className="mt-4 mb-6 border-b-0">
-            Sign In
-          </Text>
+          <BrandIcon size={80} color="#fff" />
+          {/* HALTEROFIT wordmark */}
+          <Image
+            source={wordmark}
+            style={{ width: 240, height: 40, marginTop: 12, marginBottom: 24 }}
+            resizeMode="contain"
+          />
 
           <View className="w-full max-w-sm gap-4">
             <Input
