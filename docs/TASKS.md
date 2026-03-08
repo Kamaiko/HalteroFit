@@ -17,13 +17,13 @@ Actionable tasks with Kanban tracking.
 
 ## Kanban
 
-| TODO (Top 5)                         | DOING                                  | DONE (Last 5)                  |
-| ------------------------------------ | -------------------------------------- | ------------------------------ |
-| **2.1.3** AllPlansScreen `[M]` 🔴    | **UX** Popup/BottomSheet visual rework | **4.2** Auth Service & Testing |
-| **2.1.5** CreateEditPlanScreen `[S]` |                                        | **4.1** Auth Screens           |
-| **2.3.3** PlanCard component `[S]`   |                                        | **2.1.4** EditDayScreen        |
-|                                      |                                        | **2.1.6** AddDayDialog         |
-|                                      |                                        | **2.1.2** DayDetailsScreen     |
+| TODO (Top 5)                                 | DOING                                  | DONE (Last 5)                  |
+| -------------------------------------------- | -------------------------------------- | ------------------------------ |
+| **SYNC** WatermelonDB↔Supabase sync `[L]` 🔴 | **UX** Popup/BottomSheet visual rework | **4.2** Auth Service & Testing |
+| **2.1.3** AllPlansScreen `[M]`               |                                        | **4.1** Auth Screens           |
+| **2.1.5** CreateEditPlanScreen `[S]`         |                                        | **2.1.4** EditDayScreen        |
+| **2.3.3** PlanCard component `[S]`           |                                        | **2.1.6** AddDayDialog         |
+|                                              |                                        | **2.1.2** DayDetailsScreen     |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
@@ -660,6 +660,46 @@ Actionable tasks with Kanban tracking.
 - [ ] **5.2.5** Create beta testing guide `[S]`
       Installation instructions, test checklist, bug reporting template.
       Files: docs/BETA_TESTING_GUIDE.md
+
+---
+
+## Critical: WatermelonDB↔Supabase Sync
+
+**Status:** 🔴 Investigation Required
+**Priority:** HIGH — without sync, sign-out permanently deletes all user data
+**Est. Time:** TBD (investigation session first)
+
+> Currently the app is local-only. `sync.ts` exists as a skeleton using WatermelonDB's
+> `synchronize()` protocol, but it is **never called** from any screen or layout.
+> The Supabase RPC functions it depends on (`pull_changes`, `push_changes`) do not exist
+> in any migration. Sign-out triggers a 4-layer wipe (Supabase session + WatermelonDB +
+> MMKV + Zustand), permanently deleting user workout data.
+
+### Investigation Tasks
+
+- [ ] **SYNC-1** Audit existing `sync.ts` skeleton and Supabase schema compatibility `[M]`
+      Verify WatermelonDB tables match Supabase tables (3 migrations exist).
+      Identify missing RPC functions and schema gaps.
+      Files: apps/mobile/src/services/database/remote/sync.ts,
+      apps/mobile/src/services/database/remote/types.ts,
+      supabase/migrations/
+
+- [ ] **SYNC-2** Create Supabase RPC functions for pull/push protocol `[L]`
+      Implement `pull_changes` and `push_changes` Postgres functions.
+      Follow WatermelonDB sync protocol (created/updated/deleted + timestamp).
+      Files: supabase/migrations/ (new migration)
+
+- [ ] **SYNC-3** Wire sync into app lifecycle `[M]`
+      Call `setupAutoSync()` after auth in root layout.
+      Add manual sync trigger (pull-to-refresh).
+      Guard sync behind `isAuthenticated`.
+      Files: apps/mobile/src/app/\_layout.tsx
+
+- [ ] **SYNC-4** Handle sign-out data preservation `[S]`
+      Decide: keep local data after sign-out (re-sync on sign-in) or wipe + re-download.
+      Update 4-layer wipe strategy accordingly.
+      Files: apps/mobile/src/services/auth/index.ts
+      Deps: SYNC-2, SYNC-3
 
 ---
 
