@@ -84,7 +84,6 @@ Open `.env.local` and set each variable:
 | `EXPO_PUBLIC_SUPABASE_URL`      | Yes      | Your Supabase project URL — found in Supabase Dashboard → Settings → API                                                      |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Yes      | Supabase anonymous key — same location as URL                                                                                 |
 | `EXPO_PUBLIC_SENTRY_DSN`        | No       | Sentry DSN for error monitoring. Disabled in development (`__DEV__ = true`). Get from sentry.io → Create React Native project |
-| `EXERCISEDB_API_KEY`            | No       | RapidAPI key for ExerciseDB (not needed — current implementation uses the GitHub dataset directly)                            |
 
 **Important:** Do not add quotes around values in `.env.local`:
 
