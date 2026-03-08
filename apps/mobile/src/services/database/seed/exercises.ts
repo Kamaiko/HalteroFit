@@ -57,53 +57,44 @@ export async function seedExercises(): Promise<{ success: boolean; count: number
   if (__DEV__) console.log('Starting exercise seeding...');
 
   try {
-    // Clear existing exercises first (for re-seeding scenarios)
-    const existingExercises = await database.get<ExerciseModel>('exercises').query().fetch();
-    if (existingExercises.length > 0) {
-      if (__DEV__) console.log(`Clearing ${existingExercises.length} existing exercises...`);
-      await database.write(async () => {
-        for (const exercise of existingExercises) {
-          await exercise.destroyPermanently();
-        }
-      });
-    }
+    // Clear existing exercises (single SQL for re-seeding scenarios)
+    await database.adapter.unsafeExecute({
+      sqls: [['DELETE FROM exercises', []]],
+    });
 
     const exercisesModule = await import('@/../assets/data/exercises.json');
     const exercises = exercisesModule.default as ExerciseData[];
     const now = Date.now();
 
-    // Batch insert in chunks for better performance
-    const BATCH_SIZE = 100;
+    // Batch insert in chunks using prepareCreate + database.batch()
+    // (same pattern as plan-operations.ts and day-operations.ts)
+    const CHUNK_SIZE = 500;
     let totalInserted = 0;
+    const exercisesCollection = database.get<ExerciseModel>('exercises');
 
-    for (let i = 0; i < exercises.length; i += BATCH_SIZE) {
-      const batch = exercises.slice(i, i + BATCH_SIZE);
-
-      await database.write(async () => {
-        const exercisesCollection = database.get<ExerciseModel>('exercises');
-
-        for (const exercise of batch) {
-          await exercisesCollection.create((record) => {
-            // Cast _raw once to set fields not exposed by the typed model
-            // (WatermelonDB _raw is the official way to set fields during create)
-            const raw = record._raw as Record<string, unknown>;
-            raw.id = exerciseUuid(exercise.exerciseId);
-            record.exercisedbId = exercise.exerciseId;
-            record.name = exercise.name;
-            record.gifUrl = exercise.gifUrl;
-            // Store arrays as JSON strings (WatermelonDB @json decorator will parse them)
-            raw.body_parts = JSON.stringify(exercise.bodyParts);
-            raw.target_muscles = JSON.stringify(exercise.targetMuscles);
-            raw.secondary_muscles = JSON.stringify(exercise.secondaryMuscles);
-            raw.equipments = JSON.stringify(exercise.equipments);
-            raw.instructions = JSON.stringify(exercise.instructions);
-            raw.created_at = now;
-            raw.updated_at = now;
-          });
-        }
-      });
-
-      totalInserted += batch.length;
+    for (let i = 0; i < exercises.length; i += CHUNK_SIZE) {
+      const chunk = exercises.slice(i, i + CHUNK_SIZE);
+      const prepared = chunk.map((exercise) =>
+        exercisesCollection.prepareCreate((record) => {
+          // Cast _raw once to set fields not exposed by the typed model
+          // (WatermelonDB _raw is the official way to set fields during create)
+          const raw = record._raw as Record<string, unknown>;
+          raw.id = exerciseUuid(exercise.exerciseId);
+          record.exercisedbId = exercise.exerciseId;
+          record.name = exercise.name;
+          record.gifUrl = exercise.gifUrl;
+          // Store arrays as JSON strings (WatermelonDB @json decorator will parse them)
+          raw.body_parts = JSON.stringify(exercise.bodyParts);
+          raw.target_muscles = JSON.stringify(exercise.targetMuscles);
+          raw.secondary_muscles = JSON.stringify(exercise.secondaryMuscles);
+          raw.equipments = JSON.stringify(exercise.equipments);
+          raw.instructions = JSON.stringify(exercise.instructions);
+          raw.created_at = now;
+          raw.updated_at = now;
+        })
+      );
+      await database.batch(...prepared);
+      totalInserted += chunk.length;
       if (__DEV__) console.log(`Seeded ${totalInserted}/${exercises.length} exercises`);
     }
 
