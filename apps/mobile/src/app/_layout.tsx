@@ -14,14 +14,14 @@ import { initSentry, setSentryUser, Sentry } from '@/utils/sentry';
 import { ErrorFallbackScreen } from '@/components/layout';
 import { useAuthStore, enableDevMode } from '@/stores/auth/authStore';
 import { supabase } from '@/services/supabase';
-import { setupAuthListener, createSessionFromUrl } from '@/services/auth';
+import { setupAuthListener, createSessionFromUrl, mapUser } from '@/services/auth';
 import { initializeExercises } from '@/services/database/seed';
 import '../../global.css';
 
 // Keep native splash visible until app is ready
 SplashScreen.preventAutoHideAsync();
 
-const IS_MOCK_AUTH = __DEV__ || process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH === 'true';
+const IS_MOCK_AUTH = process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH === 'true';
 
 /**
  * Root Layout
@@ -45,22 +45,32 @@ export default function RootLayout() {
 
   // Initialize app on startup
   useEffect(() => {
+    if (IS_MOCK_AUTH) {
+      enableDevMode();
+      initSentry();
+      initializeExercises()
+        .then(() => setIsReady(true))
+        .catch(() => setIsReady(true));
+      return;
+    }
+
+    // Set up listener FIRST (sync) so no auth events are missed
+    let unsubscribe: (() => void) | undefined;
+    if (supabase) {
+      unsubscribe = setupAuthListener();
+    }
+
     async function initialize() {
       try {
-        // Initialize Sentry
         initSentry();
 
-        if (IS_MOCK_AUTH) {
-          enableDevMode();
-        } else if (supabase) {
-          // Restore persisted session
+        if (supabase) {
           const { data } = await supabase.auth.getSession();
           if (data.session?.user) {
-            useAuthStore.getState().setUser({
-              id: data.session.user.id,
-              email: data.session.user.email ?? '',
-              emailVerified: !!data.session.user.email_confirmed_at,
-            });
+            // Only update if listener hasn't already set the user
+            if (!useAuthStore.getState().user) {
+              useAuthStore.getState().setUser(mapUser(data.session.user));
+            }
           } else {
             useAuthStore.getState().setLoading(false);
           }
@@ -68,26 +78,16 @@ export default function RootLayout() {
           useAuthStore.getState().setLoading(false);
         }
 
-        // Seed exercises on first launch
         await initializeExercises();
-
         setIsReady(true);
       } catch (error) {
         console.error('App initialization failed:', error);
-        // Still show app even if seeding fails
         setIsReady(true);
       }
     }
 
     initialize();
-  }, []);
-
-  // Subscribe to Supabase auth state changes (production only)
-  useEffect(() => {
-    if (IS_MOCK_AUTH || !supabase) return;
-
-    const unsubscribe = setupAuthListener();
-    return unsubscribe;
+    return () => unsubscribe?.();
   }, []);
 
   // Handle deep links (password reset flow)

@@ -66,7 +66,11 @@ function mapSupabaseError(error: { message: string; status?: number }): AuthErro
     );
   }
 
-  return new AuthError(error.message, error.message, 'AUTH_ERROR' satisfies AuthErrorCode);
+  return new AuthError(
+    'Something went wrong. Please try again.',
+    error.message,
+    'AUTH_ERROR' satisfies AuthErrorCode
+  );
 }
 
 function requireSupabase() {
@@ -84,7 +88,7 @@ function requireSupabase() {
 // Auth operations
 // ============================================================================
 
-function mapUser(supabaseUser: {
+export function mapUser(supabaseUser: {
   id: string;
   email?: string;
   email_confirmed_at?: string | null;
