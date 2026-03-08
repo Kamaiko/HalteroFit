@@ -11,6 +11,7 @@ Solutions to common development issues with Halterofit. This guide covers the De
 - [Database Issues (WatermelonDB)](#database-issues-watermelondb)
 - [Storage Issues (MMKV)](#storage-issues-mmkv)
 - [Styling Issues (NativeWind)](#styling-issues-nativewind)
+- [Supabase CLI Issues](#supabase-cli-issues)
 - [Authentication Issues (Supabase)](#authentication-issues-supabase)
 - [TypeScript Errors](#typescript-errors)
 - [Dependency Issues](#dependency-issues)
@@ -498,6 +499,36 @@ Not all React Native components support NativeWind v4 CSS interop. Using `classN
 **Rule of thumb:** Before converting an inline `style` to NativeWind `className`, verify the component supports CSS interop. Standard React Native components (`View`, `Text`, `Pressable`, `ScrollView`) and Reanimated's `Animated.View` all support it. Third-party components generally do not unless explicitly documented.
 
 **Reference:** [NativeWind v4 — CSS Interop](https://www.nativewind.dev/v4/core-concepts/css-interop)
+
+---
+
+## Supabase CLI Issues
+
+### `supabase db push` Fails with 401 Unauthorized
+
+**Symptoms:**
+
+- `unexpected login role status 401: {"message":"Unauthorized"}`
+- Happens even after `supabase login` succeeds
+
+**Cause:**
+
+`supabase login` authenticates the CLI to the Supabase **platform** (API). But `db push` needs a **direct PostgreSQL connection** to the remote database — a completely separate auth path. Recent CLI versions (v2.75+) no longer persist the database password after `supabase link`.
+
+**Solution:**
+
+Pass the database password via `-p` flag or `SUPABASE_DB_PASSWORD` environment variable:
+
+```bash
+# Option A: flag (one-shot)
+supabase db push -p "yourDatabasePassword"
+
+# Option B: env var (permanent — create supabase/.env, already gitignored)
+echo 'SUPABASE_DB_PASSWORD=yourPassword' > supabase/.env
+export SUPABASE_DB_PASSWORD=yourPassword && supabase db push
+```
+
+**Where to find the password:** It's the password you chose when creating the Supabase project. If forgotten, reset it in Dashboard → Settings → Database → "Reset database password" (breaks existing connections).
 
 ---
 
