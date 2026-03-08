@@ -34,9 +34,8 @@ import { useAuthStore } from '@/stores/auth/authStore';
 import { AuthError } from '@/utils/errors';
 
 const mockSupabase = jest.requireMock('@supabase/supabase-js').createClient();
-const mockGetQueryParams = jest.requireMock(
-  'expo-auth-session/build/QueryParams'
-).getQueryParams as jest.Mock;
+const mockGetQueryParams = jest.requireMock('expo-auth-session/build/QueryParams')
+  .getQueryParams as jest.Mock;
 const mockWrite = database.write as jest.Mock;
 const mockUnsafeResetDatabase = database.unsafeResetDatabase as jest.Mock;
 
@@ -224,9 +223,7 @@ describe('createSessionFromUrl', () => {
     } catch (err) {
       expect(err).toBeInstanceOf(AuthError);
       expect((err as AuthError).code).toBe('AUTH_ERROR');
-      expect((err as AuthError).userMessage).toBe(
-        'Invalid reset link. Please request a new one.'
-      );
+      expect((err as AuthError).userMessage).toBe('Invalid reset link. Please request a new one.');
     }
   });
 
