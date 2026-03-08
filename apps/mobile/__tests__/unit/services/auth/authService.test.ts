@@ -28,12 +28,15 @@ jest.mock('@/services/database', () => {
   };
 });
 
-import { signIn, signOut, resetPassword } from '@/services/auth';
+import { signIn, signOut, resetPassword, createSessionFromUrl } from '@/services/auth';
 import { database } from '@/services/database';
 import { useAuthStore } from '@/stores/auth/authStore';
 import { AuthError } from '@/utils/errors';
 
 const mockSupabase = jest.requireMock('@supabase/supabase-js').createClient();
+const mockGetQueryParams = jest.requireMock(
+  'expo-auth-session/build/QueryParams'
+).getQueryParams as jest.Mock;
 const mockWrite = database.write as jest.Mock;
 const mockUnsafeResetDatabase = database.unsafeResetDatabase as jest.Mock;
 
@@ -62,6 +65,7 @@ describe('signIn', () => {
   });
 
   it('throws AuthError with INVALID_CREDENTIALS code on bad login', async () => {
+    expect.assertions(3);
     mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
       data: { user: null },
       error: { message: 'Invalid login credentials', status: 400 },
@@ -69,11 +73,76 @@ describe('signIn', () => {
 
     try {
       await signIn('a@b.com', 'wrongpass1');
-      fail('Expected signIn to throw');
     } catch (err) {
       expect(err).toBeInstanceOf(AuthError);
       expect((err as AuthError).code).toBe('INVALID_CREDENTIALS');
       expect((err as AuthError).userMessage).toBe('Incorrect email or password');
+    }
+  });
+});
+
+describe('error mapping (via signIn)', () => {
+  it('maps "user already registered" to EMAIL_TAKEN', async () => {
+    expect.assertions(3);
+    mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
+      data: { user: null },
+      error: { message: 'User already registered', status: 400 },
+    });
+
+    try {
+      await signIn('a@b.com', 'password123');
+    } catch (err) {
+      expect(err).toBeInstanceOf(AuthError);
+      expect((err as AuthError).code).toBe('EMAIL_TAKEN');
+      expect((err as AuthError).userMessage).toBe('An account with this email already exists');
+    }
+  });
+
+  it('maps status 429 to RATE_LIMIT', async () => {
+    expect.assertions(3);
+    mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
+      data: { user: null },
+      error: { message: 'Request limit exceeded', status: 429 },
+    });
+
+    try {
+      await signIn('a@b.com', 'password123');
+    } catch (err) {
+      expect(err).toBeInstanceOf(AuthError);
+      expect((err as AuthError).code).toBe('RATE_LIMIT');
+      expect((err as AuthError).userMessage).toBe('Too many attempts. Please wait.');
+    }
+  });
+
+  it('maps fetch failure to NETWORK_ERROR', async () => {
+    expect.assertions(3);
+    mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
+      data: { user: null },
+      error: { message: 'Failed to fetch', status: 0 },
+    });
+
+    try {
+      await signIn('a@b.com', 'password123');
+    } catch (err) {
+      expect(err).toBeInstanceOf(AuthError);
+      expect((err as AuthError).code).toBe('NETWORK_ERROR');
+      expect((err as AuthError).userMessage).toBe('Unable to connect. Check your internet.');
+    }
+  });
+
+  it('maps unknown errors to AUTH_ERROR fallback', async () => {
+    expect.assertions(3);
+    mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
+      data: { user: null },
+      error: { message: 'Something unexpected', status: 500 },
+    });
+
+    try {
+      await signIn('a@b.com', 'password123');
+    } catch (err) {
+      expect(err).toBeInstanceOf(AuthError);
+      expect((err as AuthError).code).toBe('AUTH_ERROR');
+      expect((err as AuthError).userMessage).toBe('Something unexpected');
     }
   });
 });
@@ -100,17 +169,28 @@ describe('signOut', () => {
     expect(useAuthStore.getState().user).toBeNull();
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
   });
+
+  it('continues even if Supabase signOut fails', async () => {
+    useAuthStore.getState().setUser({ id: 'u1', email: 'a@b.com', emailVerified: true });
+    mockSupabase.auth.signOut.mockRejectedValueOnce(new Error('Network error'));
+
+    await signOut();
+
+    expect(useAuthStore.getState().user).toBeNull();
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+  });
 });
 
 describe('supabase null guard', () => {
   it('throws AUTH_UNAVAILABLE when supabase is null', async () => {
+    expect.assertions(2);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const supabaseModule = require('@/services/supabase') as { supabase: unknown };
     const originalSupabase = supabaseModule.supabase;
     supabaseModule.supabase = null;
 
     try {
       await signIn('a@b.com', 'password123');
-      fail('Expected signIn to throw');
     } catch (err) {
       expect(err).toBeInstanceOf(AuthError);
       expect((err as AuthError).code).toBe('AUTH_UNAVAILABLE');
@@ -131,5 +211,31 @@ describe('resetPassword', () => {
     expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith('a@b.com', {
       redirectTo: 'halterofit://reset-password',
     });
+  });
+});
+
+describe('createSessionFromUrl', () => {
+  it('throws AUTH_ERROR when errorCode is present', async () => {
+    expect.assertions(3);
+    mockGetQueryParams.mockReturnValueOnce({ params: {}, errorCode: 'access_denied' });
+
+    try {
+      await createSessionFromUrl('halterofit://reset-password?error_code=access_denied');
+    } catch (err) {
+      expect(err).toBeInstanceOf(AuthError);
+      expect((err as AuthError).code).toBe('AUTH_ERROR');
+      expect((err as AuthError).userMessage).toBe(
+        'Invalid reset link. Please request a new one.'
+      );
+    }
+  });
+
+  it('returns null when access_token is missing', async () => {
+    mockGetQueryParams.mockReturnValueOnce({ params: {}, errorCode: null });
+
+    const result = await createSessionFromUrl('halterofit://reset-password');
+
+    expect(result).toBeNull();
+    expect(mockSupabase.auth.setSession).not.toHaveBeenCalled();
   });
 });
