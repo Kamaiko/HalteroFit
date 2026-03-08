@@ -12,7 +12,7 @@
  * - WatermelonDB Sync Docs: https://watermelondb.dev/docs/Sync/Frontend
  */
 
-/* eslint-disable no-console -- All console usage is guarded by __DEV__ checks */
+/* eslint-disable no-console -- console.error kept for sync diagnostics (always useful); console.log guarded by __DEV__ */
 
 import { synchronize, hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
 import type { RawRecord } from '@nozbe/watermelondb/RawRecord';

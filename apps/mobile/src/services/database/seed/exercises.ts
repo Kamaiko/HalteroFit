@@ -121,17 +121,26 @@ export async function seedExercises(): Promise<{ success: boolean; count: number
  * Initialize exercises (check and seed if needed)
  * Call this during app startup
  */
+let isSeedingInProgress = false;
+
 export async function initializeExercises(): Promise<void> {
-  const needsSeeding = await needsExerciseSeeding();
+  if (isSeedingInProgress) return;
+  isSeedingInProgress = true;
 
-  if (needsSeeding) {
-    if (__DEV__) console.log('First launch or update detected, seeding exercises...');
-    const result = await seedExercises();
+  try {
+    const needsSeeding = await needsExerciseSeeding();
 
-    if (!result.success) {
-      throw new Error('Failed to seed exercises');
+    if (needsSeeding) {
+      if (__DEV__) console.log('First launch or update detected, seeding exercises...');
+      const result = await seedExercises();
+
+      if (!result.success) {
+        throw new Error('Failed to seed exercises');
+      }
+    } else {
+      if (__DEV__) console.log('Exercises already seeded');
     }
-  } else {
-    if (__DEV__) console.log('Exercises already seeded');
+  } finally {
+    isSeedingInProgress = false;
   }
 }

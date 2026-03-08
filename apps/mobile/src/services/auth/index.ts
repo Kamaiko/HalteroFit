@@ -108,7 +108,7 @@ export async function ensureLocalUserRecord(userId: string, email: string): Prom
         user.preferredUnit = 'kg';
       });
     });
-    if (__DEV__) console.log('Created local user record for', userId);
+    if (__DEV__) console.warn('Created local user record for', userId);
   }
 }
 

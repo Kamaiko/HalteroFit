@@ -32,8 +32,9 @@ export function EmailVerificationBanner() {
   }, []);
 
   // Countdown timer — ticks every second while cooldown > 0
+  const isCooldownActive = cooldown > 0;
   useEffect(() => {
-    if (cooldown <= 0) return;
+    if (!isCooldownActive) return;
     intervalRef.current = setInterval(() => {
       setCooldown((s) => {
         if (s <= 1) {
@@ -44,7 +45,7 @@ export function EmailVerificationBanner() {
       });
     }, 1000);
     return () => clearInterval(intervalRef.current);
-  }, [cooldown > 0]);
+  }, [isCooldownActive]);
 
   const handleResend = async () => {
     setIsResending(true);

@@ -9,6 +9,13 @@
 -- exercises table excluded — static bundled data, read-only.
 
 -- ============================================================
+-- DROP existing functions (safe re-deploy if signature changed)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.pull_changes;
+DROP FUNCTION IF EXISTS public.push_changes;
+
+-- ============================================================
 -- PULL CHANGES
 -- ============================================================
 

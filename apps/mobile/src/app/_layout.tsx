@@ -73,7 +73,7 @@ export default function RootLayout() {
         await initializeExercises();
         setIsReady(true);
       } catch (error) {
-        console.error('App initialization failed:', error);
+        if (__DEV__) console.error('App initialization failed:', error);
         setIsReady(true);
       }
     }
