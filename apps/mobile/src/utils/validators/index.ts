@@ -7,9 +7,5 @@
  * import { validateDayName, getDayCountError } from '@/utils/validators';
  */
 
+export * from './auth';
 export * from './plans';
-
-// Future validators:
-// export * from './email';
-// export * from './workout';
-// export * from './forms';

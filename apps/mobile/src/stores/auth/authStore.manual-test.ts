@@ -47,6 +47,7 @@ export const authStoreTestHelpers = {
     useAuthStore.getState().setUser({
       id: 'test-user-123',
       email: 'test@halterofit.com',
+      emailVerified: true,
     });
     console.log('Simulated login:', useAuthStore.getState().user);
   },

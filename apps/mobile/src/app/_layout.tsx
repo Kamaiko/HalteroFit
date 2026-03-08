@@ -6,23 +6,30 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PortalHost } from '@rn-primitives/portal';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Linking from 'expo-linking';
 import { useFonts } from 'expo-font';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants';
 import { initSentry, setSentryUser, Sentry } from '@/utils/sentry';
 import { ErrorFallbackScreen } from '@/components/layout';
 import { useAuthStore, enableDevMode } from '@/stores/auth/authStore';
+import { supabase } from '@/services/supabase';
+import { setupAuthListener, createSessionFromUrl } from '@/services/auth';
 import { initializeExercises } from '@/services/database/seed';
 import '../../global.css';
 
 // Keep native splash visible until app is ready
 SplashScreen.preventAutoHideAsync();
 
+const IS_MOCK_AUTH = __DEV__ || process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH === 'true';
+
 /**
  * Root Layout
  *
  * Initializes:
  * - Sentry (production-only error monitoring)
+ * - Supabase auth session restore + listener (production)
+ * - Deep link handling for password reset
  * - Exercise database seeding (first launch only)
  * - PortalHost (for dropdowns, tooltips, modals)
  */
@@ -43,9 +50,22 @@ export default function RootLayout() {
         // Initialize Sentry
         initSentry();
 
-        // TODO: Remove enableDevMode() when implementing real auth (Phase 4)
-        if (__DEV__ || process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH === 'true') {
+        if (IS_MOCK_AUTH) {
           enableDevMode();
+        } else if (supabase) {
+          // Restore persisted session
+          const { data } = await supabase.auth.getSession();
+          if (data.session?.user) {
+            useAuthStore.getState().setUser({
+              id: data.session.user.id,
+              email: data.session.user.email ?? '',
+              emailVerified: !!data.session.user.email_confirmed_at,
+            });
+          } else {
+            useAuthStore.getState().setLoading(false);
+          }
+        } else {
+          useAuthStore.getState().setLoading(false);
         }
 
         // Seed exercises on first launch
@@ -61,6 +81,24 @@ export default function RootLayout() {
 
     initialize();
   }, []);
+
+  // Subscribe to Supabase auth state changes (production only)
+  useEffect(() => {
+    if (IS_MOCK_AUTH || !supabase) return;
+
+    const unsubscribe = setupAuthListener();
+    return unsubscribe;
+  }, []);
+
+  // Handle deep links (password reset flow)
+  const url = Linking.useURL();
+  useEffect(() => {
+    if (url) {
+      createSessionFromUrl(url).catch((error) => {
+        if (__DEV__) console.warn('Deep link session error:', error);
+      });
+    }
+  }, [url]);
 
   // Hide splash only when both app init AND fonts are ready
   useEffect(() => {
@@ -94,7 +132,7 @@ export default function RootLayout() {
       <Sentry.ErrorBoundary fallback={ErrorFallbackScreen}>
         <SafeAreaProvider>
           <StatusBar style="light" backgroundColor={Colors.background.DEFAULT} />
-          {__DEV__ && (
+          {__DEV__ && IS_MOCK_AUTH && (
             <View
               style={{
                 backgroundColor: Colors.dev.banner,

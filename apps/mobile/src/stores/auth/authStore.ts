@@ -13,12 +13,12 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { supabase } from '@/services/supabase';
 import { zustandMMKVStorage } from '@/services/storage';
 
 export interface User {
   id: string;
   email: string;
+  emailVerified: boolean;
 }
 
 export interface AuthState {
@@ -32,10 +32,10 @@ export interface AuthState {
   signOut: () => Promise<void>;
 }
 
-// TODO: Remove mock user when implementing real auth
 const DEV_MOCK_USER: User = {
   id: 'dev-user-123',
   email: 'dev@halterofit.local',
+  emailVerified: true,
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -55,8 +55,10 @@ export const useAuthStore = create<AuthState>()(
       setLoading: (isLoading) => set({ isLoading }),
 
       signOut: async () => {
-        await supabase?.auth.signOut();
-        set({ user: null, isAuthenticated: false });
+        // Lazy require to break circular dependency (authStore ↔ authService)
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { signOut } = require('@/services/auth') as typeof import('@/services/auth');
+        await signOut();
       },
     }),
     {
@@ -83,13 +85,6 @@ export const useAuthStore = create<AuthState>()(
 /**
  * Enable development mode with mock user
  * Call this once at app startup for UI testing without real auth
- *
- * Usage: In App.tsx or _layout.tsx during development
- * ```
- * if (__DEV__) {
- *   enableDevMode();
- * }
- * ```
  */
 export function enableDevMode(): void {
   useAuthStore.getState().setUser(DEV_MOCK_USER);
