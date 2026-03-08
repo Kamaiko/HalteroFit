@@ -19,8 +19,8 @@ import type { RawRecord } from '@nozbe/watermelondb/RawRecord';
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import { database } from '../local';
 import { supabase } from '@/services/supabase';
-import { mmkvStorage } from '@/services/storage';
 import { useAuthStore } from '@/stores/auth/authStore';
+import { useSyncStore } from '@/stores/sync/syncStore';
 import { SyncError } from '@/utils/errors';
 import type { SyncableTableName } from './types';
 
@@ -28,7 +28,6 @@ import type { SyncableTableName } from './types';
 // Constants
 // ============================================================================
 
-const MMKV_LAST_SYNCED_KEY = 'sync:lastSyncedAt';
 const AUTO_SYNC_DEBOUNCE_MS = 2000;
 const SIGN_OUT_SYNC_TIMEOUT_MS = 10_000;
 
@@ -63,11 +62,9 @@ export interface SyncStatus {
 }
 
 // ============================================================================
-// Module State
+// Module State (implementation details for waitForInitialSync)
 // ============================================================================
 
-let isSyncing = false;
-let initialSyncCompleted = false;
 let initialSyncResolvers: Array<() => void> = [];
 let pendingTimeouts: Array<ReturnType<typeof setTimeout>> = [];
 
@@ -78,7 +75,7 @@ let pendingTimeouts: Array<ReturnType<typeof setTimeout>> = [];
  * before pulling existing data from the server.
  */
 export function waitForInitialSync(): Promise<void> {
-  if (initialSyncCompleted) return Promise.resolve();
+  if (useSyncStore.getState().initialSyncCompleted) return Promise.resolve();
   return new Promise((resolve) => {
     initialSyncResolvers.push(resolve);
     // Fallback: if sync never runs (mock auth, offline, no Supabase), don't block forever
@@ -89,27 +86,10 @@ export function waitForInitialSync(): Promise<void> {
 
 /** Reset sync state on sign-out (DB gets wiped, need fresh initial sync) */
 export function resetSyncState(): void {
-  initialSyncCompleted = false;
+  useSyncStore.getState().reset();
   initialSyncResolvers = [];
   for (const id of pendingTimeouts) clearTimeout(id);
   pendingTimeouts = [];
-}
-
-function getLastSyncedAt(): number | null {
-  try {
-    const value = mmkvStorage.getNumber(MMKV_LAST_SYNCED_KEY);
-    return value ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function setLastSyncedAt(timestamp: number): void {
-  try {
-    mmkvStorage.setNumber(MMKV_LAST_SYNCED_KEY, timestamp);
-  } catch {
-    if (__DEV__) console.warn('Failed to persist lastSyncedAt');
-  }
 }
 
 // ============================================================================
@@ -144,12 +124,12 @@ export async function sync(): Promise<SyncResult> {
     return result;
   }
 
-  if (isSyncing) {
+  if (useSyncStore.getState().isSyncing) {
     if (__DEV__) console.log('Sync skipped — already in progress');
     return result;
   }
 
-  isSyncing = true;
+  useSyncStore.getState().setIsSyncing(true);
   const logger = new SyncLogger(10);
   const sb = supabase; // Capture non-null ref for closures
 
@@ -250,11 +230,11 @@ export async function sync(): Promise<SyncResult> {
 
     result.success = true;
     result.timestamp = Date.now();
-    setLastSyncedAt(result.timestamp);
+    useSyncStore.getState().setLastSyncedAt(result.timestamp);
 
     // Unblock waitForInitialSync() callers (e.g. useWorkoutScreen default plan creation)
-    if (!initialSyncCompleted) {
-      initialSyncCompleted = true;
+    if (!useSyncStore.getState().initialSyncCompleted) {
+      useSyncStore.getState().markInitialSyncCompleted();
       for (const resolve of initialSyncResolvers) resolve();
       initialSyncResolvers = [];
       for (const id of pendingTimeouts) clearTimeout(id);
@@ -286,7 +266,7 @@ export async function sync(): Promise<SyncResult> {
       true
     );
   } finally {
-    isSyncing = false;
+    useSyncStore.getState().setIsSyncing(false);
   }
 }
 
@@ -311,11 +291,12 @@ export async function checkUnsyncedChanges(): Promise<boolean> {
  */
 export async function getSyncStatus(): Promise<SyncStatus> {
   const hasUnsynced = await checkUnsyncedChanges();
+  const { lastSyncedAt, isSyncing: syncing } = useSyncStore.getState();
 
   return {
-    lastSyncedAt: getLastSyncedAt(),
+    lastSyncedAt,
     hasUnsyncedChanges: hasUnsynced,
-    isSyncing,
+    isSyncing: syncing,
     isOnline: true, // TODO: NetInfo integration (future)
   };
 }
