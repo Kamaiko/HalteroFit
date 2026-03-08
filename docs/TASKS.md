@@ -504,6 +504,21 @@ Actionable tasks with Kanban tracking.
       Tests: error mapping, signOut resilience, createSessionFromUrl, signIn/signUp flows.
       Files: apps/mobile/\_\_tests\_\_/services/auth/authService.test.ts
 
+### 4.2.5: Post-Signup Onboarding
+
+> First-time user setup flow after sign-up. Collects profile info before entering the app.
+> Content TBD — at minimum: display name. May include: fitness goal, experience level,
+> preferred unit system (kg/lbs), gender, date of birth.
+> Blocks "Welcome, [Name]!" greeting on home screen.
+
+- [ ] **4.2.5** Design and implement onboarding flow `[L]`
+      Post-signup screen(s) shown once for new users.
+      Store profile data in Supabase user_metadata + local DB.
+      Track onboarding completion (e.g. `onboardingComplete` flag in auth store).
+      Route guard: redirect to onboarding if authenticated but not onboarded.
+      Files: TBD (src/app/(auth)/onboarding.tsx or similar)
+      Deps: 4.2.2, 4.3.3 (shares profile fields schema)
+
 ### 4.3: Settings & Profile
 
 > Settings screen, rest timer config, profile page, unit system, logout.

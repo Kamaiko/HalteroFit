@@ -74,7 +74,7 @@ export function EmailVerificationBanner() {
   return (
     <View
       style={{ backgroundColor: Colors.warning, paddingTop: insets.top }}
-      className="flex-row items-center justify-between px-4 py-3"
+      className="flex-row items-center justify-between px-4 py-1.5"
     >
       <View className="flex-1 flex-row items-center gap-2">
         <Ionicons name="warning-outline" size={16} color={Colors.foreground.inverse} />
