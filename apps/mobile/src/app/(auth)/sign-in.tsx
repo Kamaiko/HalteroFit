@@ -118,9 +118,7 @@ export default function SignInScreen() {
               </Pressable>
             </View>
 
-            {error !== '' && (
-              <Text className="text-sm text-destructive text-center">{error}</Text>
-            )}
+            {error !== '' && <Text className="text-sm text-destructive text-center">{error}</Text>}
 
             <Button onPress={handleSignIn} disabled={isLoading} size="lg">
               {isLoading ? (
@@ -136,8 +134,7 @@ export default function SignInScreen() {
 
             <Pressable onPress={() => router.push('/sign-up')} hitSlop={8}>
               <Text className="text-sm text-foreground-secondary text-center">
-                Don't have an account?{' '}
-                <Text className="text-sm text-primary">Sign up</Text>
+                Don&apos;t have an account? <Text className="text-sm text-primary">Sign up</Text>
               </Text>
             </Pressable>
           </View>
