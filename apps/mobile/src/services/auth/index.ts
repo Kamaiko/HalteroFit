@@ -11,11 +11,12 @@ import { makeRedirectUri } from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { router } from 'expo-router';
 import { supabase } from '@/services/supabase';
-import { database } from '@/services/database';
+import { database, syncBeforeSignOut } from '@/services/database';
 import { mmkvStorage } from '@/services/storage';
 import { useAuthStore, type User } from '@/stores/auth';
 import { AuthError } from '@/utils/errors';
 import { validateEmail, validatePassword } from '@/utils/validators';
+import User_Model from '@/services/database/local/models/User';
 
 // ============================================================================
 // Error mapping
@@ -85,6 +86,33 @@ function requireSupabase() {
 }
 
 // ============================================================================
+// Local user record
+// ============================================================================
+
+/**
+ * Ensure a WatermelonDB users record exists with id = auth.uid().
+ * Critical for sync: the local record ID must match Supabase auth.uid()
+ * so pull_changes/push_changes can find the right user.
+ */
+export async function ensureLocalUserRecord(userId: string, email: string): Promise<void> {
+  const usersCollection = database.get<User_Model>('users');
+  try {
+    await usersCollection.find(userId);
+    // Record already exists — nothing to do
+  } catch {
+    // Record doesn't exist — create with auth.uid() as ID
+    await database.write(async () => {
+      await usersCollection.create((user) => {
+        user._raw.id = userId;
+        user.email = email;
+        user.preferredUnit = 'kg';
+      });
+    });
+    if (__DEV__) console.log('Created local user record for', userId);
+  }
+}
+
+// ============================================================================
 // Auth operations
 // ============================================================================
 
@@ -114,6 +142,7 @@ export async function signIn(email: string, password: string): Promise<User> {
 
   const user = mapUser(data.user);
   useAuthStore.getState().setUser(user);
+  await ensureLocalUserRecord(user.id, user.email);
   return user;
 }
 
@@ -138,10 +167,17 @@ export async function signUp(email: string, password: string): Promise<User> {
 
   const user = mapUser(data.user);
   useAuthStore.getState().setUser(user);
+  await ensureLocalUserRecord(user.id, user.email);
   return user;
 }
 
 export async function signOut(): Promise<void> {
+  // 0. Best-effort sync before wipe (Jefit-style: data should already be in cloud)
+  const synced = await syncBeforeSignOut();
+  if (!synced && __DEV__) {
+    console.warn('signOut: pre-wipe sync failed — unsynced data may be lost');
+  }
+
   // 1. Invalidate remote session
   try {
     await supabase?.auth.signOut();

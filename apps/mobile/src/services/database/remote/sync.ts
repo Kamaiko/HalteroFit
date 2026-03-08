@@ -9,7 +9,7 @@
  *
  * References:
  * - DATABASE.md § Supabase Sync
- * - WatermelonDB Sync Docs: https://nozbe.github.io/WatermelonDB/Advanced/Sync.html
+ * - WatermelonDB Sync Docs: https://watermelondb.dev/docs/Sync/Frontend
  */
 
 /* eslint-disable no-console -- All console usage is guarded by __DEV__ checks */
@@ -19,7 +19,29 @@ import type { RawRecord } from '@nozbe/watermelondb/RawRecord';
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import { database } from '../local';
 import { supabase } from '@/services/supabase';
-import { DatabaseError } from '@/utils/errors';
+import { mmkvStorage } from '@/services/storage';
+import { useAuthStore } from '@/stores/auth/authStore';
+import { SyncError } from '@/utils/errors';
+import type { SyncableTableName } from './types';
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const MMKV_LAST_SYNCED_KEY = 'sync:lastSyncedAt';
+const AUTO_SYNC_DEBOUNCE_MS = 2000;
+const SIGN_OUT_SYNC_TIMEOUT_MS = 10_000;
+
+/** All tables included in WatermelonDB↔Supabase sync */
+const SYNCABLE_TABLES: SyncableTableName[] = [
+  'users',
+  'workouts',
+  'workout_exercises',
+  'exercise_sets',
+  'workout_plans',
+  'plan_days',
+  'plan_day_exercises',
+];
 
 // ============================================================================
 // Types
@@ -36,7 +58,31 @@ export interface SyncResult {
 export interface SyncStatus {
   lastSyncedAt: number | null;
   hasUnsyncedChanges: boolean;
+  isSyncing: boolean;
   isOnline: boolean;
+}
+
+// ============================================================================
+// Module State
+// ============================================================================
+
+let isSyncing = false;
+
+function getLastSyncedAt(): number | null {
+  try {
+    const value = mmkvStorage.getNumber(MMKV_LAST_SYNCED_KEY);
+    return value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function setLastSyncedAt(timestamp: number): void {
+  try {
+    mmkvStorage.setNumber(MMKV_LAST_SYNCED_KEY, timestamp);
+  } catch {
+    if (__DEV__) console.warn('Failed to persist lastSyncedAt');
+  }
 }
 
 // ============================================================================
@@ -44,13 +90,12 @@ export interface SyncStatus {
 // ============================================================================
 
 /**
- * Synchronize local database with Supabase backend
- * Uses WatermelonDB's official sync protocol
+ * Synchronize local database with Supabase backend.
+ * Returns early if not authenticated or Supabase is unavailable.
  *
- * @throws {DatabaseError} If sync fails
+ * @throws {SyncError} If sync fails after auth/config checks pass
  */
 export async function sync(): Promise<SyncResult> {
-  const logger = new SyncLogger(10);
   const result: SyncResult = {
     success: false,
     timestamp: Date.now(),
@@ -58,6 +103,28 @@ export async function sync(): Promise<SyncResult> {
     pushedRecords: 0,
     errors: [],
   };
+
+  // Guard: must be authenticated
+  const user = useAuthStore.getState().user;
+  if (!user?.id) {
+    if (__DEV__) console.log('Sync skipped — not authenticated');
+    return result;
+  }
+
+  // Guard: Supabase must be configured
+  if (!supabase) {
+    if (__DEV__) console.log('Sync skipped — Supabase not configured');
+    return result;
+  }
+
+  if (isSyncing) {
+    if (__DEV__) console.log('Sync skipped — already in progress');
+    return result;
+  }
+
+  isSyncing = true;
+  const logger = new SyncLogger(10);
+  const sb = supabase; // Capture non-null ref for closures
 
   try {
     await synchronize({
@@ -67,16 +134,16 @@ export async function sync(): Promise<SyncResult> {
       pullChanges: async ({ lastPulledAt }) => {
         if (__DEV__) console.log('Pulling changes since:', new Date(lastPulledAt || 0));
 
-        if (!supabase) throw new DatabaseError('Supabase not configured', 'pull');
-        const { data, error } = await supabase.rpc('pull_changes', {
+        const { data, error } = await sb!.rpc('pull_changes', {
           last_pulled_at: lastPulledAt || 0,
         });
 
         if (error) {
           console.error('Pull error:', error);
-          throw new DatabaseError(
+          throw new SyncError(
             'Failed to download data from server',
-            `Supabase RPC error: ${error.message}`
+            `Supabase RPC error: ${error.message}`,
+            true // retryable
           );
         }
 
@@ -122,16 +189,16 @@ export async function sync(): Promise<SyncResult> {
 
         if (__DEV__) console.log('Pushing', pushCount, 'changes');
 
-        if (!supabase) throw new DatabaseError('Supabase not configured', 'push');
-        const { error } = await supabase.rpc('push_changes', {
+        const { error } = await sb!.rpc('push_changes', {
           changes: changes,
         });
 
         if (error) {
           console.error('Push error:', error);
-          throw new DatabaseError(
+          throw new SyncError(
             'Failed to upload data to server',
-            `Supabase RPC error: ${error.message}`
+            `Supabase RPC error: ${error.message}`,
+            true // retryable
           );
         }
 
@@ -147,16 +214,15 @@ export async function sync(): Promise<SyncResult> {
     });
 
     result.success = true;
+    result.timestamp = Date.now();
+    setLastSyncedAt(result.timestamp);
+
     if (__DEV__) {
       console.log('Sync completed successfully');
       console.log('Sync stats:', {
         pulled: result.pulledRecords,
         pushed: result.pushedRecords,
       });
-    }
-
-    // Log detailed sync info (for debugging)
-    if (__DEV__) {
       console.log('Sync logs:', logger.formattedLogs);
     }
 
@@ -164,17 +230,19 @@ export async function sync(): Promise<SyncResult> {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     result.errors.push(errorMessage);
-
     console.error('Sync failed:', errorMessage);
 
-    if (error instanceof DatabaseError) {
+    if (error instanceof SyncError) {
       throw error;
     }
 
-    throw new DatabaseError(
+    throw new SyncError(
       'Sync failed. Your data is safe locally.',
-      `Sync error: ${errorMessage}`
+      `Sync error: ${errorMessage}`,
+      true
     );
+  } finally {
+    isSyncing = false;
   }
 }
 
@@ -198,27 +266,27 @@ export async function checkUnsyncedChanges(): Promise<boolean> {
  * Get sync status (for UI display)
  */
 export async function getSyncStatus(): Promise<SyncStatus> {
-  // TODO: Store lastSyncedAt in MMKV
-
   const hasUnsynced = await checkUnsyncedChanges();
 
   return {
-    lastSyncedAt: null,
+    lastSyncedAt: getLastSyncedAt(),
     hasUnsyncedChanges: hasUnsynced,
-    isOnline: true, // TODO: Implement connectivity check
+    isSyncing,
+    isOnline: true, // TODO: NetInfo integration (future)
   };
 }
 
 // ============================================================================
-// Auto-Sync Helper
+// Auto-Sync
 // ============================================================================
 
 /**
- * Setup automatic sync on data changes
- * Call this once during app initialization
+ * Setup automatic sync on data changes.
+ * Watches all 7 syncable tables with 2s debounce.
+ *
+ * @returns Teardown function to unsubscribe
  */
-export function setupAutoSync() {
-  // Debounced sync (wait 2s after last change before syncing)
+export function setupAutoSync(): () => void {
   let syncTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const debouncedSync = () => {
@@ -228,21 +296,28 @@ export function setupAutoSync() {
       try {
         await sync();
       } catch (error) {
-        if (__DEV__) console.log('Auto-sync failed (will retry later):', error);
+        if (__DEV__) console.log('Auto-sync failed (will retry on next change):', error);
       }
-    }, 2000); // 2 second debounce
+    }, AUTO_SYNC_DEBOUNCE_MS);
   };
 
-  // Listen to changes in critical tables
-  database
-    .withChangesForTables(['workouts', 'workout_exercises', 'exercise_sets'])
-    .subscribe(() => {
-      if (__DEV__) console.log('Data changed, scheduling sync...');
-      debouncedSync();
-    });
+  const subscription = database.withChangesForTables(SYNCABLE_TABLES).subscribe(() => {
+    if (__DEV__) console.log('Data changed, scheduling sync...');
+    debouncedSync();
+  });
 
-  if (__DEV__) console.log('Auto-sync enabled');
+  if (__DEV__) console.log('Auto-sync enabled for tables:', SYNCABLE_TABLES);
+
+  return () => {
+    if (syncTimeout) clearTimeout(syncTimeout);
+    subscription.unsubscribe();
+    if (__DEV__) console.log('Auto-sync disabled');
+  };
 }
+
+// ============================================================================
+// Manual & Pre-SignOut Sync
+// ============================================================================
 
 /**
  * Manual sync trigger (for pull-to-refresh)
@@ -250,4 +325,32 @@ export function setupAutoSync() {
 export async function manualSync(): Promise<SyncResult> {
   if (__DEV__) console.log('Manual sync triggered');
   return await sync();
+}
+
+/**
+ * Best-effort sync before sign-out (Jefit-style).
+ * Attempts to push unsynced changes with a timeout.
+ * Never throws — returns false if sync fails.
+ */
+export async function syncBeforeSignOut(): Promise<boolean> {
+  try {
+    const hasChanges = await checkUnsyncedChanges();
+    if (!hasChanges) {
+      if (__DEV__) console.log('No unsynced changes before sign-out');
+      return true;
+    }
+
+    if (__DEV__) console.log('Syncing before sign-out...');
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Pre-signout sync timeout')), SIGN_OUT_SYNC_TIMEOUT_MS)
+    );
+    await Promise.race([sync(), timeoutPromise]);
+
+    if (__DEV__) console.log('Pre-signout sync succeeded');
+    return true;
+  } catch (error) {
+    if (__DEV__) console.warn('Pre-signout sync failed:', error);
+    return false;
+  }
 }

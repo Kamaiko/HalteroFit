@@ -16,6 +16,7 @@ import { useAuthStore, enableDevMode } from '@/stores/auth/authStore';
 import { supabase } from '@/services/supabase';
 import { setupAuthListener, createSessionFromUrl, mapUser } from '@/services/auth';
 import { initializeExercises } from '@/services/database/seed';
+import { setupAutoSync, manualSync } from '@/services/database';
 import '../../global.css';
 
 // Keep native splash visible until app is ready
@@ -122,6 +123,35 @@ export default function RootLayout() {
     });
 
     return unsubscribe;
+  }, []);
+
+  // Start/stop auto-sync based on auth state
+  useEffect(() => {
+    let unsubscribeSync: (() => void) | undefined;
+
+    // If already authenticated at mount, start sync immediately
+    if (useAuthStore.getState().isAuthenticated) {
+      unsubscribeSync = setupAutoSync();
+      manualSync().catch(() => {});
+    }
+
+    // React to auth state changes
+    const unsubscribeAuth = useAuthStore.subscribe((state, prevState) => {
+      if (state.isAuthenticated && !prevState.isAuthenticated) {
+        // Signed in → start auto-sync + initial pull
+        unsubscribeSync = setupAutoSync();
+        manualSync().catch(() => {});
+      } else if (!state.isAuthenticated && prevState.isAuthenticated) {
+        // Signed out → stop auto-sync
+        unsubscribeSync?.();
+        unsubscribeSync = undefined;
+      }
+    });
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeSync?.();
+    };
   }, []);
 
   // Wait for initialization + fonts (native splash stays visible)

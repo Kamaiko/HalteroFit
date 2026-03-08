@@ -17,13 +17,13 @@ Actionable tasks with Kanban tracking.
 
 ## Kanban
 
-| TODO (Top 5)                                 | DOING                                  | DONE (Last 5)                  |
-| -------------------------------------------- | -------------------------------------- | ------------------------------ |
-| **SYNC** WatermelonDB↔Supabase sync `[L]` 🔴 | **UX** Popup/BottomSheet visual rework | **4.2** Auth Service & Testing |
-| **2.1.3** AllPlansScreen `[M]`               |                                        | **4.1** Auth Screens           |
-| **2.1.5** CreateEditPlanScreen `[S]`         |                                        | **2.1.4** EditDayScreen        |
-| **2.3.3** PlanCard component `[S]`           |                                        | **2.1.6** AddDayDialog         |
-|                                              |                                        | **2.1.2** DayDetailsScreen     |
+| TODO (Top 5)                         | DOING                                  | DONE (Last 5)                       |
+| ------------------------------------ | -------------------------------------- | ----------------------------------- |
+| **2.1.3** AllPlansScreen `[M]`       | **UX** Popup/BottomSheet visual rework | **SYNC** WatermelonDB↔Supabase sync |
+| **2.1.5** CreateEditPlanScreen `[S]` |                                        | **4.2** Auth Service & Testing      |
+| **2.3.3** PlanCard component `[S]`   |                                        | **4.1** Auth Screens                |
+|                                      |                                        | **2.1.4** EditDayScreen             |
+|                                      |                                        | **2.1.6** AddDayDialog              |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
@@ -663,43 +663,36 @@ Actionable tasks with Kanban tracking.
 
 ---
 
-## Critical: WatermelonDB↔Supabase Sync
+## Critical: WatermelonDB↔Supabase Sync ✅
 
-**Status:** 🔴 Investigation Required
+**Status:** Complete (2026-03-08)
 **Priority:** HIGH — without sync, sign-out permanently deletes all user data
-**Est. Time:** TBD (investigation session first)
 
-> Currently the app is local-only. `sync.ts` exists as a skeleton using WatermelonDB's
-> `synchronize()` protocol, but it is **never called** from any screen or layout.
-> The Supabase RPC functions it depends on (`pull_changes`, `push_changes`) do not exist
-> in any migration. Sign-out triggers a 4-layer wipe (Supabase session + WatermelonDB +
-> MMKV + Zustand), permanently deleting user workout data.
+> Bidirectional sync using WatermelonDB's `synchronize()` protocol with Supabase Postgres RPCs.
+> 7 tables synced (exercises excluded — static data). Auto-sync on data changes (2s debounce),
+> full pull on sign-in, best-effort sync before sign-out (10s timeout, Jefit-style).
 
-### Investigation Tasks
+### Tasks
 
-- [ ] **SYNC-1** Audit existing `sync.ts` skeleton and Supabase schema compatibility `[M]`
-      Verify WatermelonDB tables match Supabase tables (3 migrations exist).
-      Identify missing RPC functions and schema gaps.
+- [x] **SYNC-1** Align `types.ts` with schema v8 ✅
+      Added WorkoutPlan, PlanDay, PlanDayExercise interfaces + SyncableTableName type.
+      Files: apps/mobile/src/services/database/remote/types.ts
+
+- [x] **SYNC-2** Create Supabase RPC functions for pull/push protocol ✅
+      `pull_changes(last_pulled_at)` and `push_changes(changes)` Postgres functions.
+      SECURITY DEFINER + auth.uid() ownership checks. Soft deletes via `_status`.
+      Files: supabase/migrations/20260308000000_sync_rpc_functions.sql
+
+- [x] **SYNC-3** Wire sync into app lifecycle ✅
+      `setupAutoSync()` starts/stops based on auth state in root layout.
+      Auth guard in `sync()`. `ensureLocalUserRecord()` creates local user with id=auth.uid().
+      Extended table watch from 3 to 7 tables. MMKV persistence for lastSyncedAt.
       Files: apps/mobile/src/services/database/remote/sync.ts,
-      apps/mobile/src/services/database/remote/types.ts,
-      supabase/migrations/
+      apps/mobile/src/app/\_layout.tsx, apps/mobile/src/services/auth/index.ts
 
-- [ ] **SYNC-2** Create Supabase RPC functions for pull/push protocol `[L]`
-      Implement `pull_changes` and `push_changes` Postgres functions.
-      Follow WatermelonDB sync protocol (created/updated/deleted + timestamp).
-      Files: supabase/migrations/ (new migration)
-
-- [ ] **SYNC-3** Wire sync into app lifecycle `[M]`
-      Call `setupAutoSync()` after auth in root layout.
-      Add manual sync trigger (pull-to-refresh).
-      Guard sync behind `isAuthenticated`.
-      Files: apps/mobile/src/app/\_layout.tsx
-
-- [ ] **SYNC-4** Handle sign-out data preservation `[S]`
-      Decide: keep local data after sign-out (re-sync on sign-in) or wipe + re-download.
-      Update 4-layer wipe strategy accordingly.
+- [x] **SYNC-4** Best-effort sync before sign-out ✅
+      `syncBeforeSignOut()` with 10s timeout before 4-layer wipe. Never blocks sign-out.
       Files: apps/mobile/src/services/auth/index.ts
-      Deps: SYNC-2, SYNC-3
 
 ---
 

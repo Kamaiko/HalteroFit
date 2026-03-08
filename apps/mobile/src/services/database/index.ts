@@ -26,5 +26,6 @@ export {
   setupAutoSync,
   manualSync,
   checkUnsyncedChanges,
+  syncBeforeSignOut,
 } from './remote/sync';
 export type { SyncStatus, SyncResult } from './remote/sync';

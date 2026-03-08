@@ -126,13 +126,31 @@ All database code resides in `apps/mobile/src/services/database/`:
 
 ### Sync Behavior
 
-| Trigger          | Action                               |
-| ---------------- | ------------------------------------ |
-| App launch       | Sync if internet available           |
-| Network restored | Background sync                      |
-| Conflict         | Last-write-wins (based on timestamp) |
+WatermelonDB↔Supabase bidirectional sync using the official `synchronize()` protocol.
 
-**Implementation:** `apps/mobile/src/services/database/remote/sync.ts`
+**Tables synced (7):** users, workouts, workout_exercises, exercise_sets, workout_plans, plan_days, plan_day_exercises
+**Excluded:** exercises (static bundled data)
+
+| Trigger             | Action                                            |
+| ------------------- | ------------------------------------------------- |
+| Sign-in             | Full pull (`last_pulled_at = 0`)                  |
+| Data change (local) | Debounced auto-sync (2s) via `setupAutoSync()`    |
+| Sign-out            | Best-effort sync (10s timeout), then 4-layer wipe |
+| Conflict            | Last-write-wins (based on `_changed` timestamp)   |
+
+**Architecture:**
+
+- **Client:** `apps/mobile/src/services/database/remote/sync.ts` — `sync()`, `setupAutoSync()`, `syncBeforeSignOut()`
+- **Server:** `supabase/migrations/20260308000000_sync_rpc_functions.sql` — `pull_changes()`, `push_changes()` Postgres RPCs
+- **Auth guard:** sync skips silently if not authenticated
+- **MMKV:** `sync:lastSyncedAt` persists last successful sync timestamp
+- **Ownership:** RPCs use `SECURITY DEFINER` + `auth.uid()` checks (not RLS) for performance
+
+**Sync lifecycle in `_layout.tsx`:**
+
+1. Auth state changes to authenticated → `setupAutoSync()` + initial `manualSync()`
+2. Auth state changes to unauthenticated → teardown auto-sync subscription
+3. `signOut()` → `syncBeforeSignOut()` (best-effort) → 4-layer wipe
 
 ---
 

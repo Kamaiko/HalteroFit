@@ -18,13 +18,19 @@ jest.mock('expo-router', () => ({
 jest.mock('@/services/supabase', () => ({
   supabase: jest.requireMock('@supabase/supabase-js').createClient(),
 }));
+jest.mock('@/services/database/local/models/User', () => ({}));
 jest.mock('@/services/database', () => {
   const unsafeResetDatabase = jest.fn(() => Promise.resolve());
   return {
     database: {
       write: jest.fn((fn: () => Promise<void>) => fn()),
       unsafeResetDatabase,
+      get: jest.fn(() => ({
+        find: jest.fn(() => Promise.resolve({})),
+        create: jest.fn(() => Promise.resolve()),
+      })),
     },
+    syncBeforeSignOut: jest.fn(() => Promise.resolve(true)),
   };
 });
 
