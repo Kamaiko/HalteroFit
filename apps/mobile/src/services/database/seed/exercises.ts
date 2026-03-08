@@ -93,7 +93,9 @@ export async function seedExercises(): Promise<{ success: boolean; count: number
           raw.updated_at = now;
         })
       );
-      await database.batch(...prepared);
+      await database.write(async () => {
+        await database.batch(prepared);
+      });
       totalInserted += chunk.length;
       if (__DEV__) console.log(`Seeded ${totalInserted}/${exercises.length} exercises`);
     }
