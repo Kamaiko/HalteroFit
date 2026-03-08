@@ -133,9 +133,7 @@ export default function SignUpScreen() {
               placeholderTextColor={Colors.foreground.tertiary}
             />
 
-            {error !== '' && (
-              <Text className="text-sm text-destructive text-center">{error}</Text>
-            )}
+            {error !== '' && <Text className="text-sm text-destructive text-center">{error}</Text>}
 
             <Button onPress={handleSignUp} disabled={isLoading} size="lg">
               {isLoading ? (
@@ -147,8 +145,7 @@ export default function SignUpScreen() {
 
             <Pressable onPress={() => router.push('/sign-in')} hitSlop={8}>
               <Text className="text-sm text-foreground-secondary text-center">
-                Already have an account?{' '}
-                <Text className="text-sm text-primary">Sign in</Text>
+                Already have an account? <Text className="text-sm text-primary">Sign in</Text>
               </Text>
             </Pressable>
           </View>
