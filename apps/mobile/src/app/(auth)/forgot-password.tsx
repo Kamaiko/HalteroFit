@@ -40,7 +40,10 @@ export default function ForgotPasswordScreen() {
     } catch (err) {
       // Still show success to prevent email enumeration,
       // unless it's a network/availability error
-      if (isOperationalError(err) && (err.code === 'NETWORK_ERROR' || err.code === 'AUTH_UNAVAILABLE')) {
+      if (
+        isOperationalError(err) &&
+        (err.code === 'NETWORK_ERROR' || err.code === 'AUTH_UNAVAILABLE')
+      ) {
         setError(err.userMessage);
       } else {
         setIsSent(true);
@@ -81,16 +84,12 @@ export default function ForgotPasswordScreen() {
               </>
             ) : (
               <>
-                <Ionicons
-                  name="mail-outline"
-                  size={ICON_SIZE_3XL}
-                  color={Colors.primary.DEFAULT}
-                />
+                <Ionicons name="mail-outline" size={ICON_SIZE_3XL} color={Colors.primary.DEFAULT} />
                 <Text variant="h3" className="mt-4 mb-2 border-b-0">
                   Reset Password
                 </Text>
                 <Text className="text-sm text-foreground-secondary text-center mb-6 max-w-xs">
-                  Enter your email and we'll send you a reset link.
+                  Enter your email and we&apos;ll send you a reset link.
                 </Text>
 
                 <View className="w-full max-w-sm gap-4">
