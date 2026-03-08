@@ -1,0 +1,135 @@
+/**
+ * Auth Service - Unit Tests
+ *
+ * Tests auth orchestration: signIn, signOut, resetPassword, supabase null guard.
+ * Validators are tested separately — service tests focus on Supabase integration
+ * and the signOut wipe sequence.
+ */
+
+jest.mock('expo-auth-session', () => ({
+  makeRedirectUri: jest.fn(() => 'halterofit://reset-password'),
+}));
+jest.mock('expo-auth-session/build/QueryParams', () => ({
+  getQueryParams: jest.fn(() => ({ params: {}, errorCode: null })),
+}));
+jest.mock('expo-router', () => ({
+  router: { replace: jest.fn() },
+}));
+jest.mock('@/services/supabase', () => ({
+  supabase: jest.requireMock('@supabase/supabase-js').createClient(),
+}));
+jest.mock('@/services/database', () => {
+  const unsafeResetDatabase = jest.fn(() => Promise.resolve());
+  return {
+    database: {
+      write: jest.fn((fn: () => Promise<void>) => fn()),
+      unsafeResetDatabase,
+    },
+  };
+});
+
+import { signIn, signOut, resetPassword } from '@/services/auth';
+import { database } from '@/services/database';
+import { useAuthStore } from '@/stores/auth/authStore';
+import { AuthError } from '@/utils/errors';
+
+const mockSupabase = jest.requireMock('@supabase/supabase-js').createClient();
+const mockWrite = database.write as jest.Mock;
+const mockUnsafeResetDatabase = database.unsafeResetDatabase as jest.Mock;
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  // Restore implementations cleared by clearAllMocks
+  mockWrite.mockImplementation((fn: () => Promise<void>) => fn());
+  mockUnsafeResetDatabase.mockResolvedValue(undefined);
+  mockSupabase.auth.signOut.mockResolvedValue({ error: null });
+  useAuthStore.getState().setUser(null);
+});
+
+describe('signIn', () => {
+  it('returns user and updates store on success', async () => {
+    mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
+      data: {
+        user: { id: 'u1', email: 'a@b.com', email_confirmed_at: '2024-01-01' },
+      },
+      error: null,
+    });
+
+    const user = await signIn('a@b.com', 'password123');
+
+    expect(user).toEqual({ id: 'u1', email: 'a@b.com', emailVerified: true });
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+  });
+
+  it('throws AuthError with INVALID_CREDENTIALS code on bad login', async () => {
+    mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
+      data: { user: null },
+      error: { message: 'Invalid login credentials', status: 400 },
+    });
+
+    try {
+      await signIn('a@b.com', 'wrongpass1');
+      fail('Expected signIn to throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(AuthError);
+      expect((err as AuthError).code).toBe('INVALID_CREDENTIALS');
+      expect((err as AuthError).userMessage).toBe('Incorrect email or password');
+    }
+  });
+});
+
+describe('signOut', () => {
+  it('clears all 4 layers: Supabase, DB, MMKV, store', async () => {
+    useAuthStore.getState().setUser({ id: 'u1', email: 'a@b.com', emailVerified: true });
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+
+    await signOut();
+
+    expect(mockSupabase.auth.signOut).toHaveBeenCalled();
+    expect(mockWrite).toHaveBeenCalled();
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+    expect(useAuthStore.getState().user).toBeNull();
+  });
+
+  it('continues even if DB reset fails', async () => {
+    useAuthStore.getState().setUser({ id: 'u1', email: 'a@b.com', emailVerified: true });
+    mockUnsafeResetDatabase.mockRejectedValueOnce(new Error('DB locked'));
+
+    await signOut();
+
+    expect(useAuthStore.getState().user).toBeNull();
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+  });
+});
+
+describe('supabase null guard', () => {
+  it('throws AUTH_UNAVAILABLE when supabase is null', async () => {
+    const supabaseModule = require('@/services/supabase') as { supabase: unknown };
+    const originalSupabase = supabaseModule.supabase;
+    supabaseModule.supabase = null;
+
+    try {
+      await signIn('a@b.com', 'password123');
+      fail('Expected signIn to throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(AuthError);
+      expect((err as AuthError).code).toBe('AUTH_UNAVAILABLE');
+    } finally {
+      supabaseModule.supabase = originalSupabase;
+    }
+  });
+});
+
+describe('resetPassword', () => {
+  it('always resolves (no email enumeration)', async () => {
+    mockSupabase.auth.resetPasswordForEmail.mockResolvedValueOnce({
+      data: {},
+      error: null,
+    });
+
+    await expect(resetPassword('a@b.com')).resolves.toBeUndefined();
+    expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith('a@b.com', {
+      redirectTo: 'halterofit://reset-password',
+    });
+  });
+});

@@ -7,6 +7,10 @@ const mockSupabaseClient = {
     signInWithPassword: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })),
     signOut: jest.fn(() => Promise.resolve({ error: null })),
     getSession: jest.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+    setSession: jest.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+    updateUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+    resetPasswordForEmail: jest.fn(() => Promise.resolve({ data: {}, error: null })),
+    resend: jest.fn(() => Promise.resolve({ data: {}, error: null })),
     onAuthStateChange: jest.fn(() => ({
       data: { subscription: { unsubscribe: jest.fn() } },
     })),

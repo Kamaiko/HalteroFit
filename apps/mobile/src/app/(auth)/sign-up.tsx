@@ -1,7 +1,8 @@
 /**
- * Sign In Screen
+ * Sign Up Screen
  *
- * Email/password authentication with dev mode fallback.
+ * Email/password registration. On success, user is signed in immediately.
+ * Email verification is non-blocking (reminder banner shown in app layout).
  */
 
 import { useRef, useState } from 'react';
@@ -19,21 +20,22 @@ import { Ionicons } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Input } from '@/components/ui/input';
-import { Colors, ICON_SIZE_3XL, BORDER_RADIUS_MD } from '@/constants';
-import { enableDevMode } from '@/stores/auth/authStore';
-import { signIn } from '@/services/auth';
-import { getEmailError, getPasswordError } from '@/utils/validators';
+import { Colors, ICON_SIZE_3XL } from '@/constants';
+import { signUp } from '@/services/auth';
+import { getEmailError, getPasswordError, getPasswordConfirmError } from '@/utils/validators';
 import { isOperationalError } from '@/utils/errors';
 
-export default function SignInScreen() {
+export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const passwordRef = useRef<TextInput>(null);
+  const confirmRef = useRef<TextInput>(null);
 
-  const handleSignIn = async () => {
+  const handleSignUp = async () => {
     setError('');
 
     const emailErr = getEmailError(email);
@@ -46,10 +48,15 @@ export default function SignInScreen() {
       setError(passwordErr);
       return;
     }
+    const confirmErr = getPasswordConfirmError(password, confirmPassword);
+    if (confirmErr) {
+      setError(confirmErr);
+      return;
+    }
 
     setIsLoading(true);
     try {
-      await signIn(email, password);
+      await signUp(email, password);
       router.replace('/');
     } catch (err) {
       setError(
@@ -58,11 +65,6 @@ export default function SignInScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleDevMode = () => {
-    enableDevMode();
-    router.replace('/');
   };
 
   return (
@@ -74,7 +76,7 @@ export default function SignInScreen() {
         <View className="flex-1 items-center justify-center px-6">
           <Ionicons name="barbell-outline" size={ICON_SIZE_3XL} color={Colors.primary.DEFAULT} />
           <Text variant="h3" className="mt-4 mb-6 border-b-0">
-            Sign In
+            Create Account
           </Text>
 
           <View className="w-full max-w-sm gap-4">
@@ -99,9 +101,9 @@ export default function SignInScreen() {
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
-                autoComplete="password"
-                returnKeyType="done"
-                onSubmitEditing={handleSignIn}
+                autoComplete="new-password"
+                returnKeyType="next"
+                onSubmitEditing={() => confirmRef.current?.focus()}
                 editable={!isLoading}
                 placeholderTextColor={Colors.foreground.tertiary}
               />
@@ -117,53 +119,39 @@ export default function SignInScreen() {
                 />
               </Pressable>
             </View>
+            <Input
+              ref={confirmRef}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              autoComplete="new-password"
+              returnKeyType="done"
+              onSubmitEditing={handleSignUp}
+              editable={!isLoading}
+              placeholderTextColor={Colors.foreground.tertiary}
+            />
 
             {error !== '' && (
               <Text className="text-sm text-destructive text-center">{error}</Text>
             )}
 
-            <Button onPress={handleSignIn} disabled={isLoading} size="lg">
+            <Button onPress={handleSignUp} disabled={isLoading} size="lg">
               {isLoading ? (
                 <ActivityIndicator color={Colors.primary.foreground} />
               ) : (
-                <Text>Sign In</Text>
+                <Text>Create Account</Text>
               )}
             </Button>
 
-            <Pressable onPress={() => router.push('/forgot-password')} hitSlop={8}>
-              <Text className="text-sm text-primary text-center">Forgot password?</Text>
-            </Pressable>
-
-            <Pressable onPress={() => router.push('/sign-up')} hitSlop={8}>
+            <Pressable onPress={() => router.push('/sign-in')} hitSlop={8}>
               <Text className="text-sm text-foreground-secondary text-center">
-                Don't have an account?{' '}
-                <Text className="text-sm text-primary">Sign up</Text>
+                Already have an account?{' '}
+                <Text className="text-sm text-primary">Sign in</Text>
               </Text>
             </Pressable>
           </View>
-
-          {(__DEV__ || process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH === 'true') && (
-            <Pressable
-              onPress={handleDevMode}
-              style={{
-                backgroundColor: Colors.dev.banner,
-                paddingHorizontal: 24,
-                paddingVertical: 12,
-                borderRadius: BORDER_RADIUS_MD,
-                marginTop: 32,
-              }}
-            >
-              <Text
-                style={{
-                  color: Colors.primary.foreground,
-                  fontWeight: '600',
-                  fontSize: 14,
-                }}
-              >
-                Continue as Dev User
-              </Text>
-            </Pressable>
-          )}
         </View>
       </KeyboardAvoidingView>
     </ScreenContainer>

@@ -69,6 +69,7 @@ nul
 # External AI Tools
 # ===================
 .agents/
+.claude/plans/
 
 # ===================
 # Documentation (local-only subdirectories)

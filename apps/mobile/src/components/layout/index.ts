@@ -4,5 +4,6 @@
  * Reusable layout primitives for consistent screen structure.
  */
 
-export { ScreenContainer } from './ScreenContainer';
+export { EmailVerificationBanner } from './EmailVerificationBanner';
 export { ErrorFallbackScreen } from './ErrorFallbackScreen';
+export { ScreenContainer } from './ScreenContainer';
