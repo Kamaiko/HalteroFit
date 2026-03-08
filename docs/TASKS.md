@@ -2,7 +2,7 @@
 
 Actionable tasks with Kanban tracking.
 
-**Last Updated:** 2026-02-26
+**Last Updated:** 2026-03-07
 
 ## Table of Contents
 
@@ -17,13 +17,13 @@ Actionable tasks with Kanban tracking.
 
 ## Kanban
 
-| TODO (Top 5)                         | DOING                                  | DONE (Last 5)                    |
-| ------------------------------------ | -------------------------------------- | -------------------------------- |
-| **2.1.3** AllPlansScreen `[M]` 🔴    | **UX** Popup/BottomSheet visual rework | **2.1.4** EditDayScreen          |
-| **2.1.5** CreateEditPlanScreen `[S]` |                                        | **2.1.6** AddDayDialog           |
-| **2.3.3** PlanCard component `[S]`   |                                        | **2.1.2** DayDetailsScreen       |
-|                                      |                                        | **1.2.3** ExerciseCard component |
-|                                      |                                        | **2.1.1** WorkoutOverviewScreen  |
+| TODO (Top 5)                         | DOING                                  | DONE (Last 5)                  |
+| ------------------------------------ | -------------------------------------- | ------------------------------ |
+| **2.1.3** AllPlansScreen `[M]` 🔴    | **UX** Popup/BottomSheet visual rework | **4.2** Auth Service & Testing |
+| **2.1.5** CreateEditPlanScreen `[S]` |                                        | **4.1** Auth Screens           |
+| **2.3.3** PlanCard component `[S]`   |                                        | **2.1.4** EditDayScreen        |
+|                                      |                                        | **2.1.6** AddDayDialog         |
+|                                      |                                        | **2.1.2** DayDetailsScreen     |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
@@ -449,71 +449,60 @@ Actionable tasks with Kanban tracking.
 
 ## Phase 4: Auth, Settings & Progress
 
-**Status:** ⬜ Pending
+**Status:** 🔄 Partial (Auth complete, Settings & Progress pending)
 **Timeline:** Weeks 15-18
 **Est. Time:** ~45h (3-4 weeks)
 **Goal:** Authentication, user profile, settings, and basic Progress tab
 **Dependencies:** Phase 1 (Exercise Library); can start parallel to Phase 3
 **Reference:** [WIREFRAMES.md § 6. Settings](./reference/WIREFRAMES.md#6-settings)
 
-### 4.1: Auth Screens
+### 4.1: Auth Screens ✅
 
 > Login, Register, Password Reset UI with form validation.
 
-- [ ] **4.1.1** Create auth route group layout `[S]` 🔴
+- [x] **4.1.1** Create auth route group layout `[S]` ✅
       Expo Router (auth)/\_layout.tsx with Stack navigator.
-      Shared styling: centered content, app logo header, safe area.
-      Files: src/app/(auth)/\_layout.tsx
+      Files: apps/mobile/src/app/(auth)/\_layout.tsx
 
-- [ ] **4.1.2** Create LoginScreen `[M]` 🔴
-      Email + password inputs with validation.
-      "Log In" button with loading state. Error toast.
+- [x] **4.1.2** Create SignInScreen `[M]` ✅
+      Email + password inputs with validation, loading state, error display.
       Links: "Forgot password?" → reset, "Create account" → register.
-      Files: src/app/(auth)/login.tsx
-      Deps: 4.1.1
+      Files: apps/mobile/src/app/(auth)/sign-in.tsx
 
-- [ ] **4.1.3** Create RegisterScreen `[M]`
-      Email, password, confirm password. Password strength indicator.
-      "Create Account" button with loading state.
-      Files: src/app/(auth)/register.tsx
-      Deps: 4.1.1
+- [x] **4.1.3** Create SignUpScreen `[M]` ✅
+      Email, password, confirm password with validation.
+      Files: apps/mobile/src/app/(auth)/sign-up.tsx
 
-- [ ] **4.1.4** Create ResetPasswordScreen `[S]`
-      Email input, "Send Reset Link" button.
-      Success state + deep link handler for callback.
-      Files: src/app/(auth)/reset-password.tsx
-      Deps: 4.1.1
+- [x] **4.1.4** Create ResetPasswordScreen + ForgotPasswordScreen `[S]` ✅
+      Email input, deep link handler for password reset callback.
+      Files: apps/mobile/src/app/(auth)/forgot-password.tsx, apps/mobile/src/app/(auth)/reset-password.tsx
 
-- [ ] **4.1.5** Setup protected route guard `[M]` 🔴
-      Root \_layout.tsx: check authStore.isAuthenticated.
-      Redirect to /(auth)/login if not authenticated.
-      Splash screen during initial auth check. Persist session via MMKV.
-      Files: src/app/\_layout.tsx, src/stores/auth/authStore.ts
+- [x] **4.1.5** Setup protected route guard `[M]` ✅
+      Root \_layout.tsx checks authStore.isAuthenticated, redirects to sign-in.
+      Session persistence via MMKV. Mock auth gated behind env var.
+      Files: apps/mobile/src/app/\_layout.tsx, apps/mobile/src/stores/auth/authStore.ts
 
-### 4.2: Auth Service & Testing
+### 4.2: Auth Service & Testing ✅
 
 > Supabase Auth integration, session management, test infrastructure.
 
-- [ ] **4.2.1** Implement Supabase Auth service `[M]` 🔴
-      signIn(), signUp(), signOut(), resetPassword(), refreshSession().
-      onAuthStateChange() listener. Session persistence to MMKV.
-      Files: src/services/auth/supabaseAuth.ts
+- [x] **4.2.1** Implement Supabase Auth service `[M]` ✅
+      signIn(), signUp(), signOut(), resetPassword(), resendVerificationEmail().
+      setupAuthListener() for reactive auth state changes. Session persistence to MMKV.
+      Files: apps/mobile/src/services/auth/index.ts
 
-- [ ] **4.2.2** Wire authStore to Supabase Auth service `[S]`
-      Update authStore actions to call service. Hydrate from MMKV on launch.
+- [x] **4.2.2** Wire authStore to Supabase Auth service `[S]` ✅
+      AuthStore actions call service. Hydrate from MMKV on launch.
       Sign-out cleanup: clear MMKV, reset stores.
-      Files: src/stores/auth/authStore.ts
-      Deps: 4.2.1
+      Files: apps/mobile/src/stores/auth/authStore.ts
 
-- [ ] **4.2.3** Create auth test infrastructure `[S]`
-      Mock Supabase client, auth factories (mockUser, mockSession).
-      Files: **tests**/**helpers**/auth/
+- [x] **4.2.3** Create auth test infrastructure `[S]` ✅
+      Mock Supabase client, auth error mapping helpers.
+      Files: apps/mobile/\_\_tests\_\_/services/auth/
 
-- [ ] **4.2.4** Write auth service unit tests `[M]`
-      Test: signIn/signUp/signOut flows, session refresh, MMKV persistence.
-      Coverage target: 90%+.
-      Files: **tests**/services/auth/supabaseAuth.test.ts
-      Deps: 4.2.1, 4.2.3
+- [x] **4.2.4** Write auth service unit tests `[M]` ✅
+      Tests: error mapping, signOut resilience, createSessionFromUrl, signIn/signUp flows.
+      Files: apps/mobile/\_\_tests\_\_/services/auth/authService.test.ts
 
 ### 4.3: Settings & Profile
 

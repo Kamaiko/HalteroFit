@@ -187,7 +187,7 @@ Husky installs git hooks automatically when you run `pnpm install`. You do not n
 
 Every commit triggers two checks on staged files:
 
-1. **Schema version check** (`check-schema-version.sh`) — If you staged a database migration file, it verifies that the schema version in `src/services/database/local/schema.ts` was also incremented. This prevents migrations from being committed without a matching version bump.
+1. **Schema version check** (`check-schema-version.sh`) — If you staged a database migration file, it verifies that the schema version in `apps/mobile/src/services/database/local/schema.ts` was also incremented. This prevents migrations from being committed without a matching version bump.
 
 2. **lint-staged** — Runs ESLint and Prettier on staged `.ts`, `.tsx`, `.json`, `.md`, and `.html` files. Prettier rewrites files in place; ESLint errors block the commit.
 

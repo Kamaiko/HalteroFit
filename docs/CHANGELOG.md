@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Email/password authentication with Supabase (sign-in, sign-up, sign-out, password reset, email verification)
+- Official branding on auth screens (wordmark + BrandIcon component)
+- Auth error mapping with user-friendly messages (INVALID_CREDENTIALS, EMAIL_TAKEN, NETWORK_ERROR, etc.)
+- Email verification banner for unverified users
+- Settings screen with sign-out button
+- Auth service unit tests (error mapping, signOut resilience, createSessionFromUrl)
+
+### Fixed
+
+- Security leak, race condition, and mock-auth gate in auth flow
+- Mock auth gated behind `EXPO_PUBLIC_ENABLE_MOCK_AUTH` env var
+
 ## [0.11.0] - 2026-03-02
 
 ### Added

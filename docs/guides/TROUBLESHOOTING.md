@@ -425,7 +425,7 @@ import '../../global.css'; // Must be imported in root layout
 
 **Cause:**
 
-Mismatch between `src/constants/colors.ts` and `tailwind.config.ts`.
+Mismatch between `apps/mobile/src/constants/colors.ts` and `apps/mobile/tailwind.config.ts`.
 
 **Solution:**
 

@@ -97,7 +97,15 @@ Developer Workflow
 └── _/                               # Husky internal files (auto-generated)
 ```
 
-### 2.2 Hook Execution Order
+### 2.2 Monorepo lint-staged Configuration
+
+lint-staged is split across two levels for the monorepo:
+
+- **Root** (`package.json` → `lint-staged`): Runs Prettier on `*.{json,md,css,yml,yaml}` — repo-wide config/docs files
+- **Mobile** (`apps/mobile/.lintstagedrc.json`): Runs ESLint + Prettier on `*.{ts,tsx,js}` — app source code
+- **Mobile** (`apps/mobile/.prettierignore`): Excludes `expo-env.d.ts`, `src/lib/`, build artifacts from formatting
+
+### 2.3 Hook Execution Order
 
 ```
 git commit -m "message"

@@ -249,7 +249,7 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - Target: Use WatermelonDB observables for planDays and exerciseCounts
   - Benefits: Automatic UI updates when data changes, eliminates state sync bugs
   - Pattern: Similar to existing `observeActivePlan()` implementation
-  - **Files:** src/hooks/workout/useWorkoutScreen.ts (lines 87-90, 236-238)
+  - **Files:** apps/mobile/src/hooks/workout/useWorkoutScreen.ts (lines 87-90, 236-238)
   - **Estimated effort:** ~2-3h (refactoring with testing)
   - **Risk:** Medium - requires careful testing of reactive updates
 - **Exercise Dataset Ownership & CDN Reliability** (HIGH - Evaluate post-MVP)
@@ -288,6 +288,13 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - Alternative: Continue with current simple threshold + local Expo Atlas
   - **Estimated effort:** ~2h (setup + configuration)
   - **Dependencies:** Team growth or bundle optimization priority
+- **Production SMTP Provider** (Pre-launch)
+  - Supabase built-in email is rate-limited (~50 emails/day) — fine for dev, not for production
+  - Configure Resend (free: 3,000 emails/month) or SendGrid in Supabase Dashboard → Auth → SMTP Settings
+  - Requires domain verification (DNS records: MX, SPF, DKIM) on halterofit.ca — coordinate carefully with existing email setup
+  - No code changes needed — purely dashboard configuration
+  - **Estimated effort:** ~1-2h (account setup + DNS verification + template testing)
+  - **Dependencies:** Domain DNS access, pre-launch timing
 - **Multi-language support (i18n)** - Defer until international expansion
 - **Social features** (share workouts, follow friends) - Defer until user base >1,000
 - **Coach-client relationship** (team accounts) - Defer until B2B validation

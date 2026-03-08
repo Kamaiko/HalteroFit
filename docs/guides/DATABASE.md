@@ -48,7 +48,7 @@ This document provides an overview of Halterofit's hybrid database architecture 
 | plan_days          | Days within a plan (e.g., "Day 1")  | → plan_day_exercises |
 | plan_day_exercises | Exercise templates in a day         | ← exercises          |
 
-**Schema SSoT:** `src/services/database/local/schema.ts`
+**Schema SSoT:** `apps/mobile/src/services/database/local/schema.ts`
 
 **Cascade Behavior:**
 
@@ -77,8 +77,8 @@ Exercises are loaded into WatermelonDB on first app launch via `initializeExerci
 **Files:**
 
 - Data: `assets/data/exercises.json`
-- Seeding service: `src/services/database/seed/exercises.ts`
-- Model: `src/services/database/local/models/Exercise.ts`
+- Seeding service: `apps/mobile/src/services/database/seed/exercises.ts`
+- Model: `apps/mobile/src/services/database/local/models/Exercise.ts`
 
 **Version tracking:** MMKV stores `exercise_seed_version`. Incrementing `SEED_VERSION` in the seeding service forces a re-import on next app launch.
 
@@ -88,7 +88,7 @@ Exercises are loaded into WatermelonDB on first app launch via `initializeExerci
 
 1. Download from [Kaggle ExerciseDB](https://www.kaggle.com/datasets/exercisedb/fitness-exercises-dataset)
 2. Extract and replace `assets/data/exercises.json`
-3. Increment `SEED_VERSION` in `src/services/database/seed/exercises.ts`
+3. Increment `SEED_VERSION` in `apps/mobile/src/services/database/seed/exercises.ts`
 
 **Option 2: Kaggle CLI**
 
@@ -109,7 +109,7 @@ kaggle datasets download -d exercisedb/fitness-exercises-dataset -p assets/data 
 
 ### Code Location
 
-All database code resides in `src/services/database/`:
+All database code resides in `apps/mobile/src/services/database/`:
 
 | Directory     | Purpose                     |
 | ------------- | --------------------------- |
@@ -132,7 +132,7 @@ All database code resides in `src/services/database/`:
 | Network restored | Background sync                      |
 | Conflict         | Last-write-wins (based on timestamp) |
 
-**Implementation:** `src/services/database/remote/sync.ts`
+**Implementation:** `apps/mobile/src/services/database/remote/sync.ts`
 
 ---
 
@@ -149,11 +149,11 @@ All database code resides in `src/services/database/`:
    ```
 
 2. **Update WatermelonDB schema**
-   - File: `src/services/database/local/schema.ts`
+   - File: `apps/mobile/src/services/database/local/schema.ts`
    - Increment version number
 
 3. **Add WatermelonDB migration** (if existing data)
-   - File: `src/services/database/local/migrations.ts`
+   - File: `apps/mobile/src/services/database/local/migrations.ts`
 
 4. **Test migration**
    ```bash
@@ -189,13 +189,13 @@ All database code resides in `src/services/database/`:
 
 ### Schema (Single Source of Truth)
 
-| Component           | Location                                    |
-| ------------------- | ------------------------------------------- |
-| WatermelonDB Schema | `src/services/database/local/schema.ts`     |
-| WatermelonDB Models | `src/services/database/local/models/`       |
-| Migrations (local)  | `src/services/database/local/migrations.ts` |
-| Migrations (cloud)  | `supabase/migrations/`                      |
-| Operations (CRUD)   | `src/services/database/operations/`         |
+| Component           | Location                                                |
+| ------------------- | ------------------------------------------------------- |
+| WatermelonDB Schema | `apps/mobile/src/services/database/local/schema.ts`     |
+| WatermelonDB Models | `apps/mobile/src/services/database/local/models/`       |
+| Migrations (local)  | `apps/mobile/src/services/database/local/migrations.ts` |
+| Migrations (cloud)  | `supabase/migrations/`                                  |
+| Operations (CRUD)   | `apps/mobile/src/services/database/operations/`         |
 
 ### External Documentation
 

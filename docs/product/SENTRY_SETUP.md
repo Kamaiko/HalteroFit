@@ -3,7 +3,7 @@
 Quick reference for Sentry error monitoring configuration and usage.
 
 **Status:** Installed & Configured (see package.json for current version)
-**Configuration:** `src/utils/sentry.ts`
+**Configuration:** `apps/mobile/src/utils/sentry.ts`
 **Dashboard:** https://sentry.io
 
 ---
@@ -12,9 +12,9 @@ Quick reference for Sentry error monitoring configuration and usage.
 
 **Files configured:**
 
-- `src/utils/sentry.ts` - Sentry initialization and utilities
-- `app/_layout.tsx` - Sentry init at app startup
-- `src/hooks/ui/useErrorHandler.ts` - Automatic error reporting
+- `apps/mobile/src/utils/sentry.ts` - Sentry initialization and utilities
+- `apps/mobile/src/app/_layout.tsx` - Sentry init at app startup
+- `apps/mobile/src/hooks/ui/useErrorHandler.ts` - Automatic error reporting
 - `.env.example` - DSN placeholder
 
 **Behavior:**
@@ -26,7 +26,7 @@ Quick reference for Sentry error monitoring configuration and usage.
 
 ## Configuration
 
-**Sample rate adjustment** (`src/utils/sentry.ts`):
+**Sample rate adjustment** (`apps/mobile/src/utils/sentry.ts`):
 
 ```typescript
 tracesSampleRate: 1.0, // 100% (default) - reduce for high traffic

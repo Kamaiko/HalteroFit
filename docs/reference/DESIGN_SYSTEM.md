@@ -291,7 +291,7 @@ Strategic design guidelines and UI/UX patterns for building Halterofit's mobile 
 - **Ionicons:** Secondary (navigation, actions)
 - **FontAwesome:** Specialty (social, advanced features)
 
-**Sizes** (from `src/constants/layout.ts`):
+**Sizes** (from `apps/mobile/src/constants/layout.ts`):
 
 - XS: 16px — `ICON_SIZE_XS` (checkmarks in checkboxes)
 - SM: 20px — `ICON_SIZE_SM` (chevrons, small action icons)
