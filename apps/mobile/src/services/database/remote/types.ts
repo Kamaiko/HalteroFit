@@ -156,9 +156,6 @@ export interface WorkoutExerciseWithDetails extends WorkoutExercise {
 export type CreateWorkout = Omit<Workout, 'id' | 'created_at' | 'updated_at'>;
 export type CreateWorkoutExercise = Omit<WorkoutExercise, 'id' | 'created_at' | 'updated_at'>;
 export type CreateExerciseSet = Omit<ExerciseSet, 'id' | 'created_at' | 'updated_at'>;
-export type CreateWorkoutPlan = Omit<WorkoutPlan, 'id' | 'created_at' | 'updated_at'>;
-export type CreatePlanDay = Omit<PlanDay, 'id' | 'created_at' | 'updated_at'>;
-export type CreatePlanDayExercise = Omit<PlanDayExercise, 'id' | 'created_at' | 'updated_at'>;
 
 /**
  * Update types (optional fields only)
@@ -166,9 +163,4 @@ export type CreatePlanDayExercise = Omit<PlanDayExercise, 'id' | 'created_at' | 
 export type UpdateWorkout = Partial<Omit<Workout, 'id' | 'user_id' | 'created_at'>>;
 export type UpdateExerciseSet = Partial<
   Omit<ExerciseSet, 'id' | 'workout_exercise_id' | 'created_at'>
->;
-export type UpdateWorkoutPlan = Partial<Omit<WorkoutPlan, 'id' | 'user_id' | 'created_at'>>;
-export type UpdatePlanDay = Partial<Omit<PlanDay, 'id' | 'plan_id' | 'created_at'>>;
-export type UpdatePlanDayExercise = Partial<
-  Omit<PlanDayExercise, 'id' | 'plan_day_id' | 'created_at'>
 >;
