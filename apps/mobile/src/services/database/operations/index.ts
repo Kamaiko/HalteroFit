@@ -4,7 +4,7 @@
  * Business logic for database CRUD operations.
  *
  * USAGE:
- * import { createWorkout, logSet, createPlan } from '@/services/database/operations';
+ * import { createWorkout, createPlan } from '@/services/database/operations';
  */
 
 // Workout operations
