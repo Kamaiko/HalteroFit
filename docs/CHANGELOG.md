@@ -15,11 +15,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Email verification banner for unverified users
 - Settings screen with sign-out button
 - Auth service unit tests (error mapping, signOut resilience, createSessionFromUrl)
+- WatermelonDB↔Supabase bidirectional sync (7 tables)
+- Postgres RPC functions: `pull_changes()` / `push_changes()` (SECURITY DEFINER)
+- Auto-sync on data changes (2s debounce)
+- Best-effort sync before sign-out (10s timeout)
+- `waitForInitialSync()` gate to prevent duplicate plan creation
+- Exercise re-seeding on sign-in after DB wipe
+
+### Changed
+
+- RLS policies optimized: `auth.uid()` → `(select auth.uid())`
+- Dropped unused indexes on exercises table (local-only data)
+- Dropped exercise FK constraints (exercises not synced to Supabase)
+- Reduced dev log noise (debounced "Data changed" log, formattedLogs error-only)
 
 ### Fixed
 
 - Security leak, race condition, and mock-auth gate in auth flow
 - Mock auth gated behind `EXPO_PUBLIC_ENABLE_MOCK_AUTH` env var
+- Exercises marked dirty after seeding (false hasUnsyncedChanges)
+- User record conflict on re-login (ensureLocalUserRecord race)
+- Duplicate default plans on sign-out → sign-in
+- Day Details showing 0 exercises after sign-out → sign-in
 
 ## [0.11.0] - 2026-03-02
 
