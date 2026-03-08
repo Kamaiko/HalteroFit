@@ -11,7 +11,7 @@ import { makeRedirectUri } from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { router } from 'expo-router';
 import { supabase } from '@/services/supabase';
-import { database, syncBeforeSignOut } from '@/services/database';
+import { database, syncBeforeSignOut, resetSyncState } from '@/services/database';
 import { mmkvStorage } from '@/services/storage';
 import { useAuthStore, type User } from '@/stores/auth';
 import { AuthError } from '@/utils/errors';
@@ -142,7 +142,8 @@ export async function signIn(email: string, password: string): Promise<User> {
 
   const user = mapUser(data.user);
   useAuthStore.getState().setUser(user);
-  await ensureLocalUserRecord(user.id, user.email);
+  // No ensureLocalUserRecord() here — sync pull brings the user record from Supabase.
+  // Creating it locally before pull causes a diagnostic conflict on re-login.
   return user;
 }
 
@@ -185,7 +186,8 @@ export async function signOut(): Promise<void> {
     if (__DEV__) console.warn('signOut: Supabase signOut failed', error);
   }
 
-  // 2. Wipe local database
+  // 2. Wipe local database + reset sync state (requires fresh initial sync on next sign-in)
+  resetSyncState();
   try {
     await database.write(() => database.unsafeResetDatabase());
   } catch (error) {

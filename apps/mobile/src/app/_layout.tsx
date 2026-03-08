@@ -136,9 +136,12 @@ export default function RootLayout() {
     }
 
     // React to auth state changes
-    const unsubscribeAuth = useAuthStore.subscribe((state, prevState) => {
+    const unsubscribeAuth = useAuthStore.subscribe(async (state, prevState) => {
       if (state.isAuthenticated && !prevState.isAuthenticated) {
-        // Signed in → start auto-sync + initial pull
+        // Re-seed exercises if DB was wiped on sign-out (initializeExercises
+        // only ran once at mount — root layout doesn't remount on sign-in)
+        await initializeExercises();
+        // Start auto-sync + initial pull
         unsubscribeSync = setupAutoSync();
         manualSync().catch(() => {});
       } else if (!state.isAuthenticated && prevState.isAuthenticated) {

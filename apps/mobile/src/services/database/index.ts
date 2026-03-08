@@ -27,5 +27,7 @@ export {
   manualSync,
   checkUnsyncedChanges,
   syncBeforeSignOut,
+  waitForInitialSync,
+  resetSyncState,
 } from './remote/sync';
 export type { SyncStatus, SyncResult } from './remote/sync';

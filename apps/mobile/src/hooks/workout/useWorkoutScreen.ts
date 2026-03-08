@@ -18,6 +18,7 @@ import { useObservable } from '@/hooks/ui/useObservable';
 import {
   createPlan,
   createPlanDay,
+  getActivePlan,
   observeActivePlan,
   observeDominantMuscleByDays,
   observeExerciseCountsByDays,
@@ -28,6 +29,7 @@ import {
   type PlanDayWithExercises,
   type WorkoutPlan,
 } from '@/services/database/operations/plans';
+import { waitForInitialSync } from '@/services/database';
 import { useAuthStore } from '@/stores/auth/authStore';
 
 import { useAddDayDialog } from './useAddDayDialog';
@@ -46,12 +48,22 @@ export function useWorkoutScreen() {
   const [loading, setLoading] = useState(true);
   const creatingDefaultPlanRef = useRef(false);
 
-  // Create default plan if none exists
+  // Create default plan if none exists (waits for initial sync to avoid duplicates)
   const createDefaultPlanFn = useCallback(async () => {
     if (!user?.id || creatingDefaultPlanRef.current) return;
 
     creatingDefaultPlanRef.current = true;
     try {
+      // Wait for initial sync to pull existing plans from server before creating a default.
+      // Without this, sign-out → sign-in creates a duplicate plan (race condition).
+      await waitForInitialSync();
+
+      // Re-check: sync may have pulled an existing plan while we were waiting
+      const existingPlan = await getActivePlan(user.id);
+      if (existingPlan) {
+        return; // Observable will pick up the pulled plan reactively
+      }
+
       const newPlan = await createPlan({
         user_id: user.id,
         name: DEFAULT_PLAN_NAME,

@@ -67,6 +67,33 @@ export interface SyncStatus {
 // ============================================================================
 
 let isSyncing = false;
+let initialSyncCompleted = false;
+let initialSyncResolvers: Array<() => void> = [];
+let pendingTimeouts: Array<ReturnType<typeof setTimeout>> = [];
+
+/**
+ * Wait for the first sync after sign-in to complete.
+ * Resolves immediately if initial sync already ran.
+ * Used by useWorkoutScreen to avoid creating default plans
+ * before pulling existing data from the server.
+ */
+export function waitForInitialSync(): Promise<void> {
+  if (initialSyncCompleted) return Promise.resolve();
+  return new Promise((resolve) => {
+    initialSyncResolvers.push(resolve);
+    // Fallback: if sync never runs (mock auth, offline, no Supabase), don't block forever
+    const timeoutId = setTimeout(resolve, SIGN_OUT_SYNC_TIMEOUT_MS);
+    pendingTimeouts.push(timeoutId);
+  });
+}
+
+/** Reset sync state on sign-out (DB gets wiped, need fresh initial sync) */
+export function resetSyncState(): void {
+  initialSyncCompleted = false;
+  initialSyncResolvers = [];
+  for (const id of pendingTimeouts) clearTimeout(id);
+  pendingTimeouts = [];
+}
 
 function getLastSyncedAt(): number | null {
   try {
@@ -168,14 +195,22 @@ export async function sync(): Promise<SyncResult> {
 
       // Push local changes to server
       pushChanges: async ({ changes }) => {
-        // Count records to push
+        // Filter to syncable tables only — WatermelonDB sends ALL dirty tables
+        // (exercises have non-UUID IDs and are static local data, must be excluded)
+        const syncableChanges: Record<string, unknown> = {};
+        for (const table of SYNCABLE_TABLES) {
+          if (changes[table as keyof typeof changes]) {
+            syncableChanges[table] = changes[table as keyof typeof changes];
+          }
+        }
+
+        // Count records to push (from filtered set only)
         let pushCount = 0;
-        for (const table of Object.keys(changes)) {
-          const tableChanges = changes[table as keyof typeof changes] as {
-            created?: RawRecord[];
-            updated?: RawRecord[];
-            deleted?: string[];
-          };
+        for (const table of SYNCABLE_TABLES) {
+          const tableChanges = syncableChanges[table] as
+            | { created?: RawRecord[]; updated?: RawRecord[]; deleted?: string[] }
+            | undefined;
+          if (!tableChanges) continue;
           pushCount +=
             (tableChanges.created?.length || 0) +
             (tableChanges.updated?.length || 0) +
@@ -190,7 +225,7 @@ export async function sync(): Promise<SyncResult> {
         if (__DEV__) console.log('Pushing', pushCount, 'changes');
 
         const { error } = await sb!.rpc('push_changes', {
-          changes: changes,
+          changes: syncableChanges,
         });
 
         if (error) {
@@ -217,13 +252,21 @@ export async function sync(): Promise<SyncResult> {
     result.timestamp = Date.now();
     setLastSyncedAt(result.timestamp);
 
+    // Unblock waitForInitialSync() callers (e.g. useWorkoutScreen default plan creation)
+    if (!initialSyncCompleted) {
+      initialSyncCompleted = true;
+      for (const resolve of initialSyncResolvers) resolve();
+      initialSyncResolvers = [];
+      for (const id of pendingTimeouts) clearTimeout(id);
+      pendingTimeouts = [];
+    }
+
     if (__DEV__) {
       console.log('Sync completed successfully');
       console.log('Sync stats:', {
         pulled: result.pulledRecords,
         pushed: result.pushedRecords,
       });
-      console.log('Sync logs:', logger.formattedLogs);
     }
 
     return result;
@@ -231,6 +274,7 @@ export async function sync(): Promise<SyncResult> {
     const errorMessage = error instanceof Error ? error.message : String(error);
     result.errors.push(errorMessage);
     console.error('Sync failed:', errorMessage);
+    if (__DEV__) console.error('Sync logs:', logger.formattedLogs);
 
     if (error instanceof SyncError) {
       throw error;
@@ -288,11 +332,13 @@ export async function getSyncStatus(): Promise<SyncStatus> {
  */
 export function setupAutoSync(): () => void {
   let syncTimeout: ReturnType<typeof setTimeout> | null = null;
+  let isSyncScheduled = false;
 
   const debouncedSync = () => {
     if (syncTimeout) clearTimeout(syncTimeout);
 
     syncTimeout = setTimeout(async () => {
+      isSyncScheduled = false;
       try {
         await sync();
       } catch (error) {
@@ -302,7 +348,10 @@ export function setupAutoSync(): () => void {
   };
 
   const subscription = database.withChangesForTables(SYNCABLE_TABLES).subscribe(() => {
-    if (__DEV__) console.log('Data changed, scheduling sync...');
+    if (!isSyncScheduled && __DEV__) {
+      isSyncScheduled = true;
+      console.log('Data changed, scheduling sync...');
+    }
     debouncedSync();
   });
 

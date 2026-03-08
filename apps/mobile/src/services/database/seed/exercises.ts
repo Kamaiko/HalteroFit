@@ -10,12 +10,13 @@
 /* eslint-disable no-console -- All console usage is guarded by __DEV__ checks */
 import { database } from '../local';
 import ExerciseModel from '../local/models/Exercise';
+import { exerciseUuid } from '../local/generateId';
 import { mmkvStorage } from '@/services/storage';
 
 // Storage key for tracking seed version
 const EXERCISE_SEED_VERSION_KEY = 'exercise_seed_version';
 
-const SEED_VERSION = 3; // Increment to force re-seed on app update (v3: pre-processed dataset)
+const SEED_VERSION = 4; // v4: deterministic UUID IDs via exerciseUuid() for Supabase sync compatibility
 
 interface ExerciseData {
   exerciseId: string;
@@ -86,7 +87,7 @@ export async function seedExercises(): Promise<{ success: boolean; count: number
             // Cast _raw once to set fields not exposed by the typed model
             // (WatermelonDB _raw is the official way to set fields during create)
             const raw = record._raw as Record<string, unknown>;
-            raw.id = exercise.exerciseId;
+            raw.id = exerciseUuid(exercise.exerciseId);
             record.exercisedbId = exercise.exerciseId;
             record.name = exercise.name;
             record.gifUrl = exercise.gifUrl;
@@ -105,6 +106,13 @@ export async function seedExercises(): Promise<{ success: boolean; count: number
       totalInserted += batch.length;
       if (__DEV__) console.log(`Seeded ${totalInserted}/${exercises.length} exercises`);
     }
+
+    // Exercises are static local data — never synced to Supabase.
+    // Mark as 'synced' so WatermelonDB doesn't include them in pushChanges.
+    // (WatermelonDB has no "local-only table" concept — this is the documented escape hatch)
+    await database.adapter.unsafeExecute({
+      sqls: [[`UPDATE exercises SET _status = 'synced' WHERE _status = 'created'`, []]],
+    });
 
     // Mark seeding complete
     mmkvStorage.setNumber(EXERCISE_SEED_VERSION_KEY, SEED_VERSION);

@@ -31,6 +31,7 @@ jest.mock('@/services/database', () => {
       })),
     },
     syncBeforeSignOut: jest.fn(() => Promise.resolve(true)),
+    resetSyncState: jest.fn(),
   };
 });
 

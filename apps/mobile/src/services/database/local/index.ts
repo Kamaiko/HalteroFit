@@ -5,6 +5,7 @@
  * All models, schema, migrations, and adapter configuration.
  */
 
+import './generateId'; // MUST run before any database operations (sets UUID generator)
 import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
