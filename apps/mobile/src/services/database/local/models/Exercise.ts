@@ -47,14 +47,6 @@ export default class Exercise extends Model {
   // ===== Computed properties for convenience =====
 
   /**
-   * Primary muscle (first target muscle)
-   * @deprecated Use targetMuscles[0] directly
-   */
-  get primaryMuscle(): string | undefined {
-    return this.targetMuscles[0];
-  }
-
-  /**
    * Primary equipment (first equipment)
    */
   get primaryEquipment(): string | undefined {
