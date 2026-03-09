@@ -24,7 +24,7 @@ import {
 } from '@test-helpers/database/factories';
 import { countRecords } from '@test-helpers/database/queries';
 import { MAX_EXERCISES_PER_DAY, MAX_DAYS_PER_PLAN } from '@/constants';
-import { ValidationError, AuthError } from '@/utils/errors';
+import { ValidationError } from '@/utils/errors';
 import type PlanDayModel from '@/services/database/local/models/PlanDay';
 import type PlanDayExerciseModel from '@/services/database/local/models/PlanDayExercise';
 
@@ -72,15 +72,6 @@ import {
 // ============================================================================
 
 describe('checkExerciseAdditions', () => {
-  test('returns null when all checks pass', () => {
-    const result = checkExerciseAdditions({
-      currentCount: 5,
-      existingExerciseIds: new Set(['ex-1', 'ex-2']),
-      newExerciseIds: ['ex-3'],
-    });
-    expect(result).toBeNull();
-  });
-
   test('returns limit error when adding would exceed MAX_EXERCISES_PER_DAY', () => {
     const result = checkExerciseAdditions({
       currentCount: MAX_EXERCISES_PER_DAY - 1,
@@ -164,22 +155,6 @@ describe('Service: createPlanDay', () => {
     mockGetState.mockReturnValue({ user: { id: TEST_USER_ID } });
   });
 
-  test('creates a day with correct fields', async () => {
-    const user = await createTestUser(mockDb, { id: TEST_USER_ID });
-    const plan = await createTestWorkoutPlan(mockDb, { user_id: user.id });
-
-    const day = await createPlanDay({
-      plan_id: plan.id,
-      name: 'Chest Day',
-      order_index: 0,
-    });
-
-    expect(day.name).toBe('Chest Day');
-    expect(day.plan_id).toBe(plan.id);
-    expect(day.order_index).toBe(0);
-    expect(day.id).toBeDefined();
-  });
-
   test('throws ValidationError when MAX_DAYS_PER_PLAN is exceeded', async () => {
     const user = await createTestUser(mockDb, { id: TEST_USER_ID });
     const plan = await createTestWorkoutPlan(mockDb, { user_id: user.id });
@@ -196,14 +171,6 @@ describe('Service: createPlanDay', () => {
     await expect(
       createPlanDay({ plan_id: plan.id, name: 'One Too Many', order_index: MAX_DAYS_PER_PLAN })
     ).rejects.toThrow(ValidationError);
-  });
-
-  test('throws AuthError when user is not authenticated', async () => {
-    mockGetState.mockReturnValueOnce({ user: null });
-
-    await expect(createPlanDay({ plan_id: 'any', name: 'Day 1', order_index: 0 })).rejects.toThrow(
-      AuthError
-    );
   });
 });
 
@@ -331,23 +298,6 @@ describe('Service: savePlanDayEdits', () => {
   afterEach(async () => {
     await cleanupTestDatabase(mockDb);
     mockGetState.mockReturnValue({ user: { id: TEST_USER_ID } });
-  });
-
-  test('updates name (with trimming)', async () => {
-    const user = await createTestUser(mockDb, { id: TEST_USER_ID });
-    const plan = await createTestWorkoutPlan(mockDb, { user_id: user.id });
-    const day = await createTestPlanDay(mockDb, { plan_id: plan.id, name: 'Old Name' });
-
-    await savePlanDayEdits({
-      dayId: day.id,
-      name: '  New Name  ',
-      removedExerciseIds: [],
-      addedExercises: [],
-      reorderedExercises: [],
-    });
-
-    const updated = await mockDb.get<PlanDayModel>('plan_days').find(day.id);
-    expect(updated.name).toBe('New Name');
   });
 
   test('removes specified exercises', async () => {

@@ -35,7 +35,7 @@ jest.mock('@/services/database', () => {
   };
 });
 
-import { signIn, signOut, resetPassword, createSessionFromUrl } from '@/services/auth';
+import { signIn, signUp, signOut, resetPassword, createSessionFromUrl } from '@/services/auth';
 import { database } from '@/services/database';
 import { useAuthStore } from '@/stores/auth/authStore';
 import { AuthError } from '@/utils/errors';
@@ -84,6 +84,30 @@ describe('signIn', () => {
       expect((err as AuthError).code).toBe('INVALID_CREDENTIALS');
       expect((err as AuthError).userMessage).toBe('Incorrect email or password');
     }
+  });
+});
+
+describe('signUp', () => {
+  it('creates user, updates store, and ensures local user record', async () => {
+    mockSupabase.auth.signUp.mockResolvedValueOnce({
+      data: {
+        user: { id: 'new-user', email: 'new@test.com', email_confirmed_at: null },
+      },
+      error: null,
+    });
+
+    // ensureLocalUserRecord calls find (throws → not found) then create
+    const mockCreate = jest.fn(() => Promise.resolve());
+    const mockFind = jest.fn().mockRejectedValueOnce(new Error('Record not found'));
+    (database.get as jest.Mock).mockReturnValueOnce({ find: mockFind, create: mockCreate });
+
+    const user = await signUp('new@test.com', 'password123');
+
+    expect(user).toEqual({ id: 'new-user', email: 'new@test.com', emailVerified: false });
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    expect(useAuthStore.getState().user?.id).toBe('new-user');
+    // ensureLocalUserRecord should have written to the database
+    expect(mockWrite).toHaveBeenCalled();
   });
 });
 

@@ -53,11 +53,13 @@ describe('buildSavePayload', () => {
     removedIds: new Set<string>(),
   };
 
-  it('returns name only when trimmed value differs from initial', () => {
+  it('returns undefined when name is unchanged', () => {
     expect(
       buildSavePayload({ ...baseInput, dayName: 'Chest Day', initialName: 'Chest Day' }).name
     ).toBeUndefined();
+  });
 
+  it('returns trimmed name when value has changed', () => {
     expect(
       buildSavePayload({ ...baseInput, dayName: '  Back Day  ', initialName: 'Chest Day' }).name
     ).toBe('Back Day');

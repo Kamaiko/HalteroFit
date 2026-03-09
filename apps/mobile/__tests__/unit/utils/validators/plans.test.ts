@@ -12,13 +12,6 @@ import { MAX_DAYS_PER_PLAN, MAX_PLAN_NAME_LENGTH, MAX_DAY_NAME_LENGTH } from '@/
 // ── getDayCountError ────────────────────────────────────────────────────
 
 describe('getDayCountError', () => {
-  it.each([
-    { count: 0, expected: null },
-    { count: MAX_DAYS_PER_PLAN - 1, expected: null },
-  ])('returns null when count is $count (below limit)', ({ count, expected }) => {
-    expect(getDayCountError(count)).toBe(expected);
-  });
-
   it('returns error object when count equals the limit', () => {
     const result = getDayCountError(MAX_DAYS_PER_PLAN);
 

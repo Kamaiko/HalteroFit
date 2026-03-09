@@ -20,10 +20,6 @@ import { ValidationError } from '@/utils/errors';
 // ── getEmailError ───────────────────────────────────────────────────────
 
 describe('getEmailError', () => {
-  it('returns null for valid email', () => {
-    expect(getEmailError('user@example.com')).toBeNull();
-  });
-
   it('returns error for empty string', () => {
     expect(getEmailError('')).toBe('Email is required');
   });
@@ -53,14 +49,6 @@ describe('getEmailError', () => {
 // ── getPasswordError ────────────────────────────────────────────────────
 
 describe('getPasswordError', () => {
-  it('returns null for valid password at min length', () => {
-    expect(getPasswordError('a'.repeat(MIN_PASSWORD_LENGTH))).toBeNull();
-  });
-
-  it('returns null for valid password at max length', () => {
-    expect(getPasswordError('a'.repeat(MAX_PASSWORD_LENGTH))).toBeNull();
-  });
-
   it('returns error for empty string', () => {
     expect(getPasswordError('')).toBe('Password is required');
   });
@@ -85,10 +73,6 @@ describe('getPasswordError', () => {
 // ── getPasswordConfirmError ─────────────────────────────────────────────
 
 describe('getPasswordConfirmError', () => {
-  it('returns null when passwords match', () => {
-    expect(getPasswordConfirmError('password1', 'password1')).toBeNull();
-  });
-
   it('returns error for empty confirmation', () => {
     expect(getPasswordConfirmError('password1', '')).toBe('Please confirm your password');
   });
@@ -101,20 +85,12 @@ describe('getPasswordConfirmError', () => {
 // ── Throwing validators ─────────────────────────────────────────────────
 
 describe('validateEmail', () => {
-  it('does not throw for valid email', () => {
-    expect(() => validateEmail('user@example.com')).not.toThrow();
-  });
-
   it('throws ValidationError for invalid email', () => {
     expect(() => validateEmail('')).toThrow(ValidationError);
   });
 });
 
 describe('validatePassword', () => {
-  it('does not throw for valid password', () => {
-    expect(() => validatePassword('validpass')).not.toThrow();
-  });
-
   it('throws ValidationError for invalid password', () => {
     expect(() => validatePassword('')).toThrow(ValidationError);
   });

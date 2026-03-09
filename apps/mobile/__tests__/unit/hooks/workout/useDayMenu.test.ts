@@ -65,4 +65,22 @@ describe('useDayMenu', () => {
     expect(result.current.menuDay).toBeNull();
     expect(result.current.isDeleting).toBe(false);
   });
+
+  it('calls handleError and resets isDeleting when deletePlanDay rejects', async () => {
+    mockDeletePlanDay.mockRejectedValueOnce(new Error('DB locked'));
+    const { result } = renderHook(() => useDayMenu({ onDayDeleted }));
+    const day = makePlanDay('day-1', 'Pull Day');
+
+    act(() => {
+      result.current.handleDayMenuPress(day);
+    });
+
+    await act(async () => {
+      await result.current.handleConfirmDelete();
+    });
+
+    expect(mockHandleError).toHaveBeenCalledTimes(1);
+    expect(result.current.isDeleting).toBe(false);
+    expect(onDayDeleted).not.toHaveBeenCalled();
+  });
 });

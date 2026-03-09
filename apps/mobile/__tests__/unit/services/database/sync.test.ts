@@ -85,11 +85,18 @@ jest.mock('expo-router', () => ({
 // Imports (AFTER mocks)
 // ============================================================================
 
-import { sync, syncBeforeSignOut, setupAutoSync } from '@/services/database/remote/sync';
+import {
+  sync,
+  syncBeforeSignOut,
+  setupAutoSync,
+  waitForInitialSync,
+  resetSyncState,
+} from '@/services/database/remote/sync';
 import { ensureLocalUserRecord } from '@/services/auth';
 import { database as authDatabase } from '@/services/database';
 import { database as localDatabase } from '@/services/database/local';
 import { useAuthStore } from '@/stores/auth/authStore';
+import { useSyncStore } from '@/stores/sync/syncStore';
 import { synchronize, hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
 
 // Stable references to mock functions (resolved after module eval, no TDZ issue)
@@ -138,8 +145,9 @@ beforeEach(() => {
   const mockSubscribe = jest.fn(() => ({ unsubscribe: mockUnsubscribe }));
   mockLocalDbWithChanges.mockReturnValue({ subscribe: mockSubscribe });
 
-  // Reset auth store
+  // Reset auth + sync stores
   useAuthStore.getState().setUser(null);
+  resetSyncState();
 
   // Ensure supabase is non-null (in case a previous test set it to null)
   const supabaseModule = getSupabaseModule();
@@ -291,5 +299,68 @@ describe('ensureLocalUserRecord()', () => {
     await ensureLocalUserRecord('existing-user-id', 'existing@example.com');
 
     expect(mockAuthDbWrite).not.toHaveBeenCalled();
+  });
+});
+
+// ============================================================================
+// waitForInitialSync() / resetSyncState() — sync gate mechanism
+// ============================================================================
+
+describe('waitForInitialSync()', () => {
+  it('resolves after a successful sync()', async () => {
+    setAuthUser('user-1');
+
+    // Start waiting before sync runs
+    const waitPromise = waitForInitialSync();
+
+    // Run sync (mocked synchronize resolves immediately)
+    await sync();
+
+    // The wait should now resolve
+    await expect(waitPromise).resolves.toBeUndefined();
+    expect(useSyncStore.getState().initialSyncCompleted).toBe(true);
+  });
+
+  it('resolves immediately when initial sync already completed', async () => {
+    setAuthUser('user-1');
+
+    // Run sync first
+    await sync();
+    expect(useSyncStore.getState().initialSyncCompleted).toBe(true);
+
+    // waitForInitialSync should resolve immediately (no pending promise)
+    await expect(waitForInitialSync()).resolves.toBeUndefined();
+  });
+});
+
+describe('resetSyncState()', () => {
+  it('clears initialSyncCompleted so a new waitForInitialSync blocks again', async () => {
+    jest.useFakeTimers();
+    setAuthUser('user-1');
+
+    // Complete initial sync
+    await sync();
+    expect(useSyncStore.getState().initialSyncCompleted).toBe(true);
+
+    // Reset (simulates sign-out)
+    resetSyncState();
+    expect(useSyncStore.getState().initialSyncCompleted).toBe(false);
+
+    // New waitForInitialSync should NOT resolve immediately — it should block
+    // until sync runs or timeout fires
+    let resolved = false;
+    waitForInitialSync().then(() => {
+      resolved = true;
+    });
+
+    // Tick past microtasks — if it resolved immediately, resolved would be true
+    await Promise.resolve();
+    expect(resolved).toBe(false);
+
+    // Advance past the 10s timeout fallback to clean up
+    await jest.runAllTimersAsync();
+    expect(resolved).toBe(true);
+
+    jest.useRealTimers();
   });
 });
