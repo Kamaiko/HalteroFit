@@ -14,6 +14,7 @@ Step-by-step instructions for common tasks.
 
 - [Testing](guides/TESTING.md) — Write and run tests (Jest + Maestro)
 - [Database](guides/DATABASE.md) — Schema, migrations, WatermelonDB operations
+- [Sentry Setup](guides/SENTRY_SETUP.md) — Error monitoring configuration
 - [Troubleshooting](guides/TROUBLESHOOTING.md) — Common issues and fixes
 
 ## Reference
@@ -38,7 +39,7 @@ Vision, roadmap, and operational references.
 
 - [PRD](product/PRD.md) — Requirements, user stories, success metrics
 - [Backlog](product/BACKLOG.md) — Post-MVP features and enhancements
-- [Sentry Setup](product/SENTRY_SETUP.md) — Error monitoring configuration
+- [Halterofit Web](product/HALTEROFIT-WEB.md) — Web app planning and roadmap
 
 ## Project Management
 

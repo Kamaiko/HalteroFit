@@ -94,6 +94,6 @@ All project documentation lives in [`docs/`](docs/README.md), organized by the [
 
 **Mobile app — Phase 2: Plans & Routines** (in progress). Phase 1 (Exercise Library) is complete.
 
-**Web app** — planned. See [docs/HALTEROFIT-WEB.md](docs/HALTEROFIT-WEB.md) for the full planning document.
+**Web app** — planned. See [docs/product/HALTEROFIT-WEB.md](docs/product/HALTEROFIT-WEB.md) for the full planning document.
 
 See [docs/TASKS.md](docs/TASKS.md) for the full kanban board and phase roadmap.

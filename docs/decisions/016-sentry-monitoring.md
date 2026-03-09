@@ -32,4 +32,4 @@ Integrate Sentry for crash reporting and performance monitoring. Sentry is initi
 
 - Related: [ADR-001](001-expo-dev-build.md) (Development Build — Sentry's native SDK requires a dev build)
 - Implementation: `apps/mobile/src/utils/sentry.ts`, `apps/mobile/src/app/_layout.tsx`, `apps/mobile/src/hooks/ui/useErrorHandler.ts`
-- Docs: [SENTRY_SETUP.md](../product/SENTRY_SETUP.md), https://docs.sentry.io/platforms/react-native/
+- Docs: [SENTRY_SETUP.md](../guides/SENTRY_SETUP.md), https://docs.sentry.io/platforms/react-native/
