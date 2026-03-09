@@ -18,8 +18,6 @@
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.8",
-    "@halterofit/db": "workspace:*",
-    "@halterofit/validators": "workspace:*",
     "@nozbe/watermelondb": "^0.28.0",
     "@rn-primitives/label": "^1.2.0",
     "@rn-primitives/portal": "^1.3.0",
@@ -78,6 +76,7 @@
     "jest-expo": "~54.0.17",
     "msw": "^2.12.10",
     "prettier": "^3.7.4",
+    "react-dom": "19.1.0",
     "react-test-renderer": "19.1.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
