@@ -164,7 +164,7 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - Detect workouts inactive for 4+ hours
   - Show notification/dialog: "Resume or Discard?"
   - Option to save partial progress or discard
-  - Jefit pattern: See [screenshots/05-progress/05-leftover-session.png](reference/jefit/screenshots/05-progress/05-leftover-session.png)
+  - Industry standard pattern: show resume/discard dialog when workout inactive for 4+ hours
   - **Estimated effort:** ~3-4h
 - **Plate calculator** (modal from weight input showing required plates per side)
 - **Set history** (last 3-5 sets display below input for progressive overload reference)
@@ -173,7 +173,7 @@ function detectPlateauWithContext(exerciseHistory, user) {
 - **Profile image upload** (requires: expo-image-picker, Supabase Storage)
 - **Superset/circuit support** (exercise grouping with visual indicators)
 - **Form validation with Zod** (runtime schema validation for auth, settings, workout inputs)
-- **Rest timer audio cues** (3 beeps countdown before set starts, like Jefit)
+- **Rest timer audio cues** (3 beeps countdown before set starts — industry standard)
   - **Requires:** `expo-audio` - Install when implementing rest timer
   - Beep sounds at 3, 2, 1 seconds before rest ends
   - User can toggle sound on/off in settings
@@ -260,7 +260,7 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - **CDN dependency risk:** GIFs rely on `static.exercisedb.dev` (Cloudflare R2)
     - If CDN goes down, all exercise GIFs break app-wide
     - Self-hosting options: R2 (~$0.01/month) or own CDN, but AGPL license complicates commercial use
-  - **Industry benchmark:** Jefit (1,400), Strong (200), Hevy (400) all own their exercise data — none depend on external APIs
+  - **Industry benchmark:** Competitor apps (1,400+), Strong (200), Hevy (400) all own their exercise data — none depend on external APIs
   - ExerciseDB API docs state "not recommended for production integration"
   - **Evaluation criteria:** data quality, GIF availability, license, CDN stability, maintenance cost
   - **Estimated effort:** ~8-16h (research + migration script + validation)

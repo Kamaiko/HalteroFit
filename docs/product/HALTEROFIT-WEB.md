@@ -13,13 +13,13 @@
 # PARTIE 1 — Site compagnon Halterofit (Next.js 16)
 
 > Contexte : Halterofit est une app mobile React Native/Expo de workout tracking/logging avec Supabase (PostgreSQL) comme backend. 1,500+ exercices, plans d'entraînement, sets/reps logging. Phase 2 en cours, analytics Phase 6 (futur).
-> Objectif : Un site web compagnon qui se différencie de ce qui existe déjà (JEFIT, Hevy, Fitbod, etc.)
+> Objectif : Un site web compagnon qui se différencie de ce qui existe déjà (Hevy, Fitbod, competitor apps, etc.)
 
 ## Analyse compétitive — Ce qui existe déjà (ne pas refaire)
 
 | App                   | Ce qu'elle fait déjà bien                                                                           | Leur faiblesse                                                                |
 | --------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| **JEFIT**             | Exercise database SEO, web dashboard, analytics AI récent (pattern matching basique sur historique) | UI datée, AI = suggestions génériques, pas de vraie périodisation             |
+| **Competitor C**      | Exercise database SEO, web dashboard, analytics AI récent (pattern matching basique sur historique) | UI datée, AI = suggestions génériques, pas de vraie périodisation             |
 | **Hevy**              | Full web app, social feed, HevyGPT (wrapper ChatGPT), Coach platform                                | HevyGPT = chatbot générique, pas de data viz avancé, pas de 3D                |
 | **Fitbod**            | Muscle fatigue modeling, 1RM estimation, auto-programming                                           | Pas de web app, pas bon pour powerlifting/halté, pas de coach conversationnel |
 | **JuggernautAI**      | Vraie périodisation par blocs, readiness questionnaires                                             | $35/mois, mobile-only, powerlifting-only, pas de web                          |
@@ -48,9 +48,9 @@
 - **Répondre à des questions fitness** : RAG sur une base de connaissances de science de l'entraînement (pas du broscience, des études peer-reviewed).
 - **Ajuster en temps réel** : "Tu as raté tes 3 derniers sets de squat à 315. On réduit à 295 pour les 2 prochaines semaines et on remonte progressivement."
 
-**Pourquoi c'est DIFFÉRENT de JEFIT/Hevy/Fitbod :**
+**Pourquoi c'est DIFFÉRENT des apps existantes (Hevy/Fitbod/competitor apps) :**
 
-- JEFIT AI = pattern matching basique sur ton historique. Pas conversationnel, pas de contexte profond.
+- Competitor C AI = pattern matching basique sur ton historique. Pas conversationnel, pas de contexte profond.
 - HevyGPT = wrapper ChatGPT. Ne voit PAS tes données d'entraînement. Génère des programmes génériques.
 - Fitbod = algorithme fermé. Tu ne peux pas lui poser de questions ou comprendre son raisonnement.
 - **HalterCoach** = LLM avec accès COMPLET à tes données Supabase + RAG sur la science du training + raisonnement expliqué. Tu peux DIALOGUER avec ton historique.
@@ -77,7 +77,7 @@
 
 **Pourquoi c'est DIFFÉRENT :**
 
-- JEFIT a des charts 2D basiques. Personne ne fait de body mapping 3D interactif avec données réelles.
+- Les apps concurrentes ont des charts 2D basiques. Personne ne fait de body mapping 3D interactif avec données réelles.
 - Fitbod a un concept similaire (fatigue par muscle) mais c'est un diagramme 2D plat, pas un modèle 3D rotatif.
 - La visualisation 3D rend les déséquilibres ÉVIDENTS d'un coup d'oeil — impossible avec des charts.
 
@@ -104,7 +104,7 @@
 **Pourquoi c'est DIFFÉRENT :**
 
 - MuscleWiki a 1M+ visites/mois avec un concept similaire mais SANS app mobile, SANS tracking, SANS AI.
-- JEFIT a des pages d'exercices mais datées et pas rich-content.
+- Les apps concurrentes ont des pages d'exercices mais datées et pas rich-content.
 - Toi tu as l'avantage : les pages SEO → funnellent vers le download de l'app Halterofit. Chaque visiteur qui cherche "how to barbell row" arrive sur ton site, voit la qualité, download l'app.
 
 **Pourquoi Vinext :**
@@ -154,7 +154,7 @@
 
 **Pourquoi c'est DIFFÉRENT :**
 
-- L'analytics est le parent pauvre de TOUTES les apps fitness. JEFIT a des charts basiques. Hevy a des graphiques simples. Personne ne fait de data viz riche et interactif.
+- L'analytics est le parent pauvre de TOUTES les apps fitness. Les apps concurrentes ont des charts basiques. Hevy a des graphiques simples. Personne ne fait de data viz riche et interactif.
 - Le format web grand écran permet des dashboards que le mobile ne peut pas afficher.
 
 **Pourquoi Vinext :**
@@ -374,7 +374,7 @@ Le concept exact de Patrick — ajuster ta silhouette comme un character creatio
 | RP (Renaissance Periodization) | Ajustement de volume basé sur feedback (pump, soreness) | Système de règles codé par Dr. Mike Israetel. Pas d'AI du tout.                |
 | JuggernautAI                   | Périodisation par blocs + readiness                     | Algorithme fermé. Pas conversationnel.                                         |
 | HevyGPT                        | "AI workout generator"                                  | Wrapper ChatGPT. Ne voit PAS tes données. Prompt générique.                    |
-| JEFIT AI                       | "Smart analytics"                                       | Pattern matching basique sur ton historique. Pas conversationnel.              |
+| Competitor C AI                | "Smart analytics"                                       | Pattern matching basique sur ton historique. Pas conversationnel.              |
 | Smart Rabbit                   | Coach conversationnel                                   | Le plus avancé, mais pas de RAG sur la science. Focus mental health + fatigue. |
 
 ### Ce que HalterCoach ferait de DIFFÉRENT :

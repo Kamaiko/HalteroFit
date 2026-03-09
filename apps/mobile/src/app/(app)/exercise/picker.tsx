@@ -4,7 +4,7 @@
  * Full-screen multi-select exercise picker for adding exercises to a workout day.
  * Displayed outside tabs (covers entire screen including tab bar).
  *
- * @see docs/reference/jefit/screenshots/02-exercises/06-exercise-picker.png
+ * @see docs/reference/WIREFRAMES.md - Section 2.6 (Exercise Picker)
  */
 
 import { ExerciseCard, ExerciseListView } from '@/components/exercises';

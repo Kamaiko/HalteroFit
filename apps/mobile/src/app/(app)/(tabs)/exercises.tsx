@@ -3,7 +3,7 @@
  *
  * Grid of muscle groups for filtering exercises.
  *
- * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 2.1 (Muscle Selector)
+ * @see docs/reference/WIREFRAMES.md - Section 2.1 (Muscle Selector)
  */
 
 import { memo, useCallback } from 'react';

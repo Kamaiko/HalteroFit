@@ -3,7 +3,7 @@
  *
  * Placeholder for Task 2.1.3 implementation.
  *
- * @see docs/reference/jefit/screenshots/03-plans/01-all-plans.png
+ * @see docs/reference/WIREFRAMES.md - Section 3.1 (All Plans)
  */
 
 import { ScreenContainer } from '@/components/layout';

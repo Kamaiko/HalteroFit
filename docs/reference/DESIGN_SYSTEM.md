@@ -21,7 +21,7 @@ Strategic design guidelines and UI/UX patterns for building Halterofit's mobile 
 
 ### Comparison Table
 
-| Pattern                   | Strong                  | Hevy                      | Jefit                                |
+| Pattern                   | Strong                  | Hevy                      | Competitor C                         |
 | ------------------------- | ----------------------- | ------------------------- | ------------------------------------ |
 | **Active Workout Layout** | Single exercise focus   | Exercise cards with tabs  | Tri-section (video/table/timer)      |
 | **Set Logging**           | Checkmark → complete    | Checkmark → auto-timer    | Table with previous data pre-loaded  |
@@ -37,7 +37,7 @@ Strategic design guidelines and UI/UX patterns for building Halterofit's mobile 
 
 - Show last workout's weight/reps in set logging table
 - Enable one-tap to copy previous set
-- Source: Jefit, Hevy
+- Source: Hevy, competitor apps
 
 **2. Checkmark → Auto-Timer Flow**
 
@@ -50,7 +50,7 @@ Strategic design guidelines and UI/UX patterns for building Halterofit's mobile 
 - Timer auto-starts after set completion
 - Swipe down for low-profile mode
 - Sound + vibration alerts
-- Source: Jefit
+- Source: competitor apps
 
 **4. Distraction-Free Active Workout**
 
@@ -64,13 +64,13 @@ Strategic design guidelines and UI/UX patterns for building Halterofit's mobile 
 - Filter by: Body Part, Equipment, Type
 - Multiple selection support
 - Real-time search
-- Source: Jefit
+- Source: competitor apps
 
 **6. Swipe Navigation Between Exercises**
 
 - Swipe left/right to navigate exercises during active workout
 - No need to exit screen
-- Source: Jefit
+- Source: competitor apps
 
 ---
 

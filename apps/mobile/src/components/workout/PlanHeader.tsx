@@ -6,7 +6,7 @@
  * - Plan name
  * - "All Plans" button
  *
- * @see docs/reference/jefit/screenshots/03-plans/13-workout-overview-empty.png
+ * @see docs/reference/WIREFRAMES.md - Section 3.3 (Workout Overview)
  */
 
 import { LinearGradient } from 'expo-linear-gradient';

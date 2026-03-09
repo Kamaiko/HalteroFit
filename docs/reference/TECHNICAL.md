@@ -278,4 +278,4 @@ adb shell dumpsys meminfo com.halterofit.app
 
 **Tools:** [RN Directory](https://reactnative.directory/) | [Bundle Visualizer](https://www.npmjs.com/package/react-native-bundle-visualizer) | [simple-statistics](https://simplestatistics.org/)
 
-**Inspiration:** Strong, Hevy, JEFIT
+**Inspiration:** Strong, Hevy, competitor apps

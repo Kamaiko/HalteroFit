@@ -1,6 +1,6 @@
 # Wireframes & UI Specification
 
-> **Source:** Jefit app analysis (PDF reference, 36 pages)
+> **Source:** Competitor app analysis (PDF reference, 36 pages)
 > **Updated:** 2026-01-26
 > **Purpose:** UI patterns and screen specifications for Halterofit MVP
 
@@ -630,9 +630,9 @@ X Exercises
 
 ## 8. Halterofit Mapping
 
-### Jefit Screens → Halterofit
+### Reference Screens → Halterofit
 
-| Jefit Screen      | Halterofit Screen              | File                              | MVP           |
+| Reference Screen  | Halterofit Screen              | File                              | MVP           |
 | ----------------- | ------------------------------ | --------------------------------- | ------------- |
 | Discover          | HomeScreen                     | `(tabs)/index.tsx`                | Simplifié     |
 | Muscle Selector   | ExerciseSelectorScreen         | `(tabs)/exercises/index.tsx`      | Show All only |
@@ -663,4 +663,4 @@ X Exercises
 
 ---
 
-_Document généré à partir de l'analyse du PDF Jefit de référence._
+_Document généré à partir de l'analyse de PDF de référence concurrentielle._

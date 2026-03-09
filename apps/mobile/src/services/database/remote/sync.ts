@@ -371,7 +371,7 @@ export async function manualSync(): Promise<SyncResult> {
 }
 
 /**
- * Best-effort sync before sign-out (Jefit-style).
+ * Best-effort sync before sign-out.
  * Attempts to push unsynced changes with a timeout.
  * Never throws — returns false if sync fails.
  */

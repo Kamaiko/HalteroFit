@@ -6,9 +6,7 @@
  *
  * Displayed outside tabs (covers entire screen including tab bar).
  *
- * @see docs/reference/jefit/screenshots/03-plans/17-edit-day-empty.png
- * @see docs/reference/jefit/screenshots/03-plans/18-edit-day-full.png
- * @see docs/reference/jefit/screenshots/03-plans/EditDayDragndrop.png
+ * @see docs/reference/WIREFRAMES.md - Section 3.5 (Edit Day)
  */
 
 import DraggableFlatList, {

@@ -9,8 +9,7 @@
  *
  * Displayed outside tabs (covers entire screen including tab bar).
  *
- * @see docs/reference/jefit/screenshots/Description_exercice1.png
- * @see docs/reference/jefit/screenshots/Description_exercice2.png
+ * @see docs/reference/WIREFRAMES.md - Section 2.3 (Exercise Detail)
  */
 
 import { useLocalSearchParams } from 'expo-router';

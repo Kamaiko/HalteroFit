@@ -6,7 +6,7 @@
  * NOTE: Uses React.forwardRef instead of React 19 ref-as-prop because
  * @gorhom/bottom-sheet internally inspects the component type.
  *
- * @see docs/reference/jefit/JEFIT_UI_SPEC.md - Section 7.2 (BottomSheet)
+ * @see docs/reference/WIREFRAMES.md - Section 7.2 (BottomSheet)
  */
 
 import { Colors } from '@/constants';

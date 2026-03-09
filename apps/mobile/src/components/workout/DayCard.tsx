@@ -9,7 +9,7 @@
  * - Estimated time & exercise count
  * - Menu button (...)
  *
- * @see docs/reference/jefit/screenshots/03-plans/Jefit_v2_ Overview.png
+ * @see docs/reference/WIREFRAMES.md - Section 3.2 (Day Card)
  */
 
 import { memo, useCallback } from 'react';

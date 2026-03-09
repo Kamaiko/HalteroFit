@@ -173,7 +173,7 @@ export async function signUp(email: string, password: string): Promise<User> {
 }
 
 export async function signOut(): Promise<void> {
-  // 0. Best-effort sync before wipe (Jefit-style: data should already be in cloud)
+  // 0. Best-effort sync before wipe (data should already be in cloud before local wipe)
   const synced = await syncBeforeSignOut();
   if (!synced && __DEV__) {
     console.warn('signOut: pre-wipe sync failed — unsynced data may be lost');

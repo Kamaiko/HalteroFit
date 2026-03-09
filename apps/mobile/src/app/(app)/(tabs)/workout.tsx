@@ -1,7 +1,7 @@
 /**
  * WorkoutScreen - Main workout tab showing active plan
  *
- * @see docs/reference/jefit/screenshots/03-plans/
+ * @see docs/reference/WIREFRAMES.md - Section 3 (Plans & Workout)
  */
 
 import { router } from 'expo-router';

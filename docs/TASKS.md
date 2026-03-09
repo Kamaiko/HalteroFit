@@ -38,7 +38,7 @@ Actionable tasks with Kanban tracking.
 <details>
 <summary><b>1.0: Documentation & Wireframes</b> • 1 task ✅</summary>
 
-- [x] **1.0.1** Create wireframes documentation from Jefit analysis (L - 6h)
+- [x] **1.0.1** Create wireframes documentation from competitor app analysis (L - 6h)
       Deliverables: [WIREFRAMES.md](./reference/WIREFRAMES.md) (620 lines), 35 screenshots
       Files: docs/reference/WIREFRAMES.md, docs/\_local/screenshots/
 
@@ -154,7 +154,7 @@ Actionable tasks with Kanban tracking.
       For AllPlansScreen grid
 
 - [ ] **2.3.4** Day tags on DayCard (S - 1h) `[src/components/workout/DayCard.tsx]`
-      Add "Day 1", "Day 2" badges to DayCard (Jefit v2 style)
+      Add "Day 1", "Day 2" badges to DayCard (industry standard style)
 
 - [x] **2.3.5** Drag-to-reorder workout days ✅ `[src/components/workout/WorkoutOverviewContent.tsx]`
       DraggableFlatList integration, reorderPlanDays() DB operation, DragHandle cleanup.
@@ -683,7 +683,7 @@ Actionable tasks with Kanban tracking.
 
 > Bidirectional sync using WatermelonDB's `synchronize()` protocol with Supabase Postgres RPCs.
 > 7 tables synced (exercises excluded — static data). Auto-sync on data changes (2s debounce),
-> full pull on sign-in, best-effort sync before sign-out (10s timeout, Jefit-style).
+> full pull on sign-in, best-effort sync before sign-out (10s timeout, best-effort).
 
 ### Tasks
 
@@ -765,7 +765,7 @@ Actionable tasks with Kanban tracking.
 > **Research note (2026-02-13):** Hybrid approach decided.
 >
 > - **Full body diagram (6.3.2):** Use `react-native-body-highlighter` (Expo compatible, SVG, front/back, male/female, muscle highlighting by slug). Requires mapping DB `target_muscles` → package slugs. **Will be implemented in the next section.**
-> - **Muscle group icons (6.3.1):** Source ~11 static SVG icons from Flaticon/Vecteezy (body-highlighter renders full body only, cannot crop to individual regions). Style: circular cropped anatomy like Jefit.
+> - **Muscle group icons (6.3.1):** Source ~11 static SVG icons from Flaticon/Vecteezy (body-highlighter renders full body only, cannot crop to individual regions). Style: circular cropped anatomy icons.
 > - **No all-in-one package exists** for both use cases.
 
 - [x] **6.3.1** Create 11 muscle group icon set `[L]` ✅
