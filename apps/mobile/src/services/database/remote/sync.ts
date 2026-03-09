@@ -29,6 +29,7 @@ import type { SyncableTableName } from './types';
 // ============================================================================
 
 const AUTO_SYNC_DEBOUNCE_MS = 2000;
+const INITIAL_SYNC_TIMEOUT_MS = 10_000;
 const SIGN_OUT_SYNC_TIMEOUT_MS = 10_000;
 
 /** All tables included in WatermelonDB↔Supabase sync */
@@ -79,7 +80,7 @@ export function waitForInitialSync(): Promise<void> {
   return new Promise((resolve) => {
     initialSyncResolvers.push(resolve);
     // Fallback: if sync never runs (mock auth, offline, no Supabase), don't block forever
-    const timeoutId = setTimeout(resolve, SIGN_OUT_SYNC_TIMEOUT_MS);
+    const timeoutId = setTimeout(resolve, INITIAL_SYNC_TIMEOUT_MS);
     pendingTimeouts.push(timeoutId);
   });
 }

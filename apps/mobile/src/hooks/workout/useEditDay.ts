@@ -85,7 +85,7 @@ export function useEditDay(dayId: string | undefined) {
 
   // ── Dirty detection ────────────────────────────────────────────────────
   const isDirty = useMemo(() => {
-    if (dayName !== initialNameRef.current) return true;
+    if (dayName.trim() !== initialNameRef.current.trim()) return true;
 
     const currentIds = exercises.map((e) => e.id);
     const initialIds = initialExerciseIdsRef.current;

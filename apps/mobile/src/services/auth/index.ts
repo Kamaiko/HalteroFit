@@ -277,11 +277,16 @@ export function setupAuthListener(): () => void {
         // Refresh from server — email verification status may differ from cached JWT
         // (per Supabase docs: dispatch after callback via setTimeout)
         setTimeout(() => {
-          sb.auth.getUser().then(({ data }) => {
-            if (data.user) {
-              useAuthStore.getState().setUser(mapUser(data.user));
-            }
-          });
+          sb.auth
+            .getUser()
+            .then(({ data }) => {
+              if (data.user) {
+                useAuthStore.getState().setUser(mapUser(data.user));
+              }
+            })
+            .catch((error) => {
+              if (__DEV__) console.warn('Auth listener: getUser refresh failed', error);
+            });
         }, 0);
       } else if (event === 'INITIAL_SESSION') {
         // No session at startup → clear any stale persisted state
