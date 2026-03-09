@@ -295,6 +295,13 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - No code changes needed — purely dashboard configuration
   - **Estimated effort:** ~1-2h (account setup + DNS verification + template testing)
   - **Dependencies:** Domain DNS access, pre-launch timing
+- **Social Login Providers (OAuth)** (Pre-MVP — see TASKS.md 4.2.6)
+  - Google + Apple: required before production (Apple mandatory if any social login offered — App Store Guideline 4.8)
+  - Facebook: deferred post-launch (requires Meta App Review)
+  - Supabase supports all three natively — config in Dashboard → Auth → Providers
+  - Expo: `expo-auth-session` or `expo-web-browser` for OAuth flows
+  - **Estimated effort:** ~2-4h per provider (config + UI + testing)
+  - **Dependencies:** Auth system (4.2.2)
 - **Multi-language support (i18n)** - Defer until international expansion
 - **Social features** (share workouts, follow friends) - Defer until user base >1,000
 - **Coach-client relationship** (team accounts) - Defer until B2B validation
