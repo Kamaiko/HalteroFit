@@ -519,6 +519,19 @@ Actionable tasks with Kanban tracking.
       Files: TBD (src/app/(auth)/onboarding.tsx or similar)
       Deps: 4.2.2, 4.3.3 (shares profile fields schema)
 
+### 4.2.6: OAuth Providers (Google + Apple)
+
+> Social login required before production. Apple Sign-In is mandatory on iOS
+> if any social login is offered (App Store Guideline 4.8).
+
+- [ ] **4.2.6** Implement OAuth providers (Google + Apple) `[M]`
+      Google Sign-In + Apple Sign-In via Supabase Auth providers.
+      UI: social login buttons on sign-in/sign-up screens with "or" divider.
+      Supabase: enable providers in Dashboard → Auth → Providers.
+      Expo: `expo-auth-session` or `expo-web-browser` for OAuth flows.
+      Files: src/app/(auth)/sign-in.tsx, src/app/(auth)/sign-up.tsx, src/services/auth/index.ts
+      Deps: 4.2.2
+
 ### 4.3: Settings & Profile
 
 > Settings screen, rest timer config, profile page, unit system, logout.

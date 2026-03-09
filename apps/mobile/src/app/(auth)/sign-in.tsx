@@ -78,7 +78,7 @@ export default function SignInScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
       >
-        <View className="flex-1 items-center justify-center px-6">
+        <View className="flex-1 items-center pt-52 px-6">
           <BrandIcon size={80} color="#fff" />
           {/* HALTEROFIT wordmark */}
           <Image
