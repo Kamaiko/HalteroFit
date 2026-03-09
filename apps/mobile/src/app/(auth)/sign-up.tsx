@@ -8,6 +8,7 @@
 import { useRef, useState } from 'react';
 import {
   View,
+  Image,
   TextInput,
   KeyboardAvoidingView,
   Platform,
@@ -19,6 +20,9 @@ import { ScreenContainer } from '@/components/layout';
 import { Ionicons } from '@/components/ui/icon';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import { Button } from '@/components/ui/button';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const wordmark = require('../../../assets/branding/wordmark.png') as number;
 import { Text } from '@/components/ui/text';
 import { Input } from '@/components/ui/input';
 import { Colors } from '@/constants';
@@ -75,10 +79,13 @@ export default function SignUpScreen() {
         className="flex-1"
       >
         <View className="flex-1 items-center justify-center px-6">
-          <BrandIcon size={48} color={Colors.primary.DEFAULT} />
-          <Text variant="h3" className="mt-4 mb-6 border-b-0">
-            Create Account
-          </Text>
+          <BrandIcon size={80} color="#fff" />
+          {/* HALTEROFIT wordmark */}
+          <Image
+            source={wordmark}
+            style={{ width: 240, height: 40, marginTop: 12, marginBottom: 24 }}
+            resizeMode="contain"
+          />
 
           <View className="w-full max-w-sm gap-4">
             <Input

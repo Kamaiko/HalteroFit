@@ -19,11 +19,11 @@ Actionable tasks with Kanban tracking.
 
 | TODO (Top 5)                         | DOING                                  | DONE (Last 5)                       |
 | ------------------------------------ | -------------------------------------- | ----------------------------------- |
-| **2.1.3** AllPlansScreen `[M]`       | **UX** Popup/BottomSheet visual rework | **SYNC** WatermelonDB↔Supabase sync |
-| **2.1.5** CreateEditPlanScreen `[S]` |                                        | **4.2** Auth Service & Testing      |
-| **2.3.3** PlanCard component `[S]`   |                                        | **4.1** Auth Screens                |
+| **2.1.3** AllPlansScreen `[M]`       | **UX** Popup/BottomSheet visual rework | **FIX** Sync guards + dev mode      |
+| **2.1.5** CreateEditPlanScreen `[S]` |                                        | **SYNC** WatermelonDB↔Supabase sync |
+| **2.3.3** PlanCard component `[S]`   |                                        | **4.2** Auth Service & Testing      |
+|                                      |                                        | **4.1** Auth Screens                |
 |                                      |                                        | **2.1.4** EditDayScreen             |
-|                                      |                                        | **2.1.6** AddDayDialog              |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
