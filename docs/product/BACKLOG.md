@@ -244,6 +244,13 @@ function detectPlateauWithContext(exerciseHistory, user) {
 
 **Priority:** AS NEEDED
 
+- **Remove manual memoization** (LOW - When confident in React Compiler)
+  - React Compiler enabled (`app.json > experiments > reactCompiler: true`)
+  - Currently coexists with ~30 `memo()`, ~40 `useCallback`, ~20 `useMemo` as safety net
+  - Gradually remove manual memoization once the compiler is proven stable in production
+  - Use React DevTools `Memo ✨` badge to verify compiler is optimizing components
+  - **Estimated effort:** ~2-3h (incremental, low risk)
+  - **Dependencies:** React Compiler running stable for several releases
 - **Observable pattern for plan data** (HIGH - Phase 5)
   - Current: Manual refetch triggers in useWorkoutScreen.ts (workaround)
   - Target: Use WatermelonDB observables for planDays and exerciseCounts

@@ -688,6 +688,21 @@ pnpm resolves peer dependencies differently than npm. The project `.npmrc` at th
 
 ## Performance Issues
 
+### FlashList 2.x — `estimatedItemSize` Removed
+
+**Symptoms:**
+
+- TypeScript error: `Property 'estimatedItemSize' does not exist on type 'FlashListProps'`
+- Adding `estimatedItemSize` prop causes build failure
+
+**Cause:**
+
+FlashList 2.0 removed the `estimatedItemSize` prop. The component now auto-calculates item sizes internally. Many tutorials and AI-generated code still reference FlashList 1.x API which required this prop.
+
+**Solution:**
+
+Do not add `estimatedItemSize`. FlashList 2.x handles sizing automatically — no action needed.
+
 ### App Slow or Laggy
 
 **Symptoms:**
