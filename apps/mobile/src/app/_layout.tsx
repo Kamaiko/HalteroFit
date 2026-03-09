@@ -16,7 +16,7 @@ import { useAuthStore, enableDevMode } from '@/stores/auth/authStore';
 import { supabase } from '@/services/supabase';
 import { setupAuthListener, createSessionFromUrl, mapUser } from '@/services/auth';
 import { initializeExercises } from '@/services/database/seed';
-import { setupAutoSync, manualSync } from '@/services/database';
+import { setupAutoSync, manualSync, resolveInitialSync } from '@/services/database';
 import '../../global.css';
 
 // Keep native splash visible until app is ready
@@ -48,6 +48,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (IS_MOCK_AUTH) {
       enableDevMode();
+      resolveInitialSync(); // No sync in dev mode
       initSentry();
       initializeExercises()
         .then(() => setIsReady(true))
@@ -127,6 +128,8 @@ export default function RootLayout() {
 
   // Start/stop auto-sync based on auth state
   useEffect(() => {
+    if (IS_MOCK_AUTH) return; // No Supabase session in dev mode
+
     let unsubscribeSync: (() => void) | undefined;
 
     // If already authenticated at mount, start sync immediately

@@ -71,6 +71,7 @@ export function createTestDatabase(): Database {
     // LokiJS-specific options (optimized for tests)
     useWebWorker: false, // Disable web worker for faster execution in Node.js
     useIncrementalIndexedDB: false, // Not needed for in-memory tests
+    extraLokiOptions: { autosave: false }, // Prevent 500ms setInterval that keeps Jest alive
   });
 
   return new Database({
@@ -94,12 +95,10 @@ export function createTestDatabase(): Database {
  * Call this in afterEach() to ensure test isolation between tests.
  * Uses unsafeResetDatabase() which is faster than dropping/recreating.
  *
- * Database Lifecycle Best Practice:
- * - LokiJS adapter does not provide a close() method (by design)
+ * Database Lifecycle:
+ * - LokiJS autosave is disabled (extraLokiOptions) to prevent open handles
  * - Use shared database instance pattern (one DB per test suite via beforeAll)
- * - This prevents handle leaks by creating worker instances only once
- * - Jest automatically cleans up when the test suite completes
- * - This is the industry-standard pattern for in-memory database testing
+ * - cleanupTestDatabase() resets data between tests
  *
  * @param {Database} database - Database instance to clean
  *

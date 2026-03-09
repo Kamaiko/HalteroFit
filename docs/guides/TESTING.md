@@ -114,7 +114,7 @@ Import via `@test-helpers/*` aliases configured in `jest.config.ts` and `tsconfi
 
 ## CI Integration
 
-Tests run on every pull request via GitHub Actions. Two required checks execute in parallel: **Lint** (ESLint, Prettier, TypeScript, Expo Doctor) and **Test** (Jest with coverage). `forceExit: true` is configured in `jest.config.ts` because LokiJS workers do not close gracefully — this is expected behavior.
+Tests run on every pull request via GitHub Actions. Two required checks execute in parallel: **Lint** (ESLint, Prettier, TypeScript, Expo Doctor) and **Test** (Jest with coverage). LokiJS autosave is disabled in the test adapter (`extraLokiOptions: { autosave: false }`) to prevent open handles that would keep Jest alive.
 
 See [PIPELINE.md](../reference/PIPELINE.md) for full CI/CD details.
 
@@ -122,10 +122,10 @@ See [PIPELINE.md](../reference/PIPELINE.md) for full CI/CD details.
 
 ## Troubleshooting
 
-| Error                                                       | Root Cause                     | Fix                                                        |
-| ----------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------- |
-| `Cannot find module '@test-helpers/...'`                    | Alias not configured           | Add to `jest.config.ts` + `tsconfig.json` paths            |
-| `LokiJS: Table 'workouts' not found`                        | Database not initialized       | Add `createTestDatabase()` in `beforeAll`                  |
-| `Test IDs inconsistent between runs`                        | `resetTestIdCounter()` missing | Call in `beforeAll()` after `createTestDatabase()`         |
-| `Jest hangs or won't exit`                                  | Too many database instances    | Use shared instance pattern (`beforeAll` not `beforeEach`) |
-| `Jest did not exit one second after the test run completed` | LokiJS workers remain open     | Already handled: `forceExit: true` in `jest.config.ts`     |
+| Error                                                       | Root Cause                     | Fix                                                           |
+| ----------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------- |
+| `Cannot find module '@test-helpers/...'`                    | Alias not configured           | Add to `jest.config.ts` + `tsconfig.json` paths               |
+| `LokiJS: Table 'workouts' not found`                        | Database not initialized       | Add `createTestDatabase()` in `beforeAll`                     |
+| `Test IDs inconsistent between runs`                        | `resetTestIdCounter()` missing | Call in `beforeAll()` after `createTestDatabase()`            |
+| `Jest hangs or won't exit`                                  | Too many database instances    | Use shared instance pattern (`beforeAll` not `beforeEach`)    |
+| `Jest did not exit one second after the test run completed` | LokiJS autosave timer open     | Fixed: autosave disabled in test adapter (`extraLokiOptions`) |

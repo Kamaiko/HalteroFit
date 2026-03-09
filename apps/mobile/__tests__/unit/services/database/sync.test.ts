@@ -13,7 +13,14 @@
 // ============================================================================
 
 jest.mock('@/services/supabase', () => ({
-  supabase: { rpc: jest.fn() },
+  supabase: {
+    rpc: jest.fn(),
+    auth: {
+      getSession: jest.fn(() =>
+        Promise.resolve({ data: { session: { access_token: 'mock-token' } }, error: null })
+      ),
+    },
+  },
 }));
 
 jest.mock('@/services/storage', () => ({

@@ -84,6 +84,16 @@ export function waitForInitialSync(): Promise<void> {
   });
 }
 
+/** Resolve all pending waitForInitialSync() callers and mark initial sync as done. */
+export function resolveInitialSync(): void {
+  if (useSyncStore.getState().initialSyncCompleted) return;
+  useSyncStore.getState().markInitialSyncCompleted();
+  for (const resolve of initialSyncResolvers) resolve();
+  initialSyncResolvers = [];
+  for (const id of pendingTimeouts) clearTimeout(id);
+  pendingTimeouts = [];
+}
+
 /** Reset sync state on sign-out (DB gets wiped, need fresh initial sync) */
 export function resetSyncState(): void {
   useSyncStore.getState().reset();
@@ -121,6 +131,15 @@ export async function sync(): Promise<SyncResult> {
   // Guard: Supabase must be configured
   if (!supabase) {
     if (__DEV__) console.log('Sync skipped — Supabase not configured');
+    return result;
+  }
+
+  // Guard: must have active Supabase session (JWT)
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) {
+    if (__DEV__) console.log('Sync skipped — no active session');
     return result;
   }
 
@@ -233,13 +252,7 @@ export async function sync(): Promise<SyncResult> {
     useSyncStore.getState().setLastSyncedAt(result.timestamp);
 
     // Unblock waitForInitialSync() callers (e.g. useWorkoutScreen default plan creation)
-    if (!useSyncStore.getState().initialSyncCompleted) {
-      useSyncStore.getState().markInitialSyncCompleted();
-      for (const resolve of initialSyncResolvers) resolve();
-      initialSyncResolvers = [];
-      for (const id of pendingTimeouts) clearTimeout(id);
-      pendingTimeouts = [];
-    }
+    resolveInitialSync();
 
     if (__DEV__) {
       console.log('Sync completed successfully');
@@ -363,6 +376,7 @@ export async function manualSync(): Promise<SyncResult> {
  * Never throws — returns false if sync fails.
  */
 export async function syncBeforeSignOut(): Promise<boolean> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   try {
     const hasChanges = await checkUnsyncedChanges();
     if (!hasChanges) {
@@ -372,9 +386,12 @@ export async function syncBeforeSignOut(): Promise<boolean> {
 
     if (__DEV__) console.log('Syncing before sign-out...');
 
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Pre-signout sync timeout')), SIGN_OUT_SYNC_TIMEOUT_MS)
-    );
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(
+        () => reject(new Error('Pre-signout sync timeout')),
+        SIGN_OUT_SYNC_TIMEOUT_MS
+      );
+    });
     await Promise.race([sync(), timeoutPromise]);
 
     if (__DEV__) console.log('Pre-signout sync succeeded');
@@ -382,5 +399,7 @@ export async function syncBeforeSignOut(): Promise<boolean> {
   } catch (error) {
     if (__DEV__) console.warn('Pre-signout sync failed:', error);
     return false;
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
   }
 }

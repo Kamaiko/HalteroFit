@@ -21,11 +21,6 @@ const config: Config = {
   maxWorkers: '50%',
   verbose: process.env.CI === 'true',
 
-  // Force exit after tests complete
-  // Required for WatermelonDB/LokiJS which keeps worker threads open
-  // See: docs/guides/TESTING.md#troubleshooting
-  forceExit: true,
-
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',

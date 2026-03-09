@@ -17,10 +17,11 @@ import {
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/layout';
 import { Ionicons } from '@/components/ui/icon';
+import { BrandIcon } from '@/components/ui/brand-icon';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Input } from '@/components/ui/input';
-import { Colors, ICON_SIZE_3XL } from '@/constants';
+import { Colors } from '@/constants';
 import { signUp } from '@/services/auth';
 import { getEmailError, getPasswordError, getPasswordConfirmError } from '@/utils/validators';
 import { isOperationalError } from '@/utils/errors';
@@ -74,7 +75,7 @@ export default function SignUpScreen() {
         className="flex-1"
       >
         <View className="flex-1 items-center justify-center px-6">
-          <Ionicons name="barbell-outline" size={ICON_SIZE_3XL} color={Colors.primary.DEFAULT} />
+          <BrandIcon size={48} color={Colors.primary.DEFAULT} />
           <Text variant="h3" className="mt-4 mb-6 border-b-0">
             Create Account
           </Text>

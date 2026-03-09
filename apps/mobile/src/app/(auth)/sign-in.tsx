@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Colors, BORDER_RADIUS_MD } from '@/constants';
 import { enableDevMode } from '@/stores/auth/authStore';
 import { signIn } from '@/services/auth';
+import { resolveInitialSync } from '@/services/database';
 import { getEmailError, getPasswordError } from '@/utils/validators';
 import { isOperationalError } from '@/utils/errors';
 
@@ -67,6 +68,7 @@ export default function SignInScreen() {
 
   const handleDevMode = () => {
     enableDevMode();
+    resolveInitialSync(); // No real sync in dev mode
     router.replace('/');
   };
 
