@@ -227,8 +227,8 @@ export function useWorkoutScreen() {
     selectedDayId: selectedDay?.id,
   });
 
-  // ── Day reorder ────────────────────────────────────────────────────
-  const reorderDaysOptimistic = useCallback(
+  // ── Day reorder (via menu buttons) ─────────────────────────────────
+  const reorderDays = useCallback(
     async (reorderedDays: PlanDay[]) => {
       try {
         const updates = reorderedDays.map((day, index) => ({
@@ -241,6 +241,36 @@ export function useWorkoutScreen() {
       }
     },
     [handleError]
+  );
+
+  const handleMoveDayUp = useCallback(
+    async (day: PlanDay) => {
+      const index = planDays.findIndex((d) => d.id === day.id);
+      if (index <= 0) return;
+      const reordered = [...planDays];
+      const prev = reordered[index - 1];
+      const curr = reordered[index];
+      if (!prev || !curr) return;
+      reordered[index - 1] = curr;
+      reordered[index] = prev;
+      await reorderDays(reordered);
+    },
+    [planDays, reorderDays]
+  );
+
+  const handleMoveDayDown = useCallback(
+    async (day: PlanDay) => {
+      const index = planDays.findIndex((d) => d.id === day.id);
+      if (index < 0 || index >= planDays.length - 1) return;
+      const reordered = [...planDays];
+      const curr = reordered[index];
+      const next = reordered[index + 1];
+      if (!curr || !next) return;
+      reordered[index] = next;
+      reordered[index + 1] = curr;
+      await reorderDays(reordered);
+    },
+    [planDays, reorderDays]
   );
 
   // ── Return composed state ───────────────────────────────────────────
@@ -257,7 +287,8 @@ export function useWorkoutScreen() {
     exerciseCounts,
     dominantMuscleGroups,
     handleDayPress,
-    reorderDaysOptimistic,
+    handleMoveDayUp,
+    handleMoveDayDown,
 
     // Sub-hook spreads
     ...dayMenu,

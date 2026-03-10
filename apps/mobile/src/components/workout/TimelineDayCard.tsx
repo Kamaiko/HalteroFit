@@ -2,35 +2,32 @@
  * TimelineDayCard - Accordion day card for the workout timeline
  *
  * Handles both collapsed and expanded states in a single component.
- * Collapsed: drag handle + muscle icon + day name/stats + menu
- * Expanded: header + exercise list + add exercise button
+ * Collapsed: muscle icon + day name/stats + menu
+ * Expanded: header + exercise list (FlashList) + add exercise button
  *
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
 import { BrandIcon } from '@/components/ui/brand-icon';
-import { Ionicons, MaterialIcons } from '@/components/ui/icon';
+import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import {
   Colors,
-  CARD_ACTIVE_STYLE,
   DEFAULT_TARGET_SETS,
   DURATION_FAST,
-  DURATION_STANDARD,
   ICON_SIZE_XS,
-  ICON_SIZE_MD,
   ICON_SIZE_LG,
   ICON_SIZE_3XL,
 } from '@/constants';
 import type { PlanDay } from '@/services/database/operations/plans';
 
 import { DayExerciseCard, type DayExercise } from './DayExerciseCard';
-import { DragHandle } from './DragHandle';
 import { SwipeableContext, type SwipeableContextValue } from './SwipeableContext';
 
 // ── Constants ───────────────────────────────────────────────────────────
@@ -38,8 +35,6 @@ const MUSCLE_ICON_SIZE = ICON_SIZE_3XL; // 64px
 const CARD_BORDER_RADIUS = 14;
 const COLLAPSED_BG = Colors.background.surface;
 const EXPANDED_BORDER_COLOR = Colors.border.light;
-const STAGGER_DELAY = 40;
-const MAX_STAGGER = 300;
 
 // ── Props ───────────────────────────────────────────────────────────────
 interface TimelineDayCardProps {
@@ -49,7 +44,6 @@ interface TimelineDayCardProps {
   isExpanded: boolean;
   exercises: DayExercise[];
   loadingExercises: boolean;
-  showDragHandle: boolean;
   isActiveWorkout?: boolean;
 
   onPress: (day: PlanDay) => void;
@@ -57,16 +51,12 @@ interface TimelineDayCardProps {
   onStartWorkout?: () => void;
   onAddExercisePress: () => void;
   onExerciseImagePress: (exercise: DayExercise) => void;
-  onEditExercise?: (exercise: DayExercise) => void;
+  onEditDay?: () => void;
   onDeleteExercise?: (exercise: DayExercise) => void;
 
-  drag?: () => void;
-  isActive?: boolean;
   deletingExerciseId?: string | null;
   onDeleteAnimationComplete?: () => void;
 }
-
-// ── Helpers ─────────────────────────────────────────────────────────────
 
 // ── Component ───────────────────────────────────────────────────────────
 
@@ -77,17 +67,14 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   isExpanded,
   exercises,
   loadingExercises,
-  showDragHandle,
   isActiveWorkout,
   onPress,
   onMenuPress,
   onStartWorkout,
   onAddExercisePress,
   onExerciseImagePress,
-  onEditExercise,
+  onEditDay,
   onDeleteExercise,
-  drag,
-  isActive,
   deletingExerciseId,
   onDeleteAnimationComplete,
 }: TimelineDayCardProps) {
@@ -98,7 +85,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     [openSwipeableId]
   );
 
-  // ── Callbacks ──────────────────────────────────────────────────────
   const handlePress = useCallback(() => {
     onPress(day);
   }, [day, onPress]);
@@ -112,18 +98,38 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     onAddExercisePress();
   }, [onAddExercisePress]);
 
+  // ── Exercise list renderItem ────────────────────────────────────────
+  const renderExerciseItem = useCallback(
+    ({ item }: ListRenderItemInfo<DayExercise>) => (
+      <DayExerciseCard
+        exercise={item}
+        onImagePress={onExerciseImagePress}
+        onDelete={onDeleteExercise}
+        isDeleting={item.id === deletingExerciseId}
+        onDeleteAnimationComplete={onDeleteAnimationComplete}
+      />
+    ),
+    [onExerciseImagePress, onDeleteExercise, deletingExerciseId, onDeleteAnimationComplete]
+  );
+
+  const exerciseKeyExtractor = useCallback((item: DayExercise) => item.id, []);
+
   // ── Animated styles ────────────────────────────────────────────────
+  // useSharedValue persists across re-renders — animation won't restart
+  // when unrelated state changes (e.g. loadingExercises).
+  const expandedProgress = useSharedValue(isExpanded ? 0 : 1);
+
+  useEffect(() => {
+    expandedProgress.value = withTiming(isExpanded ? 0 : 1, { duration: DURATION_FAST });
+  }, [isExpanded, expandedProgress]);
+
   const muscleIconStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(isExpanded ? 0 : 1, { duration: DURATION_FAST }),
-    width: withTiming(isExpanded ? 0 : MUSCLE_ICON_SIZE, { duration: DURATION_FAST }),
+    opacity: expandedProgress.value,
+    width: expandedProgress.value * MUSCLE_ICON_SIZE,
     overflow: 'hidden' as const,
   }));
 
-  const dragHandleOpacity = useAnimatedStyle(() => ({
-    opacity: withTiming(showDragHandle ? 1 : 0, { duration: DURATION_FAST }),
-  }));
-
-  // ── Stats text (stable — uses exerciseCount from observable, no flicker) ──
+  // ── Stats text ────────────────────────────────────────────────────
   const setsDisplay = exerciseCount * DEFAULT_TARGET_SETS;
   const statsText = `${setsDisplay} sets · ${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}`;
 
@@ -132,7 +138,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     styles.card,
     isExpanded && styles.cardExpanded,
     isActiveWorkout && styles.cardActiveWorkout,
-    isActive ? CARD_ACTIVE_STYLE : undefined,
   ];
 
   return (
@@ -149,11 +154,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
 
         {/* ── Header row ─────────────────────────────────────────── */}
         <View style={styles.headerRow}>
-          {/* Drag handle — always rendered, opacity controlled */}
-          <Animated.View style={[styles.dragHandleWrapper, dragHandleOpacity]}>
-            <DragHandle onDrag={showDragHandle ? drag : undefined} />
-          </Animated.View>
-
           {/* Muscle icon — fades out when expanded */}
           <Animated.View style={[styles.muscleIconWrapper, muscleIconStyle]}>
             {dominantMuscleGroupId ? (
@@ -196,9 +196,9 @@ export const TimelineDayCard = memo(function TimelineDayCard({
             accessibilityRole="button"
             accessibilityLabel="Day options menu"
           >
-            <MaterialIcons
-              name="more-horiz"
-              size={ICON_SIZE_MD}
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={ICON_SIZE_XS}
               color={Colors.foreground.secondary}
             />
           </Pressable>
@@ -227,26 +227,12 @@ export const TimelineDayCard = memo(function TimelineDayCard({
             </View>
           ) : (
             <SwipeableContext.Provider value={swipeableCtx}>
-              <View style={styles.exerciseListContent}>
-                {exercises.map((item, index) => {
-                  const staggerDelay = Math.min(index * STAGGER_DELAY, MAX_STAGGER);
-                  return (
-                    <Animated.View
-                      key={item.id}
-                      entering={FadeInDown.duration(DURATION_STANDARD).delay(staggerDelay)}
-                    >
-                      <DayExerciseCard
-                        exercise={item}
-                        onImagePress={onExerciseImagePress}
-                        onEdit={onEditExercise}
-                        onDelete={onDeleteExercise}
-                        isDeleting={item.id === deletingExerciseId}
-                        onDeleteAnimationComplete={onDeleteAnimationComplete}
-                      />
-                    </Animated.View>
-                  );
-                })}
-              </View>
+              <FlashList
+                data={exercises}
+                renderItem={renderExerciseItem}
+                keyExtractor={exerciseKeyExtractor}
+                contentContainerStyle={styles.exerciseListContent}
+              />
             </SwipeableContext.Provider>
           )}
 
@@ -304,12 +290,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
+    paddingLeft: 12,
     paddingRight: 8,
     minHeight: 95,
-  },
-  dragHandleWrapper: {
-    marginLeft: 8,
-    marginRight: 4,
   },
   muscleIconWrapper: {
     height: MUSCLE_ICON_SIZE,

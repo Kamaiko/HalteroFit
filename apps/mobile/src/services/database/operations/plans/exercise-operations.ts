@@ -364,8 +364,10 @@ export async function reorderPlanDayExercises(
           );
         }
 
-        // Prepare all updates, verify same parent, then batch
-        const preparedUpdates = await Promise.all(
+        // Prepare updates — only for exercises whose order actually changed.
+        // This avoids marking unchanged records as dirty (reduces sync traffic).
+        const preparedUpdates: PlanDayExerciseModel[] = [];
+        await Promise.all(
           exercises.map(async ({ id, order_index }) => {
             const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
             if (pde.planDayId !== planDayId) {
@@ -374,12 +376,18 @@ export async function reorderPlanDayExercises(
                 `reorderPlanDayExercises: exercise ${id} belongs to day ${pde.planDayId}, not ${planDayId}`
               );
             }
-            return pde.prepareUpdate((e) => {
-              e.orderIndex = order_index;
-            });
+            if (pde.orderIndex !== order_index) {
+              preparedUpdates.push(
+                pde.prepareUpdate((e) => {
+                  e.orderIndex = order_index;
+                })
+              );
+            }
           })
         );
-        await database.batch(...preparedUpdates);
+        if (preparedUpdates.length > 0) {
+          await database.batch(...preparedUpdates);
+        }
       });
     },
     'Unable to reorder exercises. Please try again.',

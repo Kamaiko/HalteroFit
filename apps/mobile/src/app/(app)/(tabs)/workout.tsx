@@ -4,10 +4,7 @@
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import DraggableFlatList, {
-  type RenderItemParams,
-  ScaleDecorator,
-} from 'react-native-draggable-flatlist';
+import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
@@ -58,7 +55,8 @@ export default function WorkoutScreen() {
     deletingExerciseId,
     deleteExerciseOptimistic,
     handleDeleteAnimationComplete,
-    reorderDaysOptimistic,
+    handleMoveDayUp,
+    handleMoveDayDown,
   } = useWorkoutScreen();
 
   // ── Callbacks ────────────────────────────────────────────────────────
@@ -81,43 +79,36 @@ export default function WorkoutScreen() {
     [exerciseCounts]
   );
 
-  const allCollapsed = expandedDayId === null;
-
   const renderTimelineItem = useCallback(
-    ({ item: day, drag, isActive }: RenderItemParams<PlanDay>) => {
+    ({ item: day }: ListRenderItemInfo<PlanDay>) => {
       const isExpanded = day.id === expandedDayId;
       return (
-        <ScaleDecorator>
-          <TimelineDayCard
-            day={day}
-            exerciseCount={exerciseCounts[day.id] ?? 0}
-            dominantMuscleGroupId={dominantMuscleGroups[day.id]}
-            isExpanded={isExpanded}
-            exercises={isExpanded ? (selectedDayExercises?.exercises ?? []) : []}
-            loadingExercises={isExpanded && loadingExercises}
-            showDragHandle={allCollapsed}
-            drag={allCollapsed ? drag : undefined}
-            isActive={isActive}
-            onPress={handleDayPress}
-            onMenuPress={handleDayMenuPress}
-            onStartWorkout={() => {
-              // TODO(3.1.3): Navigate to active workout session
-            }}
-            onAddExercisePress={() => {
-              router.push({
-                pathname: '/exercise/picker',
-                params: { dayId: day.id, dayName: day.name },
-              });
-            }}
-            onExerciseImagePress={handleExercisePress}
-            onEditExercise={() => {
-              router.push({ pathname: '/plans/edit-day', params: { dayId: day.id } });
-            }}
-            onDeleteExercise={handleDeleteExercise}
-            deletingExerciseId={deletingExerciseId}
-            onDeleteAnimationComplete={handleDeleteAnimationComplete}
-          />
-        </ScaleDecorator>
+        <TimelineDayCard
+          day={day}
+          exerciseCount={exerciseCounts[day.id] ?? 0}
+          dominantMuscleGroupId={dominantMuscleGroups[day.id]}
+          isExpanded={isExpanded}
+          exercises={isExpanded ? (selectedDayExercises?.exercises ?? []) : []}
+          loadingExercises={isExpanded && loadingExercises}
+          onPress={handleDayPress}
+          onMenuPress={handleDayMenuPress}
+          onStartWorkout={() => {
+            // TODO(3.1.3): Navigate to active workout session
+          }}
+          onAddExercisePress={() => {
+            router.push({
+              pathname: '/exercise/picker',
+              params: { dayId: day.id, dayName: day.name },
+            });
+          }}
+          onExerciseImagePress={handleExercisePress}
+          onEditDay={() => {
+            router.push({ pathname: '/plans/edit-day', params: { dayId: day.id } });
+          }}
+          onDeleteExercise={handleDeleteExercise}
+          deletingExerciseId={deletingExerciseId}
+          onDeleteAnimationComplete={handleDeleteAnimationComplete}
+        />
       );
     },
     [
@@ -126,7 +117,6 @@ export default function WorkoutScreen() {
       dominantMuscleGroups,
       selectedDayExercises,
       loadingExercises,
-      allCollapsed,
       handleDayPress,
       handleDayMenuPress,
       handleExercisePress,
@@ -175,11 +165,10 @@ export default function WorkoutScreen() {
           action={{ label: '+ Add a day', onPress: handleAddDayPress }}
         />
       ) : (
-        <DraggableFlatList
+        <FlashList
           data={planDays}
           renderItem={renderTimelineItem}
           keyExtractor={keyExtractor}
-          onDragEnd={({ data }) => reorderDaysOptimistic(data)}
           contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
           ListFooterComponent={<AddDayPill onPress={handleAddDayPress} />}
         />
@@ -187,6 +176,38 @@ export default function WorkoutScreen() {
 
       <BottomSheet ref={menuSheetRef} title={menuDay?.name ?? 'Options'}>
         <View className="gap-2 pb-6">
+          {menuDay && planDays.length > 1 && (
+            <>
+              {planDays[0]?.id !== menuDay.id && (
+                <Pressable
+                  onPress={() => {
+                    menuSheetRef.current?.close();
+                    handleMoveDayUp(menuDay);
+                  }}
+                  className="flex-row items-center px-4 py-3 active:opacity-60"
+                >
+                  <Ionicons name="arrow-up" size={ICON_SIZE_SM} color={Colors.foreground.DEFAULT} />
+                  <Text className="text-foreground text-base ml-3">Move Up</Text>
+                </Pressable>
+              )}
+              {planDays[planDays.length - 1]?.id !== menuDay.id && (
+                <Pressable
+                  onPress={() => {
+                    menuSheetRef.current?.close();
+                    handleMoveDayDown(menuDay);
+                  }}
+                  className="flex-row items-center px-4 py-3 active:opacity-60"
+                >
+                  <Ionicons
+                    name="arrow-down"
+                    size={ICON_SIZE_SM}
+                    color={Colors.foreground.DEFAULT}
+                  />
+                  <Text className="text-foreground text-base ml-3">Move Down</Text>
+                </Pressable>
+              )}
+            </>
+          )}
           <Pressable
             onPress={handleEditDay}
             className="flex-row items-center px-4 py-3 active:opacity-60"

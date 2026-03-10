@@ -65,9 +65,10 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage', // MMKV key
       storage: createJSONStorage(() => zustandMMKVStorage),
       // Only persist session state, not loading state
+      // Never persist mock user — prevents dev-user-123 leaking into preview/prod builds
       partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
+        user: state.user?.id === DEV_MOCK_USER.id ? null : state.user,
+        isAuthenticated: state.user?.id === DEV_MOCK_USER.id ? false : state.isAuthenticated,
       }),
       // Handle rehydration errors gracefully
       onRehydrateStorage: (state) => (_hydratedState, error) => {

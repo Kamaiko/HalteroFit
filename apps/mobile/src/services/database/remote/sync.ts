@@ -166,6 +166,11 @@ export async function sync(): Promise<SyncResult> {
         });
 
         if (error) {
+          // Auth errors during sign-out transition — skip silently (transient state)
+          if (error.code === 'P0001') {
+            if (__DEV__) console.log('Sync skipped — session expired during pull');
+            return { changes: {}, timestamp: lastPulledAt || 0 };
+          }
           console.error('Pull error:', error);
           throw new SyncError(
             'Failed to download data from server',
@@ -229,6 +234,11 @@ export async function sync(): Promise<SyncResult> {
         });
 
         if (error) {
+          // Auth errors during sign-out transition — skip silently (transient state)
+          if (error.code === 'P0001') {
+            if (__DEV__) console.log('Sync skipped — session expired during push');
+            return;
+          }
           console.error('Push error:', error);
           throw new SyncError(
             'Failed to upload data to server',
