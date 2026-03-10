@@ -8,13 +8,13 @@
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import type { RefObject } from 'react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, type ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
+  type AnimatedRef,
   FadeInDown,
-  LinearTransition,
   useAnimatedStyle,
+  useSharedValue,
   withDelay,
   withTiming,
   type SharedValue,
@@ -30,7 +30,6 @@ import {
   DEFAULT_TARGET_SETS,
   DURATION_FAST,
   DURATION_INSTANT,
-  DURATION_STANDARD,
   ICON_SIZE_XS,
   ICON_SIZE_LG,
   ICON_SIZE_3XL,
@@ -45,7 +44,6 @@ import { SwipeableContext, type SwipeableContextValue } from './SwipeableContext
 // ── Constants ───────────────────────────────────────────────────────────
 const MUSCLE_ICON_SIZE = ICON_SIZE_3XL; // 64px
 const CARD_BORDER_RADIUS = 14;
-const LAYOUT_TRANSITION = LinearTransition.duration(DURATION_STANDARD);
 const COLLAPSED_BG = Colors.background.surface;
 const EXPANDED_BORDER_COLOR = Colors.border.light;
 
@@ -69,7 +67,7 @@ interface TimelineDayCardProps {
   onDeleteAnimationComplete?: () => void;
 
   // Drag-to-reorder (passed from parent ScrollView)
-  scrollRef: RefObject<ScrollView | null>;
+  scrollRef: AnimatedRef<Animated.ScrollView>;
   scrollY: SharedValue<number>;
   scrollViewBounds: SharedValue<{ top: number; bottom: number }>;
   onReorderExercises: (reordered: PlanDayWithExercises['exercises']) => Promise<void>;
@@ -99,6 +97,14 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   onReorderExercises,
   onScrollEnabledChange,
 }: TimelineDayCardProps) {
+  // ── Shared value for icon animation ──
+  // Prevents useAnimatedStyle from replaying animations on every re-render
+  // (e.g., when returning to the tab triggers a re-render but isExpanded hasn't changed)
+  const isExpandedSV = useSharedValue(isExpanded);
+  useEffect(() => {
+    isExpandedSV.value = isExpanded;
+  }, [isExpanded, isExpandedSV]);
+
   // ── Deferred exercise rendering ──
   // Defer mounting 16+ DayExerciseCards until AFTER the icon width collapse
   // (DURATION_FAST) so the expand animation plays smoothly without JS thread
@@ -117,38 +123,34 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     };
   }, [isExpanded]);
 
-  // ── Muscle icon width collapse ──
-  // Delay the width snap (64→0) until AFTER the fade+slide animation finishes.
-  // This prevents LinearTransition from re-laying-out every frame during the slide.
-  // Expand: fade+slide plays (DURATION_FAST=150ms), THEN width collapses → text slides.
-  // Collapse: width restores immediately → fade+slide animates icon back in.
-  const [iconCollapsed, setIconCollapsed] = useState(false);
-
-  useEffect(() => {
-    if (!isExpanded) return;
-    const timer = setTimeout(() => setIconCollapsed(true), DURATION_FAST);
-    return () => {
-      clearTimeout(timer);
-      setIconCollapsed(false);
-    };
-  }, [isExpanded]);
-
   // ── Muscle icon animation ──
-  // useAnimatedStyle handles opacity + translateX for smooth slide + fade (GPU transform).
-  // Width collapse is delayed (iconCollapsed) so no re-layout during the animation.
-  // Header row LinearTransition handles sibling reflow when width finally snaps.
-  const iconAnimStyle = useAnimatedStyle(() => ({
-    opacity: isExpanded
-      ? withTiming(0, { duration: DURATION_FAST })
-      : withDelay(DURATION_INSTANT, withTiming(1, { duration: DURATION_FAST })),
-    transform: [
-      {
-        translateX: isExpanded
-          ? withTiming(-MUSCLE_ICON_SIZE, { duration: DURATION_FAST })
-          : withDelay(DURATION_INSTANT, withTiming(0, { duration: DURATION_FAST })),
-      },
-    ],
-  }));
+  // All icon properties animated via shared value (no React state, no LinearTransition).
+  // Expand: opacity+translateX fade out (DURATION_FAST), THEN width+margin collapse (delayed).
+  // Collapse: width+margin restore immediately, THEN opacity+translateX fade in (delayed).
+  // Using shared value ensures animations only trigger when isExpanded actually changes,
+  // not on re-renders from tab switches or other state changes.
+  const iconAnimStyle = useAnimatedStyle(() => {
+    const expanded = isExpandedSV.value;
+    return {
+      opacity: expanded
+        ? withTiming(0, { duration: DURATION_FAST })
+        : withDelay(DURATION_INSTANT, withTiming(1, { duration: DURATION_FAST })),
+      transform: [
+        {
+          translateX: expanded
+            ? withTiming(-MUSCLE_ICON_SIZE, { duration: DURATION_FAST })
+            : withDelay(DURATION_INSTANT, withTiming(0, { duration: DURATION_FAST })),
+        },
+      ],
+      width: expanded
+        ? withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST }))
+        : withTiming(MUSCLE_ICON_SIZE, { duration: DURATION_FAST }),
+      marginRight: expanded
+        ? withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST }))
+        : withTiming(12, { duration: DURATION_FAST }),
+      overflow: 'hidden' as const,
+    };
+  });
 
   // ── Swipeable context for exercise cards ────────────────────────────
   const [openSwipeableId, setOpenSwipeableId] = useState<string | null>(null);
@@ -217,15 +219,9 @@ export const TimelineDayCard = memo(function TimelineDayCard({
         {isActiveWorkout && <View style={styles.accentBar} />}
 
         {/* ── Header row ─────────────────────────────────────────── */}
-        <Animated.View style={styles.headerRow} layout={LAYOUT_TRANSITION}>
-          {/* Muscle icon — width snaps AFTER fade+slide finishes, header LinearTransition handles text reflow */}
-          <Animated.View
-            style={[
-              styles.muscleIconWrapper,
-              iconCollapsed && styles.muscleIconCollapsed,
-              iconAnimStyle,
-            ]}
-          >
+        <Animated.View style={styles.headerRow}>
+          {/* Muscle icon — animated width/margin replaces LinearTransition reflow */}
+          <Animated.View style={[styles.muscleIconWrapper, iconAnimStyle]}>
             {dominantMuscleGroupId ? (
               <MuscleGroupIcon
                 muscleGroupId={dominantMuscleGroupId}
@@ -242,7 +238,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
           {/* Day info */}
           <Animated.View
             className="flex-1 justify-center"
-            layout={LAYOUT_TRANSITION}
             style={isExpanded ? undefined : styles.infoCollapsed}
           >
             <Text className="text-base font-bold text-foreground" numberOfLines={1}>
@@ -387,11 +382,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-  },
-  muscleIconCollapsed: {
-    width: 0,
-    marginRight: 0,
-    overflow: 'hidden' as const,
   },
   muscleIconFallback: {
     width: MUSCLE_ICON_SIZE,

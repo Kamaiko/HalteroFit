@@ -10,11 +10,11 @@
 
 import type { DayExercise } from '@/services/database/operations/plans';
 import * as Haptics from 'expo-haptics';
-import type { RefObject } from 'react';
 import { useCallback, useRef } from 'react';
-import type { LayoutChangeEvent, ScrollView } from 'react-native';
+import type { LayoutChangeEvent } from 'react-native';
 import { Gesture, type GestureType } from 'react-native-gesture-handler';
-import {
+import Animated, {
+  type AnimatedRef,
   runOnJS,
   runOnUI,
   scrollTo,
@@ -49,7 +49,7 @@ interface UseDragSortParams {
   items: DayExercise[];
   onReorder: (reordered: DayExercise[]) => void;
   onDragStart?: () => void;
-  scrollRef: RefObject<ScrollView | null>;
+  scrollRef: AnimatedRef<Animated.ScrollView>;
   scrollY: SharedValue<number>;
   /** Screen-space bounds of the ScrollView viewport [topY, bottomY] */
   scrollViewBounds: SharedValue<{ top: number; bottom: number }>;
@@ -71,6 +71,8 @@ export function useDragSort({
   const dragTranslateY = useSharedValue(0);
   // Finger's absolute Y on screen (for auto-scroll edge detection)
   const dragAbsoluteY = useSharedValue(0);
+  // Scroll offset at drag start (for compensating auto-scroll movement)
+  const scrollYAtStart = useSharedValue(0);
 
   // currentOrder[visualSlot] = originalIndex
   const currentOrder = useSharedValue<number[]>([]);
@@ -122,7 +124,7 @@ export function useDragSort({
       }
 
       if (speed !== 0) {
-        scrollTo(scrollRef as never, 0, scrollY.value + speed, false);
+        scrollTo(scrollRef, 0, scrollY.value + speed, false);
       }
     }
   );
@@ -147,12 +149,15 @@ export function useDragSort({
           isDragging.value = true;
           dragAbsoluteY.value = e.absoluteY;
           dragTranslateY.value = 0;
+          scrollYAtStart.value = scrollY.value;
 
           runOnJS(triggerHaptic)();
           runOnJS(handleDragStart)();
         })
         .onUpdate((e) => {
-          dragTranslateY.value = e.translationY;
+          // Compensate for scroll changes during drag so the card stays under the finger
+          const scrollDelta = scrollY.value - scrollYAtStart.value;
+          dragTranslateY.value = e.translationY + scrollDelta;
           dragAbsoluteY.value = e.absoluteY;
 
           if (itemHeight.value === 0) return;
@@ -160,7 +165,8 @@ export function useDragSort({
           // Which visual slot is the dragged item currently in?
           const draggedSlot = currentOrder.value.indexOf(index);
           // Where should it go based on finger movement?
-          const targetSlot = Math.round(draggedSlot + e.translationY / itemHeight.value);
+          const totalDisplacement = e.translationY + scrollDelta;
+          const targetSlot = Math.round(index + totalDisplacement / itemHeight.value);
           const clampedTarget = Math.max(0, Math.min(count - 1, targetSlot));
 
           if (clampedTarget !== draggedSlot) {
@@ -194,6 +200,7 @@ export function useDragSort({
           isDragging.value = false;
           dragTranslateY.value = 0;
           dragAbsoluteY.value = 0;
+          scrollYAtStart.value = 0;
 
           const resetTrans: number[] = [];
           for (let i = 0; i < count; i++) {
@@ -211,6 +218,8 @@ export function useDragSort({
       currentOrder,
       translations,
       itemHeight,
+      scrollY,
+      scrollYAtStart,
       triggerHaptic,
       handleDragStart,
       handleReorder,

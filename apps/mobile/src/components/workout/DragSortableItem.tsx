@@ -9,7 +9,7 @@
 import { DURATION_FAST, DURATION_STANDARD } from '@/constants';
 import type { ReactNode } from 'react';
 import { memo, useCallback } from 'react';
-import type { LayoutChangeEvent } from 'react-native';
+import { type LayoutChangeEvent, StyleSheet } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
@@ -21,6 +21,12 @@ const DRAG_SCALE = 1.03;
 const DRAG_SHADOW_OPACITY = 0.15;
 const DRAG_SHADOW_RADIUS = 8;
 const DRAG_ELEVATION = 8;
+
+// Nudge the handle right (away from card edge) and up to align with thumbnail center.
+// The card center is ~7px below the thumbnail center due to 3 lines of text below it.
+const handleOffset = StyleSheet.create({
+  wrapper: { marginLeft: 12, marginTop: -7 },
+}).wrapper;
 
 // ── Props ───────────────────────────────────────────────────────────────
 interface DragSortableItemProps {
@@ -84,7 +90,7 @@ export const DragSortableItem = memo(function DragSortableItem({
     <Animated.View style={animatedStyle} onLayout={handleLayout}>
       <Animated.View className="flex-row items-center">
         <GestureDetector gesture={gesture}>
-          <Animated.View>
+          <Animated.View style={handleOffset}>
             <DragHandle />
           </Animated.View>
         </GestureDetector>

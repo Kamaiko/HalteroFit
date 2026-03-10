@@ -5,16 +5,13 @@
  */
 
 import { router } from 'expo-router';
-import type { RefObject } from 'react';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  type LayoutChangeEvent,
-  Pressable,
-  type ScrollView,
-  View,
-} from 'react-native';
-import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, type LayoutChangeEvent, Pressable, View } from 'react-native';
+import Animated, {
+  useAnimatedRef,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui';
@@ -67,7 +64,7 @@ export default function WorkoutScreen() {
   } = useWorkoutScreen();
 
   // ── Scroll tracking for drag-to-reorder ────────────────────────────
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollY = useSharedValue(0);
   const scrollViewBounds = useSharedValue({ top: 0, bottom: 0 });
   const [scrollEnabled, setScrollEnabled] = useState(true);
@@ -156,6 +153,7 @@ export default function WorkoutScreen() {
       handleDeleteExercise,
       deletingExerciseId,
       handleDeleteAnimationComplete,
+      scrollRef,
       scrollY,
       scrollViewBounds,
       reorderExercisesOptimistic,
@@ -200,7 +198,7 @@ export default function WorkoutScreen() {
         />
       ) : (
         <Animated.ScrollView
-          ref={scrollRef as RefObject<Animated.ScrollView>}
+          ref={scrollRef}
           onScroll={scrollHandler}
           scrollEventThrottle={16}
           scrollEnabled={scrollEnabled}
