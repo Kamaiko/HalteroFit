@@ -64,7 +64,7 @@ export default function ForgotPasswordScreen() {
             <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
           </Pressable>
 
-          <View className="flex-1 items-center justify-center">
+          <View className="flex-1 items-center pt-40">
             {isSent ? (
               <>
                 <Ionicons
