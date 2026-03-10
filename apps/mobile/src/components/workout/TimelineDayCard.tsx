@@ -84,25 +84,43 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   onDeleteAnimationComplete,
 }: TimelineDayCardProps) {
   // ── Deferred exercise rendering ──
-  // Defer mounting 16+ DayExerciseCards by 1 frame so the expand animation
-  // plays immediately without JS thread being blocked by card initialization
-  // (3 shared values + ReanimatedSwipeable + GIF decode per card).
+  // Defer mounting 16+ DayExerciseCards until AFTER the icon width collapse
+  // (DURATION_FAST) so the expand animation plays smoothly without JS thread
+  // being blocked by card initialization (3 shared values + ReanimatedSwipeable
+  // + GIF decode per card). The extra frame (setTimeout 0) after the icon
+  // collapse ensures text reflow completes before heavy mounting begins.
   // Reset happens in cleanup (not sync in effect body) to satisfy React Compiler lint.
   const [exercisesReady, setExercisesReady] = useState(false);
 
   useEffect(() => {
     if (!isExpanded) return;
-    const timer = setTimeout(() => setExercisesReady(true), 0);
+    const timer = setTimeout(() => setExercisesReady(true), DURATION_FAST + 16);
     return () => {
       clearTimeout(timer);
       setExercisesReady(false);
     };
   }, [isExpanded]);
 
+  // ── Muscle icon width collapse ──
+  // Delay the width snap (64→0) until AFTER the fade+slide animation finishes.
+  // This prevents LinearTransition from re-laying-out every frame during the slide.
+  // Expand: fade+slide plays (DURATION_FAST=150ms), THEN width collapses → text slides.
+  // Collapse: width restores immediately → fade+slide animates icon back in.
+  const [iconCollapsed, setIconCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const timer = setTimeout(() => setIconCollapsed(true), DURATION_FAST);
+    return () => {
+      clearTimeout(timer);
+      setIconCollapsed(false);
+    };
+  }, [isExpanded]);
+
   // ── Muscle icon animation ──
-  // LinearTransition on icon wrapper animates width 64→0 over 200ms.
-  // useAnimatedStyle handles opacity + translateX — icon slides left + fades
-  // BEFORE the width clipping is visible (translateX masks the clip).
+  // useAnimatedStyle handles opacity + translateX for smooth slide + fade (GPU transform).
+  // Width collapse is delayed (iconCollapsed) so no re-layout during the animation.
+  // Header row LinearTransition handles sibling reflow when width finally snaps.
   const iconAnimStyle = useAnimatedStyle(() => ({
     opacity: isExpanded
       ? withTiming(0, { duration: DURATION_FAST })
@@ -161,14 +179,13 @@ export const TimelineDayCard = memo(function TimelineDayCard({
 
         {/* ── Header row ─────────────────────────────────────────── */}
         <Animated.View style={styles.headerRow} layout={LAYOUT_TRANSITION}>
-          {/* Muscle icon — width snaps via React state, LinearTransition on header handles sibling reflow */}
+          {/* Muscle icon — width snaps AFTER fade+slide finishes, header LinearTransition handles text reflow */}
           <Animated.View
             style={[
               styles.muscleIconWrapper,
-              isExpanded && styles.muscleIconCollapsed,
+              iconCollapsed && styles.muscleIconCollapsed,
               iconAnimStyle,
             ]}
-            layout={LAYOUT_TRANSITION}
           >
             {dominantMuscleGroupId ? (
               <MuscleGroupIcon
