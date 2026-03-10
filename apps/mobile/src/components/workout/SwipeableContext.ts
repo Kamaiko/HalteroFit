@@ -2,7 +2,7 @@
  * SwipeableContext - Shared context for tracking open swipeable card
  *
  * Extracted to its own file to avoid a require cycle between
- * DayExerciseCard (consumer) and WorkoutDayDetailsContent (provider).
+ * DayExerciseCard (consumer) and TimelineDayCard (provider).
  */
 
 import { createContext } from 'react';

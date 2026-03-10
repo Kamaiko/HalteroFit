@@ -244,11 +244,12 @@ export function useWorkoutScreen() {
   );
 
   // ── Return composed state ───────────────────────────────────────────
+  const { alert: addDayAlert, clearAlert: clearAddDayAlert, ...addDayRest } = addDay;
+
   return {
     user,
     activePlan,
     planDays,
-    selectedDay,
     selectedDayExercises,
     loadingExercises,
     loading,
@@ -260,9 +261,9 @@ export function useWorkoutScreen() {
 
     // Sub-hook spreads
     ...dayMenu,
-    ...addDay,
-    addDayAlert: addDay.alert,
-    clearAddDayAlert: addDay.clearAlert,
+    ...addDayRest,
+    addDayAlert,
+    clearAddDayAlert,
     ...exerciseActions,
   };
 }

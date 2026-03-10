@@ -33,7 +33,7 @@ export const CompactHeader = memo(function CompactHeader({
   return (
     <View style={styles.container}>
       <View className="flex-row items-start justify-between">
-        {/* Plan name + chevron (visual only — future: plan switcher bottom sheet) */}
+        {/* Plan name + chevron (visual only — TODO: plan switcher bottom sheet) */}
         <View className="flex-row items-center flex-1 mr-4">
           <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
             {planName}
@@ -51,6 +51,8 @@ export const CompactHeader = memo(function CompactHeader({
           onPress={handleAllPlansPress}
           style={styles.allPlansPill}
           className="active:opacity-60"
+          accessibilityRole="button"
+          accessibilityLabel="All Plans"
         >
           <Text style={styles.allPlansText}>All Plans</Text>
         </Pressable>
@@ -64,12 +66,12 @@ export const CompactHeader = memo(function CompactHeader({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: Colors.background.surface,
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#2D3748',
+    borderBottomColor: Colors.border.DEFAULT,
   },
   allPlansPill: {
     backgroundColor: 'rgba(14,165,233,0.1)',
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   subtitle: {
-    color: '#718096',
+    color: Colors.foreground.tertiary,
     fontSize: 13,
     marginTop: 2,
   },

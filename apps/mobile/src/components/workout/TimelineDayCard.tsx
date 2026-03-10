@@ -40,8 +40,8 @@ import { SwipeableContext, type SwipeableContextValue } from './SwipeableContext
 // ── Constants ───────────────────────────────────────────────────────────
 const MUSCLE_ICON_SIZE = ICON_SIZE_3XL; // 64px
 const CARD_BORDER_RADIUS = 14;
-const COLLAPSED_BG = '#1A1A1A';
-const EXPANDED_BORDER_COLOR = '#4A5568';
+const COLLAPSED_BG = Colors.background.surface;
+const EXPANDED_BORDER_COLOR = Colors.border.light;
 const STAGGER_DELAY = 40;
 const MAX_STAGGER = 300;
 
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   muscleIconWrapper: {
     height: MUSCLE_ICON_SIZE,
     borderRadius: 12,
-    backgroundColor: '#2A2A2A',
+    backgroundColor: Colors.background.elevated,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   startPillText: {
-    color: '#FFFFFF',
+    color: Colors.primary.foreground,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: '#2D3748',
+    borderColor: Colors.border.DEFAULT,
     borderRadius: 10,
   },
 });

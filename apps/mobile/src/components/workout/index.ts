@@ -11,5 +11,3 @@ export { DayExerciseCard } from './DayExerciseCard';
 export type { DayExercise, DayExerciseCardProps } from './DayExerciseCard';
 export { EditDayExerciseCard } from './EditDayExerciseCard';
 export type { EditDayExerciseCardProps } from './EditDayExerciseCard';
-export { WorkoutList } from './WorkoutList';
-export { WorkoutListItem } from './WorkoutListItem';
