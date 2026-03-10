@@ -6,13 +6,7 @@
 
 import { router } from 'expo-router';
 import { useCallback, useMemo } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  type ListRenderItemInfo,
-  Pressable,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui';
@@ -84,11 +78,12 @@ export default function WorkoutScreen() {
     [exerciseCounts]
   );
 
-  const renderTimelineItem = useCallback(
-    ({ item: day }: ListRenderItemInfo<PlanDay>) => {
+  const renderDayCard = useCallback(
+    (day: PlanDay) => {
       const isExpanded = day.id === expandedDayId;
       return (
         <TimelineDayCard
+          key={day.id}
           day={day}
           exerciseCount={exerciseCounts[day.id] ?? 0}
           dominantMuscleGroupId={dominantMuscleGroups[day.id]}
@@ -128,8 +123,6 @@ export default function WorkoutScreen() {
     ]
   );
 
-  const keyExtractor = useCallback((item: PlanDay) => item.id, []);
-
   // ── Loading / auth guard ─────────────────────────────────────────────
   if (loading) {
     return (
@@ -167,13 +160,10 @@ export default function WorkoutScreen() {
           action={{ label: '+ Add a day', onPress: handleAddDayPress }}
         />
       ) : (
-        <FlatList
-          data={planDays}
-          renderItem={renderTimelineItem}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={{ paddingTop: 8, paddingBottom: TAB_BAR_HEIGHT + 16 }}
-          ListFooterComponent={<AddDayPill onPress={handleAddDayPress} />}
-        />
+        <ScrollView contentContainerStyle={{ paddingTop: 8, paddingBottom: TAB_BAR_HEIGHT + 16 }}>
+          {planDays.map(renderDayCard)}
+          <AddDayPill onPress={handleAddDayPress} />
+        </ScrollView>
       )}
 
       <BottomSheet ref={menuSheetRef} title={menuDay?.name ?? 'Options'}>

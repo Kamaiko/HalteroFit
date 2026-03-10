@@ -314,7 +314,6 @@ const styles = StyleSheet.create({
   },
   muscleIconHidden: {
     width: 0,
-    opacity: 0,
     marginRight: 0,
     overflow: 'hidden' as const,
   },
