@@ -1,49 +1,45 @@
 /**
- * WorkoutScreen - Main workout tab showing active plan
+ * WorkoutScreen - Main workout tab showing active plan as vertical timeline accordion
  *
- * @see docs/reference/WIREFRAMES.md - Section 3 (Plans & Workout)
+ * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
+import DraggableFlatList, {
+  type RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
 import { router } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout';
+import { EmptyState } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Ionicons } from '@/components/ui/icon';
-import { Button } from '@/components/ui/button';
 import { AlertDialog } from '@/components/ui/alert-dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { InputDialog } from '@/components/ui/input-dialog';
-import { Tabs, type TabRoute } from '@/components/ui';
 import { Text } from '@/components/ui/text';
-import {
-  PlanHeader,
-  WorkoutOverviewContent,
-  WorkoutDayDetailsContent,
-  type DayExercise,
-} from '@/components/workout';
-import { Colors, DEFAULT_PLAN_NAME, ICON_SIZE_SM, START_BUTTON_HEIGHT } from '@/constants';
+import { CompactHeader, TimelineDayCard, AddDayPill, type DayExercise } from '@/components/workout';
+import { Colors, DEFAULT_PLAN_NAME, ICON_SIZE_SM } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
+import type { PlanDay } from '@/services/database/operations/plans';
 
 export default function WorkoutScreen() {
   const {
     user,
     activePlan,
     planDays,
-    selectedDay,
     selectedDayExercises,
     loadingExercises,
     loading,
-    activeTabIndex,
+    expandedDayId,
     exerciseCounts,
     dominantMuscleGroups,
-    canStartWorkout,
     menuDay,
     showDeleteConfirm,
     isDeleting,
     menuSheetRef,
-    setActiveTabIndex,
     setShowDeleteConfirm,
     handleDayPress,
     handleDayMenuPress,
@@ -66,25 +62,13 @@ export default function WorkoutScreen() {
     reorderDaysOptimistic,
   } = useWorkoutScreen();
 
-  const handleAddExercisePress = useCallback(() => {
-    if (!selectedDay) return;
-    router.push({
-      pathname: '/exercise/picker',
-      params: { dayId: selectedDay.id, dayName: selectedDay.name },
-    });
-  }, [selectedDay]);
-
+  // ── Callbacks ────────────────────────────────────────────────────────
   const handleExercisePress = useCallback((exercise: DayExercise) => {
     router.push({
       pathname: '/exercise/[id]',
       params: { id: exercise.exercise.id },
     });
   }, []);
-
-  const handleEditExercise = useCallback(() => {
-    if (!selectedDay) return;
-    router.push({ pathname: '/plans/edit-day', params: { dayId: selectedDay.id } });
-  }, [selectedDay]);
 
   const handleDeleteExercise = useCallback(
     (exercise: DayExercise) => {
@@ -93,65 +77,71 @@ export default function WorkoutScreen() {
     [deleteExerciseOptimistic]
   );
 
-  // Render scene for swipeable tabs
-  const renderScene = useCallback(
-    ({ route }: { route: TabRoute }) => {
-      if (route.key === 'tab-0') {
-        return (
-          <WorkoutOverviewContent
-            planDays={planDays}
-            exerciseCounts={exerciseCounts}
-            dominantMuscleGroups={dominantMuscleGroups}
-            selectedDayId={selectedDay?.id}
-            onDayPress={handleDayPress}
-            onDayMenuPress={handleDayMenuPress}
-            onAddDayPress={handleAddDayPress}
-            onReorder={reorderDaysOptimistic}
-          />
-        );
-      }
+  const totalExercises = useMemo(
+    () => Object.values(exerciseCounts).reduce((sum, c) => sum + c, 0),
+    [exerciseCounts]
+  );
 
-      if (route.key === 'tab-1') {
-        const dayExercises = selectedDayExercises?.exercises ?? [];
-        return (
-          <WorkoutDayDetailsContent
-            selectedDay={selectedDay}
-            exercises={dayExercises}
-            loading={loadingExercises}
-            onAddExercisePress={handleAddExercisePress}
-            onImagePress={handleExercisePress}
-            onEditExercise={handleEditExercise}
+  const allCollapsed = expandedDayId === null;
+
+  const renderTimelineItem = useCallback(
+    ({ item: day, drag, isActive }: RenderItemParams<PlanDay>) => {
+      const isExpanded = day.id === expandedDayId;
+      return (
+        <ScaleDecorator>
+          <TimelineDayCard
+            day={day}
+            exerciseCount={exerciseCounts[day.id] ?? 0}
+            dominantMuscleGroupId={dominantMuscleGroups[day.id]}
+            isExpanded={isExpanded}
+            exercises={isExpanded ? (selectedDayExercises?.exercises ?? []) : []}
+            loadingExercises={isExpanded && loadingExercises}
+            showDragHandle={allCollapsed}
+            drag={allCollapsed ? drag : undefined}
+            isActive={isActive}
+            onPress={handleDayPress}
+            onMenuPress={handleDayMenuPress}
+            onStartWorkout={() => {
+              // TODO(3.1.3): Navigate to active workout session
+            }}
+            onAddExercisePress={() => {
+              router.push({
+                pathname: '/exercise/picker',
+                params: { dayId: day.id, dayName: day.name },
+              });
+            }}
+            onExerciseImagePress={handleExercisePress}
+            onEditExercise={() => {
+              router.push({ pathname: '/plans/edit-day', params: { dayId: day.id } });
+            }}
             onDeleteExercise={handleDeleteExercise}
-            onReorder={reorderExercisesOptimistic}
+            onReorderExercises={reorderExercisesOptimistic}
             deletingExerciseId={deletingExerciseId}
             onDeleteAnimationComplete={handleDeleteAnimationComplete}
           />
-        );
-      }
-
-      return null;
+        </ScaleDecorator>
+      );
     },
     [
-      planDays,
+      expandedDayId,
       exerciseCounts,
       dominantMuscleGroups,
-      selectedDay,
-      handleDayPress,
-      handleDayMenuPress,
-      handleAddDayPress,
       selectedDayExercises,
       loadingExercises,
-      handleAddExercisePress,
+      allCollapsed,
+      handleDayPress,
+      handleDayMenuPress,
       handleExercisePress,
-      handleEditExercise,
       handleDeleteExercise,
       reorderExercisesOptimistic,
-      reorderDaysOptimistic,
       deletingExerciseId,
       handleDeleteAnimationComplete,
     ]
   );
 
+  const keyExtractor = useCallback((item: PlanDay) => item.id, []);
+
+  // ── Loading / auth guard ─────────────────────────────────────────────
   if (loading) {
     return (
       <ScreenContainer contentClassName="items-center justify-center" edges={[]}>
@@ -174,30 +164,28 @@ export default function WorkoutScreen() {
 
   return (
     <ScreenContainer edges={[]}>
-      <PlanHeader
+      <CompactHeader
         planName={activePlan?.name ?? DEFAULT_PLAN_NAME}
-        coverImageUrl={activePlan?.cover_image_url}
+        dayCount={planDays.length}
+        exerciseCount={totalExercises}
       />
 
-      <Tabs
-        tabs={['Overview', 'Day Details']}
-        activeIndex={activeTabIndex}
-        onChange={setActiveTabIndex}
-        renderScene={renderScene}
-      />
-
-      {canStartWorkout && (
-        <View className="absolute bottom-6 left-4 right-4">
-          <Button
-            className="rounded-xl shadow-lg items-center justify-center"
-            style={{ backgroundColor: Colors.primary.DEFAULT, height: START_BUTTON_HEIGHT }}
-            onPress={() => {
-              // TODO(3.1.3): Navigate to active workout session
-            }}
-          >
-            <Text className="text-white font-bold text-lg">Start Workout</Text>
-          </Button>
-        </View>
+      {planDays.length === 0 ? (
+        <EmptyState
+          icon="calendar-outline"
+          title="No workout days yet"
+          subtitle="Add your first workout day to get started"
+          action={{ label: '+ Add a day', onPress: handleAddDayPress }}
+        />
+      ) : (
+        <DraggableFlatList
+          data={planDays}
+          renderItem={renderTimelineItem}
+          keyExtractor={keyExtractor}
+          onDragEnd={({ data }) => reorderDaysOptimistic(data)}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
+          ListFooterComponent={<AddDayPill onPress={handleAddDayPress} />}
+        />
       )}
 
       <BottomSheet ref={menuSheetRef} title={menuDay?.name ?? 'Options'}>

@@ -4,13 +4,14 @@
  * Composes observable data subscriptions with extracted sub-hooks:
  * - Plan observation (existing observable)
  * - Plan days + exercise counts (new observables)
- * - Selected day exercises (new observable - hybrid)
+ * - Expanded day exercises observation (reactive - hybrid)
  * - Day menu actions (useDayMenu)
  * - Add day dialog (useAddDayDialog)
  * - Exercise delete/reorder (useExerciseActions)
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LayoutAnimation } from 'react-native';
 
 import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
@@ -142,23 +143,29 @@ export function useWorkoutScreen() {
     (err) => handleError(err, 'observeDominantMuscleByDays')
   );
 
-  // ── Day selection ───────────────────────────────────────────────────
-  const [selectedDay, setSelectedDay] = useState<PlanDay | null>(null);
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  // ── Accordion state (replaces tab selection) ──────────────────────
+  const [expandedDayId, setExpandedDayId] = useState<string | null>(null);
 
-  // Auto-select first day when planDays load (if nothing selected)
-  useEffect(() => {
-    if (planDays.length > 0 && !selectedDay) {
-      setSelectedDay(planDays[0] ?? null);
-    }
-  }, [planDays, selectedDay]);
+  // Derived selected day from expandedDayId
+  const selectedDay = useMemo(
+    () => planDays.find((d) => d.id === expandedDayId) ?? null,
+    [planDays, expandedDayId]
+  );
 
   const handleDayPress = useCallback((day: PlanDay) => {
-    setSelectedDay(day);
-    setActiveTabIndex(1);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    // Clear stale exercises immediately when switching to a different day
+    // (prevents 1-frame flash of old exercises on the new card)
+    setExpandedDayId((prev) => {
+      if (prev !== null && prev !== day.id) {
+        setSelectedDayExercises(null);
+        setLoadingExercises(true);
+      }
+      return prev === day.id ? null : day.id;
+    });
   }, []);
 
-  // ── Selected day exercises observation (reactive - hybrid) ──────────
+  // ── Expanded day exercises observation (reactive - hybrid) ──────────
   const [selectedDayExercises, setSelectedDayExercises] = useState<PlanDayWithExercises | null>(
     null
   );
@@ -193,16 +200,17 @@ export function useWorkoutScreen() {
   // ── Extracted sub-hooks ─────────────────────────────────────────────
   const handleDayDeleted = useCallback(
     (dayId: string) => {
-      if (selectedDay?.id === dayId) {
-        setSelectedDay(null);
-        setActiveTabIndex(0);
+      if (expandedDayId === dayId) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setExpandedDayId(null);
       }
     },
-    [selectedDay?.id]
+    [expandedDayId]
   );
 
   const handleDayAdded = useCallback((day: PlanDay) => {
-    setSelectedDay(day);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedDayId(day.id);
   }, []);
 
   const dayMenu = useDayMenu({
@@ -235,13 +243,6 @@ export function useWorkoutScreen() {
     [handleError]
   );
 
-  // ── Derived state ───────────────────────────────────────────────────
-  const canStartWorkout = useMemo(() => {
-    if (!selectedDay) return false;
-    const count = exerciseCounts[selectedDay.id] ?? 0;
-    return count > 0;
-  }, [selectedDay, exerciseCounts]);
-
   // ── Return composed state ───────────────────────────────────────────
   return {
     user,
@@ -251,11 +252,9 @@ export function useWorkoutScreen() {
     selectedDayExercises,
     loadingExercises,
     loading,
-    activeTabIndex,
+    expandedDayId,
     exerciseCounts,
     dominantMuscleGroups,
-    canStartWorkout,
-    setActiveTabIndex,
     handleDayPress,
     reorderDaysOptimistic,
 
