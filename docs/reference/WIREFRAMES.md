@@ -1,7 +1,7 @@
 # Wireframes & UI Specification
 
 > **Source:** Competitor app analysis (PDF reference, 36 pages)
-> **Updated:** 2026-01-26
+> **Updated:** 2026-03-10
 > **Purpose:** UI patterns and screen specifications for Halterofit MVP
 
 ---
@@ -162,57 +162,73 @@
 
 ---
 
-### 3.2 Planned Screen (PlanDetailScreen)
+### 3.2 Workout Timeline (WorkoutScreen)
 
-**Purpose:** Afficher le détail d'un plan avec ses jours
+**Purpose:** Afficher le plan actif sous forme de timeline verticale accordéon
 
 **UI Elements:**
 
-- Header tabs (ignorés): Find | **Planned** | Instant
-- Banner avec image + nom du plan + "All Plans" button
-- Sub-tabs swipeable: **Overview** | Day Details
-- Actions: Upload icon (ignoré) | "..." menu
+- **CompactHeader:** nom du plan + chevron ▼ + subtitle "X days · Y exercises" + pill "All Plans" (→ PlansListScreen)
+- **DraggableFlatList** de TimelineDayCards
+- **AddDayPill** en footer ("+ Add a Day", dashed border)
 
-**Overview Sub-tab:**
-
-- Liste de DayCards
-- "+ Add a day" button
-
-**DayCard:**
+**TimelineDayCard (collapsed, ~82px):**
 
 ```
-[Muscle image] [Nom du jour]              [...]
-               Est. Xm  | XX exercises
-               X days ago                  [→]
+[⠿] [MuscleIcon 48×48] [Nom du jour]              [···]
+                         XX exercises
 ```
 
-**Barre bleue verticale:** Indique le jour "actif" (sélectionné)
+**TimelineDayCard (expanded):**
 
-**Screenshot:** `screenshots/03-plans/02-planned-overview.png`
+```
+     [MuscleIcon 48×48] [Nom du jour]              [···]
+                         XX exercises
+                         ──────────────────────────
+                         [Thumb] Exercise 1    [drag ⋮]
+                         [Thumb] Exercise 2    [drag ⋮]
+                         [+ Add exercise]
+                         [▶ Start Workout]
+```
+
+**Comportement accordéon:** Un seul jour expanded à la fois. Tap sur un autre jour collapse le précédent.
+
+**Drag contextuel:**
+
+- Tous collapsed → drag les jours (réordonner via DragHandle)
+- Un expanded → drag les exercices dans ce jour
+
+**Animation:** Staggered fade-in des exercices à l'expand (40ms/item, cap 300ms)
+
+**Phase 3+ (préparé visuellement, non implémenté) :**
+
+- `isActiveWorkout` : bordure bleue 1.5px + barre accent gauche 3px avec glow
+- Timer elapsed : collapsed → gauche du "···", expanded → sous le nom du jour
+- Pill "End Workout" rouge remplace "Start Workout" pendant workout actif
+- Autres jours masquent Start/End pendant workout actif
+- Pulsing blue dot (7px, animation 2s) à côté du timer
 
 ---
 
-### 3.3 Day Details Sub-tab
+### 3.3 Expanded Day Details (inline dans TimelineDayCard)
 
-**Purpose:** Afficher les exercices d'un jour spécifique
+**Purpose:** Afficher les exercices d'un jour dans l'accordéon expanded
 
 **UI Elements:**
 
-- Header: Nom du jour + temps estimé + nb exercices
-- Boutons: "NEW" (ignoré) | "..."
 - Liste d'exercices avec:
-  - Image thumbnail
+  - Image thumbnail (ExerciseThumbnail)
   - Nom de l'exercice
-  - Sets × reps (ex: "4 x 10,10,4,8 reps")
-- "+ Add Exercise" button (toujours visible en bas)
+  - Swipe gauche → delete (DayExerciseCard + SwipeableContext)
+- "+ Add exercise" button → AddExercisesScreen
+- "Start Workout" button → ActiveWorkoutScreen (TODO: 3.1.3)
+- Drag handles pour réordonner les exercices
 
 **User Flow:**
 
-1. Swipe depuis Overview pour arriver ici
-2. Click sur exercice → ActiveWorkoutScreen (preview mode)
-3. Click sur "+ Add Exercise" → AddExercisesScreen
-
-**Screenshot:** `screenshots/03-plans/03-day-details.png`
+1. Tap sur TimelineDayCard collapsed → expand avec fade-in des exercices
+2. Tap "+ Add Exercise" → AddExercisesScreen
+3. Swipe exercice gauche → action delete
 
 ---
 
@@ -261,16 +277,14 @@
 
 ### 3.6 Start Workout Button
 
-**Position:** Fixe en bas à droite de PlannedScreen
+**Position:** Intégré dans TimelineDayCard expanded (en bas de la liste d'exercices)
 
 **États:**
 
-- **Avant workout:** "Start Workout" (bouton bleu)
-- **Pendant workout:** "End Workout" (bouton bleu)
+- **Avant workout:** "Start Workout" (bouton bleu) visible uniquement dans le jour expanded
+- **Pendant workout (Phase 3+):** Pill "End Workout" rouge remplace "Start Workout" dans le jour actif; autres jours masquent le bouton
 
-**Visible:** Sur Overview ET Day Details (ne bouge pas au swipe)
-
-**Screenshot:** `screenshots/03-plans/06-start-workout-button.png`
+**Changement vs ancien design:** N'est plus un bouton flottant fixe en bas à droite. Maintenant contextuel au jour sélectionné.
 
 ---
 
@@ -632,21 +646,21 @@ X Exercises
 
 ### Reference Screens → Halterofit
 
-| Reference Screen  | Halterofit Screen              | File                              | MVP           |
-| ----------------- | ------------------------------ | --------------------------------- | ------------- |
-| Discover          | HomeScreen                     | `(tabs)/index.tsx`                | Simplifié     |
-| Muscle Selector   | ExerciseSelectorScreen         | `(tabs)/exercises/index.tsx`      | Show All only |
-| Exercise List     | ExerciseListScreen             | `(tabs)/exercises/list.tsx`       | Oui           |
-| All Plans         | PlansListScreen                | `plans/index.tsx`                 | Oui           |
-| Planned           | PlanDetailScreen               | `plans/[id]/index.tsx`            | Oui           |
-| Day Details       | (inclus dans PlanDetailScreen) | -                                 | Oui           |
-| Edit Day          | EditDayScreen                  | `plans/[id]/day/[dayId]/edit.tsx` | Oui           |
-| Add Exercises     | AddExercisesScreen             | `plans/add-exercises.tsx`         | Oui           |
-| Active Workout    | ActiveWorkoutScreen            | `workout/active.tsx`              | Oui           |
-| Workout Complete  | WorkoutSummaryScreen           | `workout/summary.tsx`             | Oui           |
-| Progress Overview | ProgressScreen                 | `(tabs)/progress.tsx`             | Simplifié     |
-| Settings          | SettingsScreen                 | `settings/index.tsx`              | Oui           |
-| Profile           | ProfileScreen                  | `settings/profile.tsx`            | Oui           |
+| Reference Screen  | Halterofit Screen             | File                                     | MVP           |
+| ----------------- | ----------------------------- | ---------------------------------------- | ------------- |
+| Discover          | HomeScreen                    | `(tabs)/index.tsx`                       | Simplifié     |
+| Muscle Selector   | ExerciseSelectorScreen        | `(tabs)/exercises/index.tsx`             | Show All only |
+| Exercise List     | ExerciseListScreen            | `(tabs)/exercises/list.tsx`              | Oui           |
+| All Plans         | PlansListScreen               | `plans/index.tsx`                        | Oui           |
+| Workout Timeline  | WorkoutScreen                 | `(tabs)/workout.tsx`                     | Oui           |
+| Day Details       | (inline dans TimelineDayCard) | `components/workout/TimelineDayCard.tsx` | Oui           |
+| Edit Day          | EditDayScreen                 | `plans/[id]/day/[dayId]/edit.tsx`        | Oui           |
+| Add Exercises     | AddExercisesScreen            | `plans/add-exercises.tsx`                | Oui           |
+| Active Workout    | ActiveWorkoutScreen           | `workout/active.tsx`                     | Oui           |
+| Workout Complete  | WorkoutSummaryScreen          | `workout/summary.tsx`                    | Oui           |
+| Progress Overview | ProgressScreen                | `(tabs)/progress.tsx`                    | Simplifié     |
+| Settings          | SettingsScreen                | `settings/index.tsx`                     | Oui           |
+| Profile           | ProfileScreen                 | `settings/profile.tsx`                   | Oui           |
 
 ### Features Post-MVP
 

@@ -138,17 +138,16 @@ components/
 │   ├── muscleGroupIconConfig.ts
 │   └── index.ts
 ├── workout/                 # Workout plan components
-│   ├── DayCard.tsx
+│   ├── AddDayPill.tsx
+│   ├── CompactHeader.tsx
 │   ├── DayExerciseCard.tsx
 │   ├── DragHandle.tsx
 │   ├── EditDayExerciseCard.tsx
 │   ├── ExerciseThumbnail.tsx
-│   ├── PlanHeader.tsx
 │   ├── SwipeableContext.ts
-│   ├── WorkoutDayDetailsContent.tsx
+│   ├── TimelineDayCard.tsx
 │   ├── WorkoutList.tsx
 │   ├── WorkoutListItem.tsx
-│   ├── WorkoutOverviewContent.tsx
 │   └── index.ts
 ├── charts/                  # Victory Native chart components
 │   ├── BarChart.tsx
