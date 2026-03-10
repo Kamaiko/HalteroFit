@@ -202,34 +202,28 @@ export function useWorkoutScreen() {
     [handleError]
   );
 
-  const handleMoveDayUp = useCallback(
-    async (day: PlanDay) => {
+  const handleMoveDay = useCallback(
+    async (day: PlanDay, direction: 'up' | 'down') => {
       const index = planDays.findIndex((d) => d.id === day.id);
-      if (index <= 0) return;
+      const swapIndex = direction === 'up' ? index - 1 : index + 1;
+      if (index < 0 || swapIndex < 0 || swapIndex >= planDays.length) return;
+
       const reordered = [...planDays];
-      const prev = reordered[index - 1];
-      const curr = reordered[index];
-      if (!prev || !curr) return;
-      reordered[index - 1] = curr;
-      reordered[index] = prev;
+      const a = reordered[index];
+      const b = reordered[swapIndex];
+      if (!a || !b) return;
+      reordered[index] = b;
+      reordered[swapIndex] = a;
       await reorderDays(reordered);
     },
     [planDays, reorderDays]
   );
 
+  const handleMoveDayUp = useCallback((day: PlanDay) => handleMoveDay(day, 'up'), [handleMoveDay]);
+
   const handleMoveDayDown = useCallback(
-    async (day: PlanDay) => {
-      const index = planDays.findIndex((d) => d.id === day.id);
-      if (index < 0 || index >= planDays.length - 1) return;
-      const reordered = [...planDays];
-      const curr = reordered[index];
-      const next = reordered[index + 1];
-      if (!curr || !next) return;
-      reordered[index] = next;
-      reordered[index + 1] = curr;
-      await reorderDays(reordered);
-    },
-    [planDays, reorderDays]
+    (day: PlanDay) => handleMoveDay(day, 'down'),
+    [handleMoveDay]
   );
 
   // ── Return composed state ───────────────────────────────────────────

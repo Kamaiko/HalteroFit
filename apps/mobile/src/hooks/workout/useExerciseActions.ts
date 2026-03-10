@@ -6,7 +6,7 @@
  * Extracted from useWorkoutScreen for single-responsibility.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import {
@@ -31,12 +31,15 @@ export function useExerciseActions(params: {
   const { selectedDayId } = params;
 
   const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
+  // Ref mirrors state to avoid stale closure in animation callback
+  const deletingIdRef = useRef<string | null>(null);
 
   // Step 1: Mark exercise as deleting (triggers slide + collapse animation ONLY)
   // DB mutation is deferred to Step 2 so the card stays mounted during animation.
   const deleteExerciseOptimistic = useCallback(
     (exerciseId: string) => {
       if (deletingExerciseId) return;
+      deletingIdRef.current = exerciseId;
       setDeletingExerciseId(exerciseId);
     },
     [deletingExerciseId]
@@ -44,8 +47,11 @@ export function useExerciseActions(params: {
 
   // Step 2: Animation finished — now perform the actual DB deletion.
   // The observable will auto-remove the exercise from the list (already invisible).
+  // Uses ref instead of state to guarantee the correct ID even if React re-renders
+  // between animation start and callback.
   const handleDeleteAnimationComplete = useCallback(async () => {
-    const exerciseId = deletingExerciseId;
+    const exerciseId = deletingIdRef.current;
+    deletingIdRef.current = null;
     setDeletingExerciseId(null);
     if (!exerciseId) return;
 
@@ -55,7 +61,7 @@ export function useExerciseActions(params: {
       handleError(error, 'deleteExercise');
       // On failure, the exercise reappears via observable (DB unchanged)
     }
-  }, [deletingExerciseId, handleError]);
+  }, [handleError]);
 
   // Reorder exercises with optimistic update
   const reorderExercisesOptimistic = useCallback(

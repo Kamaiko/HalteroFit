@@ -78,8 +78,13 @@ export default function WorkoutScreen() {
   const handleScrollViewLayout = useCallback(
     (e: LayoutChangeEvent) => {
       const { height } = e.nativeEvent.layout;
-      // measure() gives screen-relative coordinates
-      (e.target as unknown as { measure: (cb: (...args: number[]) => void) => void }).measure(
+      // measure() gives screen-relative coordinates.
+      // Cast is safe: LayoutChangeEvent.target is always a native view with measure().
+      const target = e.target as unknown as {
+        measure: (cb: (...args: number[]) => void) => void;
+      };
+      if (typeof target.measure !== 'function') return;
+      target.measure(
         (_x: number, _y: number, _w: number, _h: number, _pageX: number, pageY: number) => {
           scrollViewBounds.value = { top: pageY, bottom: pageY + height };
         }

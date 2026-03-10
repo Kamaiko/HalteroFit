@@ -81,9 +81,6 @@ export function useDragSort({
   // Uniform item height (measured from first item)
   const itemHeight = useSharedValue(0);
 
-  // Y offsets from onLayout (JS-side only)
-  const itemOffsetsRef = useRef<number[]>([]);
-
   // ── JS-side callbacks (called via runOnJS) ────────────────────────────
 
   const triggerHaptic = useCallback(() => {
@@ -110,7 +107,7 @@ export function useDragSort({
       absY: dragAbsoluteY.value,
     }),
     ({ active, absY }) => {
-      if (active < 0 || !scrollRef) return;
+      if (active < 0 || !scrollRef || !scrollRef.current) return;
 
       const { top, bottom } = scrollViewBounds.value;
       const distFromTop = absY - top;
@@ -136,6 +133,7 @@ export function useDragSort({
         .activateAfterLongPress(DRAG_ACTIVATE_DELAY)
         .onStart((e) => {
           // Initialize order [0, 1, 2, ...] and translations [0, 0, 0, ...]
+          // NOTE: for-loops required — Array.from/fill crash in worklets (UI thread)
           const order: number[] = [];
           const trans: number[] = [];
           for (let i = 0; i < count; i++) {
@@ -232,8 +230,7 @@ export function useDragSort({
 
   const onItemLayout = useCallback(
     (index: number, event: LayoutChangeEvent) => {
-      const { y, height } = event.nativeEvent.layout;
-      itemOffsetsRef.current[index] = y;
+      const { height } = event.nativeEvent.layout;
 
       // Use first measured height as the uniform item height.
       // runOnUI avoids React Compiler's immutability check on shared values.

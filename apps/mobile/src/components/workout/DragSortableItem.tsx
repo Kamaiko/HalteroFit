@@ -90,7 +90,11 @@ export const DragSortableItem = memo(function DragSortableItem({
     <Animated.View style={animatedStyle} onLayout={handleLayout}>
       <Animated.View className="flex-row items-center">
         <GestureDetector gesture={gesture}>
-          <Animated.View style={handleOffset}>
+          <Animated.View
+            style={handleOffset}
+            accessibilityLabel="Reorder exercise"
+            accessibilityHint="Long press then drag to reorder"
+          >
             <DragHandle />
           </Animated.View>
         </GestureDetector>

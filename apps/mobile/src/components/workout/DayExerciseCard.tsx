@@ -13,7 +13,7 @@ import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { DayExercise } from '@/services/database/operations/plans';
 import React, { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { type LayoutChangeEvent, Pressable, View } from 'react-native';
+import { type LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 import { SwipeableContext } from './SwipeableContext';
@@ -26,6 +26,9 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ExerciseThumbnail } from './ExerciseThumbnail';
+
+// Sentinel: shared value not animating — height follows natural layout
+const ANIM_HEIGHT_AUTO = -1;
 
 export type { DayExercise };
 
@@ -55,7 +58,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
 
   // Shared values for manual delete animation
   const translateX = useSharedValue(0);
-  const animHeight = useSharedValue(-1); // -1 = auto (not animating)
+  const animHeight = useSharedValue(ANIM_HEIGHT_AUTO);
   const animMargin = useSharedValue(8); // mb-2 = 8px
 
   const handleLayout = useCallback(
@@ -85,10 +88,10 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         }
       })
     );
-  }, [isDeleting, cardHeight, onDeleteAnimationComplete, translateX, animHeight, animMargin]);
+  }, [isDeleting, cardHeight, onDeleteAnimationComplete]);
 
   const deletingStyle = useAnimatedStyle(() => {
-    if (animHeight.value === -1) {
+    if (animHeight.value === ANIM_HEIGHT_AUTO) {
       return { transform: [{ translateX: translateX.value }] };
     }
     return {
@@ -127,7 +130,9 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         <Pressable
           onPress={handleEdit}
           className="w-16 items-center justify-center"
-          style={{ backgroundColor: Colors.background.elevated }}
+          style={styles.editButton}
+          accessibilityRole="button"
+          accessibilityLabel="Edit exercise"
         >
           <Ionicons name="pencil-outline" size={ICON_SIZE_MD} color={Colors.foreground.DEFAULT} />
         </Pressable>
@@ -135,7 +140,9 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         <Pressable
           onPress={handleDelete}
           className="w-16 items-center justify-center"
-          style={{ backgroundColor: Colors.destructive }}
+          style={styles.deleteButton}
+          accessibilityRole="button"
+          accessibilityLabel="Delete exercise"
         >
           <Ionicons name="trash-outline" size={ICON_SIZE_MD} color={Colors.primary.foreground} />
         </Pressable>
@@ -199,4 +206,10 @@ export const DayExerciseCard = memo(function DayExerciseCard({
       </ReanimatedSwipeable>
     </Animated.View>
   );
+});
+
+// ── Styles ──────────────────────────────────────────────────────────────
+const styles = StyleSheet.create({
+  editButton: { backgroundColor: Colors.background.elevated },
+  deleteButton: { backgroundColor: Colors.destructive },
 });
