@@ -8,19 +8,18 @@
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import {
+  BORDER_RADIUS_LG,
   Colors,
   DEFAULT_TARGET_SETS,
-  DURATION_FAST,
   ICON_SIZE_XS,
   ICON_SIZE_LG,
   ICON_SIZE_3XL,
@@ -51,7 +50,6 @@ interface TimelineDayCardProps {
   onStartWorkout?: () => void;
   onAddExercisePress: () => void;
   onExerciseImagePress: (exercise: DayExercise) => void;
-  onEditDay?: () => void;
   onDeleteExercise?: (exercise: DayExercise) => void;
 
   deletingExerciseId?: string | null;
@@ -73,7 +71,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   onStartWorkout,
   onAddExercisePress,
   onExerciseImagePress,
-  onEditDay,
   onDeleteExercise,
   deletingExerciseId,
   onDeleteAnimationComplete,
@@ -114,21 +111,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
 
   const exerciseKeyExtractor = useCallback((item: DayExercise) => item.id, []);
 
-  // ── Animated styles ────────────────────────────────────────────────
-  // useSharedValue persists across re-renders — animation won't restart
-  // when unrelated state changes (e.g. loadingExercises).
-  const expandedProgress = useSharedValue(isExpanded ? 0 : 1);
-
-  useEffect(() => {
-    expandedProgress.value = withTiming(isExpanded ? 0 : 1, { duration: DURATION_FAST });
-  }, [isExpanded, expandedProgress]);
-
-  const muscleIconStyle = useAnimatedStyle(() => ({
-    opacity: expandedProgress.value,
-    width: expandedProgress.value * MUSCLE_ICON_SIZE,
-    overflow: 'hidden' as const,
-  }));
-
   // ── Stats text ────────────────────────────────────────────────────
   const setsDisplay = exerciseCount * DEFAULT_TARGET_SETS;
   const statsText = `${setsDisplay} sets · ${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}`;
@@ -154,8 +136,8 @@ export const TimelineDayCard = memo(function TimelineDayCard({
 
         {/* ── Header row ─────────────────────────────────────────── */}
         <View style={styles.headerRow}>
-          {/* Muscle icon — fades out when expanded */}
-          <Animated.View style={[styles.muscleIconWrapper, muscleIconStyle]}>
+          {/* Muscle icon — LayoutAnimation handles width/opacity/margin transition */}
+          <View style={[styles.muscleIconWrapper, isExpanded && styles.muscleIconHidden]}>
             {dominantMuscleGroupId ? (
               <MuscleGroupIcon
                 muscleGroupId={dominantMuscleGroupId}
@@ -167,7 +149,7 @@ export const TimelineDayCard = memo(function TimelineDayCard({
                 <BrandIcon size={ICON_SIZE_LG} color={Colors.foreground.secondary} />
               </View>
             )}
-          </Animated.View>
+          </View>
 
           {/* Day info */}
           <View
@@ -296,11 +278,17 @@ const styles = StyleSheet.create({
   },
   muscleIconWrapper: {
     height: MUSCLE_ICON_SIZE,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS_LG,
     backgroundColor: Colors.background.elevated,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+  },
+  muscleIconHidden: {
+    width: 0,
+    opacity: 0,
+    marginRight: 0,
+    overflow: 'hidden' as const,
   },
   muscleIconFallback: {
     width: MUSCLE_ICON_SIZE,

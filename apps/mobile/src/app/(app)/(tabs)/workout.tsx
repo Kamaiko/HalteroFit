@@ -4,10 +4,15 @@
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback, useMemo } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  type ListRenderItemInfo,
+  Pressable,
+  View,
+} from 'react-native';
 
 import { ScreenContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui';
@@ -18,7 +23,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { InputDialog } from '@/components/ui/input-dialog';
 import { Text } from '@/components/ui/text';
 import { CompactHeader, TimelineDayCard, AddDayPill, type DayExercise } from '@/components/workout';
-import { Colors, DEFAULT_PLAN_NAME, ICON_SIZE_SM } from '@/constants';
+import { Colors, DEFAULT_PLAN_NAME, ICON_SIZE_SM, TAB_BAR_HEIGHT } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
 import type { PlanDay } from '@/services/database/operations/plans';
 
@@ -102,9 +107,6 @@ export default function WorkoutScreen() {
             });
           }}
           onExerciseImagePress={handleExercisePress}
-          onEditDay={() => {
-            router.push({ pathname: '/plans/edit-day', params: { dayId: day.id } });
-          }}
           onDeleteExercise={handleDeleteExercise}
           deletingExerciseId={deletingExerciseId}
           onDeleteAnimationComplete={handleDeleteAnimationComplete}
@@ -165,11 +167,11 @@ export default function WorkoutScreen() {
           action={{ label: '+ Add a day', onPress: handleAddDayPress }}
         />
       ) : (
-        <FlashList
+        <FlatList
           data={planDays}
           renderItem={renderTimelineItem}
           keyExtractor={keyExtractor}
-          contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: TAB_BAR_HEIGHT + 16 }}
           ListFooterComponent={<AddDayPill onPress={handleAddDayPress} />}
         />
       )}

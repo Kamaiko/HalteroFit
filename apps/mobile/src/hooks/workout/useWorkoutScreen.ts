@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LayoutAnimation } from 'react-native';
 
 import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
@@ -145,13 +146,8 @@ export function useWorkoutScreen() {
   // ── Accordion state (replaces tab selection) ──────────────────────
   const [expandedDayId, setExpandedDayId] = useState<string | null>(null);
 
-  // Derived selected day from expandedDayId
-  const selectedDay = useMemo(
-    () => planDays.find((d) => d.id === expandedDayId) ?? null,
-    [planDays, expandedDayId]
-  );
-
   const handleDayPress = useCallback((day: PlanDay) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     // Clear stale exercises immediately when switching to a different day
     // (prevents 1-frame flash of old exercises on the new card)
     setExpandedDayId((prev) => {
@@ -170,7 +166,7 @@ export function useWorkoutScreen() {
   const [loadingExercises, setLoadingExercises] = useState(false);
 
   useEffect(() => {
-    if (!selectedDay?.id) {
+    if (!expandedDayId) {
       setSelectedDayExercises(null);
       return;
     }
@@ -178,7 +174,7 @@ export function useWorkoutScreen() {
     let isFirstEmission = true;
     setLoadingExercises(true);
 
-    const subscription = observePlanDayWithExercises(selectedDay.id).subscribe({
+    const subscription = observePlanDayWithExercises(expandedDayId).subscribe({
       next: (dayWithExercises) => {
         setSelectedDayExercises(dayWithExercises);
         if (isFirstEmission) {
@@ -193,12 +189,13 @@ export function useWorkoutScreen() {
     });
 
     return () => subscription.unsubscribe();
-  }, [selectedDay?.id, handleError]);
+  }, [expandedDayId, handleError]);
 
   // ── Extracted sub-hooks ─────────────────────────────────────────────
   const handleDayDeleted = useCallback(
     (dayId: string) => {
       if (expandedDayId === dayId) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setExpandedDayId(null);
       }
     },
@@ -206,6 +203,7 @@ export function useWorkoutScreen() {
   );
 
   const handleDayAdded = useCallback((day: PlanDay) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedDayId(day.id);
   }, []);
 
@@ -220,7 +218,7 @@ export function useWorkoutScreen() {
   });
 
   const exerciseActions = useExerciseActions({
-    selectedDayId: selectedDay?.id,
+    selectedDayId: expandedDayId ?? undefined,
   });
 
   // ── Day reorder (via menu buttons) ─────────────────────────────────
