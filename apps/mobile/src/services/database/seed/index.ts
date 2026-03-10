@@ -5,3 +5,4 @@
  */
 
 export { initializeExercises, needsExerciseSeeding, seedExercises } from './exercises';
+export { seedDevData } from './dev-data';

@@ -15,7 +15,7 @@ import { ErrorFallbackScreen } from '@/components/layout';
 import { useAuthStore, enableDevMode } from '@/stores/auth/authStore';
 import { supabase } from '@/services/supabase';
 import { setupAuthListener, createSessionFromUrl, mapUser } from '@/services/auth';
-import { initializeExercises } from '@/services/database/seed';
+import { initializeExercises, seedDevData } from '@/services/database/seed';
 import { setupAutoSync, manualSync, resolveInitialSync } from '@/services/database';
 import '../../global.css';
 
@@ -51,6 +51,7 @@ export default function RootLayout() {
       resolveInitialSync(); // No sync in dev mode
       initSentry();
       initializeExercises()
+        .then(() => seedDevData())
         .then(() => setIsReady(true))
         .catch(() => setIsReady(true));
       return;
