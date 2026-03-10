@@ -8,14 +8,16 @@
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
+import type { RefObject } from 'react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, type ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   FadeInDown,
   LinearTransition,
   useAnimatedStyle,
   withDelay,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
@@ -33,9 +35,11 @@ import {
   ICON_SIZE_LG,
   ICON_SIZE_3XL,
 } from '@/constants';
-import type { PlanDay } from '@/services/database/operations/plans';
+import { useDragSort } from '@/hooks/workout/useDragSort';
+import type { PlanDay, PlanDayWithExercises } from '@/services/database/operations/plans';
 
 import { DayExerciseCard, type DayExercise } from './DayExerciseCard';
+import { DragSortableItem } from './DragSortableItem';
 import { SwipeableContext, type SwipeableContextValue } from './SwipeableContext';
 
 // ── Constants ───────────────────────────────────────────────────────────
@@ -63,6 +67,13 @@ interface TimelineDayCardProps {
 
   deletingExerciseId?: string | null;
   onDeleteAnimationComplete?: () => void;
+
+  // Drag-to-reorder (passed from parent ScrollView)
+  scrollRef: RefObject<ScrollView | null>;
+  scrollY: SharedValue<number>;
+  scrollViewBounds: SharedValue<{ top: number; bottom: number }>;
+  onReorderExercises: (reordered: PlanDayWithExercises['exercises']) => Promise<void>;
+  onScrollEnabledChange: (enabled: boolean) => void;
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -82,6 +93,11 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   onDeleteExercise,
   deletingExerciseId,
   onDeleteAnimationComplete,
+  scrollRef,
+  scrollY,
+  scrollViewBounds,
+  onReorderExercises,
+  onScrollEnabledChange,
 }: TimelineDayCardProps) {
   // ── Deferred exercise rendering ──
   // Defer mounting 16+ DayExerciseCards until AFTER the icon width collapse
@@ -140,6 +156,29 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     () => ({ openId: openSwipeableId, setOpenId: setOpenSwipeableId }),
     [openSwipeableId]
   );
+
+  // ── Drag-to-reorder ────────────────────────────────────────────────
+  const handleDragStart = useCallback(() => {
+    setOpenSwipeableId(null); // Close any open swipeable when drag starts
+    onScrollEnabledChange(false); // Disable parent scroll during drag
+  }, [onScrollEnabledChange]);
+
+  const handleReorderComplete = useCallback(
+    (reordered: DayExercise[]) => {
+      onScrollEnabledChange(true); // Re-enable scroll after drop
+      onReorderExercises(reordered);
+    },
+    [onReorderExercises, onScrollEnabledChange]
+  );
+
+  const dragSort = useDragSort({
+    items: exercises,
+    onReorder: handleReorderComplete,
+    onDragStart: handleDragStart,
+    scrollRef,
+    scrollY,
+    scrollViewBounds,
+  });
 
   const handlePress = useCallback(() => {
     onPress(day);
@@ -261,13 +300,15 @@ export const TimelineDayCard = memo(function TimelineDayCard({
                     key={exercise.id}
                     entering={FadeInDown.delay(index * 20).duration(DURATION_FAST)}
                   >
-                    <DayExerciseCard
-                      exercise={exercise}
-                      onImagePress={onExerciseImagePress}
-                      onDelete={onDeleteExercise}
-                      isDeleting={exercise.id === deletingExerciseId}
-                      onDeleteAnimationComplete={onDeleteAnimationComplete}
-                    />
+                    <DragSortableItem index={index} dragSort={dragSort}>
+                      <DayExerciseCard
+                        exercise={exercise}
+                        onImagePress={onExerciseImagePress}
+                        onDelete={onDeleteExercise}
+                        isDeleting={exercise.id === deletingExerciseId}
+                        onDeleteAnimationComplete={onDeleteAnimationComplete}
+                      />
+                    </DragSortableItem>
                   </Animated.View>
                 ))}
               </View>

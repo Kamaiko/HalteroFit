@@ -5,8 +5,16 @@
  */
 
 import { router } from 'expo-router';
-import { useCallback, useMemo } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import type { RefObject } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  type LayoutChangeEvent,
+  Pressable,
+  type ScrollView,
+  View,
+} from 'react-native';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui';
@@ -53,9 +61,35 @@ export default function WorkoutScreen() {
     deletingExerciseId,
     deleteExerciseOptimistic,
     handleDeleteAnimationComplete,
+    reorderExercisesOptimistic,
     handleMoveDayUp,
     handleMoveDayDown,
   } = useWorkoutScreen();
+
+  // ── Scroll tracking for drag-to-reorder ────────────────────────────
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollY = useSharedValue(0);
+  const scrollViewBounds = useSharedValue({ top: 0, bottom: 0 });
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
+
+  const handleScrollViewLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      const { height } = e.nativeEvent.layout;
+      // measure() gives screen-relative coordinates
+      (e.target as unknown as { measure: (cb: (...args: number[]) => void) => void }).measure(
+        (_x: number, _y: number, _w: number, _h: number, _pageX: number, pageY: number) => {
+          scrollViewBounds.value = { top: pageY, bottom: pageY + height };
+        }
+      );
+    },
+    [scrollViewBounds]
+  );
 
   // ── Callbacks ────────────────────────────────────────────────────────
   const handleExercisePress = useCallback((exercise: DayExercise) => {
@@ -103,6 +137,11 @@ export default function WorkoutScreen() {
           onDeleteExercise={handleDeleteExercise}
           deletingExerciseId={deletingExerciseId}
           onDeleteAnimationComplete={handleDeleteAnimationComplete}
+          scrollRef={scrollRef}
+          scrollY={scrollY}
+          scrollViewBounds={scrollViewBounds}
+          onReorderExercises={reorderExercisesOptimistic}
+          onScrollEnabledChange={setScrollEnabled}
         />
       );
     },
@@ -117,6 +156,9 @@ export default function WorkoutScreen() {
       handleDeleteExercise,
       deletingExerciseId,
       handleDeleteAnimationComplete,
+      scrollY,
+      scrollViewBounds,
+      reorderExercisesOptimistic,
     ]
   );
 
@@ -157,10 +199,17 @@ export default function WorkoutScreen() {
           action={{ label: '+ Add a day', onPress: handleAddDayPress }}
         />
       ) : (
-        <ScrollView contentContainerStyle={{ paddingTop: 8, paddingBottom: TAB_BAR_HEIGHT + 16 }}>
+        <Animated.ScrollView
+          ref={scrollRef as RefObject<Animated.ScrollView>}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          scrollEnabled={scrollEnabled}
+          onLayout={handleScrollViewLayout}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: TAB_BAR_HEIGHT + 16 }}
+        >
           {planDays.map(renderDayCard)}
           <AddDayPill onPress={handleAddDayPress} />
-        </ScrollView>
+        </Animated.ScrollView>
       )}
 
       <BottomSheet ref={menuSheetRef} title={menuDay?.name ?? 'Options'}>
