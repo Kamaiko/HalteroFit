@@ -233,6 +233,7 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   }, [onAddExercisePress]);
 
   // ── Stats text ────────────────────────────────────────────────────
+  // TODO: Replace with sum of each exercise's real targetSets when custom sets/reps per exercise is implemented
   const setsDisplay = exerciseCount * DEFAULT_TARGET_SETS;
   const statsText = `${setsDisplay} sets · ${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}`;
 

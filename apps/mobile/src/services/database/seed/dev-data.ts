@@ -22,6 +22,7 @@ import type PlanDayExercise from '../local/models/PlanDayExercise';
 const DEV_USER_ID = 'dev-user-123';
 
 // ── Seed plan structure ─────────────────────────────────────────────────
+// TODO: Add varied targetSets/targetReps per exercise when custom sets/reps feature is implemented
 // All exercises use DEFAULT_TARGET_SETS (3) × DEFAULT_TARGET_REPS (10)
 // to match the UI display logic in TimelineDayCard which calculates
 // total sets as exerciseCount × DEFAULT_TARGET_SETS.
