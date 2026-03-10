@@ -8,13 +8,13 @@
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import Animated, {
   LinearTransition,
   useAnimatedStyle,
-  useSharedValue,
+  withDelay,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -26,6 +26,8 @@ import {
   BORDER_RADIUS_LG,
   Colors,
   DEFAULT_TARGET_SETS,
+  DURATION_FAST,
+  DURATION_INSTANT,
   DURATION_STANDARD,
   ICON_SIZE_XS,
   ICON_SIZE_LG,
@@ -83,15 +85,14 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   deletingExerciseId,
   onDeleteAnimationComplete,
 }: TimelineDayCardProps) {
-  // ── Icon opacity animation (LinearTransition handles layout, not opacity) ──
-  const iconOpacity = useSharedValue(isExpanded ? 0 : 1);
-
-  useEffect(() => {
-    iconOpacity.value = withTiming(isExpanded ? 0 : 1, { duration: DURATION_STANDARD });
-  }, [isExpanded, iconOpacity]);
-
-  const iconAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: iconOpacity.value,
+  // ── Muscle icon animation ──
+  // LinearTransition handles width/marginRight (synced with sibling reflow).
+  // useAnimatedStyle handles opacity only (LinearTransition can't animate opacity).
+  // Collapse: opacity delayed so text slides first, then icon fades in.
+  const iconOpacityStyle = useAnimatedStyle(() => ({
+    opacity: isExpanded
+      ? withTiming(0, { duration: DURATION_FAST })
+      : withDelay(DURATION_INSTANT, withTiming(1, { duration: DURATION_FAST })),
   }));
 
   // ── Swipeable context for exercise cards ────────────────────────────
@@ -155,12 +156,12 @@ export const TimelineDayCard = memo(function TimelineDayCard({
 
         {/* ── Header row ─────────────────────────────────────────── */}
         <Animated.View style={styles.headerRow} layout={LAYOUT_TRANSITION}>
-          {/* Muscle icon — LinearTransition handles width/margin, useAnimatedStyle handles opacity */}
+          {/* Muscle icon — LinearTransition handles layout, useAnimatedStyle handles opacity */}
           <Animated.View
             style={[
               styles.muscleIconWrapper,
-              isExpanded && styles.muscleIconHidden,
-              iconAnimatedStyle,
+              isExpanded && styles.muscleIconCollapsed,
+              iconOpacityStyle,
             ]}
             layout={LAYOUT_TRANSITION}
           >
@@ -230,19 +231,19 @@ export const TimelineDayCard = memo(function TimelineDayCard({
       {/* ── Expanded exercise list ─────────────────────────────────── */}
       {isExpanded && (
         <View style={styles.expandedContent}>
-          {loadingExercises ? (
-            <View className="items-center py-6">
+          <SwipeableContext.Provider value={swipeableCtx}>
+            <FlashList
+              data={exercises}
+              renderItem={renderExerciseItem}
+              keyExtractor={exerciseKeyExtractor}
+              contentContainerStyle={styles.exerciseListContent}
+            />
+          </SwipeableContext.Provider>
+
+          {loadingExercises && (
+            <View style={styles.spinnerOverlay}>
               <ActivityIndicator size="small" color={Colors.primary.DEFAULT} />
             </View>
-          ) : (
-            <SwipeableContext.Provider value={swipeableCtx}>
-              <FlashList
-                data={exercises}
-                renderItem={renderExerciseItem}
-                keyExtractor={exerciseKeyExtractor}
-                contentContainerStyle={styles.exerciseListContent}
-              />
-            </SwipeableContext.Provider>
           )}
 
           {/* + Add Exercise */}
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
-  muscleIconHidden: {
+  muscleIconCollapsed: {
     width: 0,
     marginRight: 0,
     overflow: 'hidden' as const,
@@ -337,6 +338,13 @@ const styles = StyleSheet.create({
     color: Colors.primary.foreground,
     fontSize: 12,
     fontWeight: '700',
+  },
+  spinnerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLLAPSED_BG,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    zIndex: 1,
   },
   expandedContent: {
     backgroundColor: COLLAPSED_BG,

@@ -12,7 +12,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
+import {
+  DEFAULT_FIRST_DAY_NAME,
+  DEFAULT_FIRST_DAY_OF_WEEK,
+  DEFAULT_PLAN_NAME,
+  DURATION_STANDARD,
+} from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { useObservable } from '@/hooks/ui/useObservable';
 import {
@@ -146,15 +151,7 @@ export function useWorkoutScreen() {
   const [expandedDayId, setExpandedDayId] = useState<string | null>(null);
 
   const handleDayPress = useCallback((day: PlanDay) => {
-    // Clear stale exercises immediately when switching to a different day
-    // (prevents 1-frame flash of old exercises on the new card)
-    setExpandedDayId((prev) => {
-      if (prev !== null && prev !== day.id) {
-        setSelectedDayExercises(null);
-        setLoadingExercises(true);
-      }
-      return prev === day.id ? null : day.id;
-    });
+    setExpandedDayId((prev) => (prev === day.id ? null : day.id));
   }, []);
 
   // ── Expanded day exercises observation (reactive - hybrid) ──────────
@@ -166,27 +163,37 @@ export function useWorkoutScreen() {
   useEffect(() => {
     if (!expandedDayId) {
       setSelectedDayExercises(null);
+      setLoadingExercises(false);
       return;
     }
 
-    let isFirstEmission = true;
     setLoadingExercises(true);
+    let received = false;
+    let minTimeElapsed = false;
+
+    // Minimum spinner display prevents flash of partial FlashList layout
+    const timer = setTimeout(() => {
+      minTimeElapsed = true;
+      if (received) setLoadingExercises(false);
+    }, DURATION_STANDARD);
 
     const subscription = observePlanDayWithExercises(expandedDayId).subscribe({
-      next: (dayWithExercises) => {
-        setSelectedDayExercises(dayWithExercises);
-        if (isFirstEmission) {
-          setLoadingExercises(false);
-          isFirstEmission = false;
-        }
+      next: (data) => {
+        setSelectedDayExercises(data);
+        received = true;
+        if (minTimeElapsed) setLoadingExercises(false);
       },
       error: (error) => {
         handleError(error, 'observePlanDayWithExercises');
-        setLoadingExercises(false);
+        received = true;
+        if (minTimeElapsed) setLoadingExercises(false);
       },
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
   }, [expandedDayId, handleError]);
 
   // ── Extracted sub-hooks ─────────────────────────────────────────────

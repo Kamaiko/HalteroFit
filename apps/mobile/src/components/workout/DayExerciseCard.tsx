@@ -4,18 +4,11 @@
  * Shows exercise name, thumbnail, and target sets/reps.
  * Supports swipe-to-reveal for edit and delete actions.
  *
- * Delete animation is manual (shared values) because DraggableFlatList
- * ignores Reanimated's declarative `exiting` and `layout` props.
+ * Delete animation is manual (shared values) for precise sequencing.
  * Sequence: slide left (200ms) → height collapse (200ms @ 150ms delay).
  */
 
-import {
-  Colors,
-  CARD_ACTIVE_STYLE,
-  DURATION_STANDARD,
-  DURATION_FAST,
-  ICON_SIZE_MD,
-} from '@/constants';
+import { Colors, DURATION_STANDARD, DURATION_FAST, ICON_SIZE_MD } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { DayExercise } from '@/services/database/operations/plans';
@@ -32,7 +25,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { DragHandle } from './DragHandle';
 import { ExerciseThumbnail } from './ExerciseThumbnail';
 
 export type { DayExercise };
@@ -42,8 +34,6 @@ export interface DayExerciseCardProps {
   onImagePress: (exercise: DayExercise) => void;
   onEdit?: (exercise: DayExercise) => void;
   onDelete?: (exercise: DayExercise) => void;
-  drag?: () => void;
-  isActive?: boolean;
   isDeleting?: boolean;
   onDeleteAnimationComplete?: () => void;
 }
@@ -53,8 +43,6 @@ export const DayExerciseCard = memo(function DayExerciseCard({
   onImagePress,
   onEdit,
   onDelete,
-  drag,
-  isActive,
   isDeleting,
   onDeleteAnimationComplete,
 }: DayExerciseCardProps) {
@@ -187,14 +175,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
             }
           }}
           className="mx-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
-          style={isActive ? CARD_ACTIVE_STYLE : undefined}
         >
-          {drag && (
-            <View style={{ marginLeft: -8, marginRight: 4 }}>
-              <DragHandle onDrag={drag} />
-            </View>
-          )}
-
           <ExerciseThumbnail
             imageUrl={exercise.exercise.gif_url}
             targetMuscles={exercise.exercise.target_muscles}
