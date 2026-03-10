@@ -58,7 +58,6 @@ export default function WorkoutScreen() {
     deletingExerciseId,
     deleteExerciseOptimistic,
     handleDeleteAnimationComplete,
-    reorderExercisesOptimistic,
     reorderDaysOptimistic,
   } = useWorkoutScreen();
 
@@ -115,7 +114,6 @@ export default function WorkoutScreen() {
               router.push({ pathname: '/plans/edit-day', params: { dayId: day.id } });
             }}
             onDeleteExercise={handleDeleteExercise}
-            onReorderExercises={reorderExercisesOptimistic}
             deletingExerciseId={deletingExerciseId}
             onDeleteAnimationComplete={handleDeleteAnimationComplete}
           />
@@ -133,7 +131,6 @@ export default function WorkoutScreen() {
       handleDayMenuPress,
       handleExercisePress,
       handleDeleteExercise,
-      reorderExercisesOptimistic,
       deletingExerciseId,
       handleDeleteAnimationComplete,
     ]

@@ -3,15 +3,11 @@
  *
  * Handles both collapsed and expanded states in a single component.
  * Collapsed: drag handle + muscle icon + day name/stats + menu
- * Expanded: header + exercise list (DraggableFlatList) + add exercise button
+ * Expanded: header + exercise list + add exercise button
  *
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import DraggableFlatList, {
-  type RenderItemParams,
-  ScaleDecorator,
-} from 'react-native-draggable-flatlist';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, withTiming } from 'react-native-reanimated';
@@ -63,7 +59,6 @@ interface TimelineDayCardProps {
   onExerciseImagePress: (exercise: DayExercise) => void;
   onEditExercise?: (exercise: DayExercise) => void;
   onDeleteExercise?: (exercise: DayExercise) => void;
-  onReorderExercises?: (exercises: DayExercise[]) => void;
 
   drag?: () => void;
   isActive?: boolean;
@@ -91,7 +86,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   onExerciseImagePress,
   onEditExercise,
   onDeleteExercise,
-  onReorderExercises,
   drag,
   isActive,
   deletingExerciseId,
@@ -132,44 +126,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   // ── Stats text (stable — uses exerciseCount from observable, no flicker) ──
   const setsDisplay = exerciseCount * DEFAULT_TARGET_SETS;
   const statsText = `${setsDisplay} sets · ${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}`;
-
-  // ── Exercise list renderItem ───────────────────────────────────────
-  const renderExerciseItem = useCallback(
-    ({
-      item,
-      drag: exerciseDrag,
-      isActive: exerciseIsActive,
-      getIndex,
-    }: RenderItemParams<DayExercise>) => {
-      const index = getIndex() ?? 0;
-      const staggerDelay = Math.min(index * STAGGER_DELAY, MAX_STAGGER);
-      return (
-        <ScaleDecorator>
-          <Animated.View entering={FadeInDown.duration(DURATION_STANDARD).delay(staggerDelay)}>
-            <DayExerciseCard
-              exercise={item}
-              onImagePress={onExerciseImagePress}
-              onEdit={onEditExercise}
-              onDelete={onDeleteExercise}
-              drag={exerciseDrag}
-              isActive={exerciseIsActive}
-              isDeleting={item.id === deletingExerciseId}
-              onDeleteAnimationComplete={onDeleteAnimationComplete}
-            />
-          </Animated.View>
-        </ScaleDecorator>
-      );
-    },
-    [
-      onExerciseImagePress,
-      onEditExercise,
-      onDeleteExercise,
-      deletingExerciseId,
-      onDeleteAnimationComplete,
-    ]
-  );
-
-  const exerciseKeyExtractor = useCallback((item: DayExercise) => item.id, []);
 
   // ── Card style ─────────────────────────────────────────────────────
   const cardStyle = [
@@ -271,14 +227,26 @@ export const TimelineDayCard = memo(function TimelineDayCard({
             </View>
           ) : (
             <SwipeableContext.Provider value={swipeableCtx}>
-              <DraggableFlatList
-                data={exercises}
-                renderItem={renderExerciseItem}
-                keyExtractor={exerciseKeyExtractor}
-                onDragEnd={({ data }) => onReorderExercises?.(data)}
-                scrollEnabled={false}
-                contentContainerStyle={styles.exerciseListContent}
-              />
+              <View style={styles.exerciseListContent}>
+                {exercises.map((item, index) => {
+                  const staggerDelay = Math.min(index * STAGGER_DELAY, MAX_STAGGER);
+                  return (
+                    <Animated.View
+                      key={item.id}
+                      entering={FadeInDown.duration(DURATION_STANDARD).delay(staggerDelay)}
+                    >
+                      <DayExerciseCard
+                        exercise={item}
+                        onImagePress={onExerciseImagePress}
+                        onEdit={onEditExercise}
+                        onDelete={onDeleteExercise}
+                        isDeleting={item.id === deletingExerciseId}
+                        onDeleteAnimationComplete={onDeleteAnimationComplete}
+                      />
+                    </Animated.View>
+                  );
+                })}
+              </View>
             </SwipeableContext.Provider>
           )}
 
