@@ -11,7 +11,6 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutAnimation } from 'react-native';
 
 import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
@@ -153,7 +152,6 @@ export function useWorkoutScreen() {
   );
 
   const handleDayPress = useCallback((day: PlanDay) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     // Clear stale exercises immediately when switching to a different day
     // (prevents 1-frame flash of old exercises on the new card)
     setExpandedDayId((prev) => {
@@ -201,7 +199,6 @@ export function useWorkoutScreen() {
   const handleDayDeleted = useCallback(
     (dayId: string) => {
       if (expandedDayId === dayId) {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setExpandedDayId(null);
       }
     },
@@ -209,7 +206,6 @@ export function useWorkoutScreen() {
   );
 
   const handleDayAdded = useCallback((day: PlanDay) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedDayId(day.id);
   }, []);
 

@@ -164,18 +164,24 @@ export async function savePlanDayEdits(data: {
           allOperations.push(...preparedCreates);
         }
 
-        // 4. Prepare reorders
+        // 4. Prepare reorders — only for exercises whose order actually changed.
+        // This avoids marking unchanged records as dirty (reduces sync traffic).
         // NOTE: order_index values may be non-contiguous (e.g., [0, 2]) because
         // buildSavePayload maps existing exercises to their position in the full
         // mixed array (which includes newly-added exercises). The gaps are filled
         // by addedExercises above. All downstream queries use sortBy('order_index')
         // which handles gaps correctly.
-        const preparedReorders = await Promise.all(
+        const preparedReorders: PlanDayExerciseModel[] = [];
+        await Promise.all(
           data.reorderedExercises.map(async ({ id, order_index }) => {
             const pde = await database.get<PlanDayExerciseModel>('plan_day_exercises').find(id);
-            return pde.prepareUpdate((e) => {
-              e.orderIndex = order_index;
-            });
+            if (pde.orderIndex !== order_index) {
+              preparedReorders.push(
+                pde.prepareUpdate((e) => {
+                  e.orderIndex = order_index;
+                })
+              );
+            }
           })
         );
         allOperations.push(...preparedReorders);
@@ -502,8 +508,10 @@ export async function reorderPlanDays(
           );
         }
 
-        // Prepare all updates, verify same parent, then batch
-        const preparedUpdates = await Promise.all(
+        // Prepare updates — only for days whose order actually changed.
+        // This avoids marking unchanged records as dirty (reduces sync traffic).
+        const preparedUpdates: PlanDayModel[] = [];
+        await Promise.all(
           days.map(async ({ id, order_index }) => {
             const day = await database.get<PlanDayModel>('plan_days').find(id);
             if (day.planId !== planId) {
@@ -512,12 +520,18 @@ export async function reorderPlanDays(
                 `reorderPlanDays: day ${id} belongs to plan ${day.planId}, not ${planId}`
               );
             }
-            return day.prepareUpdate((d) => {
-              d.orderIndex = order_index;
-            });
+            if (day.orderIndex !== order_index) {
+              preparedUpdates.push(
+                day.prepareUpdate((d) => {
+                  d.orderIndex = order_index;
+                })
+              );
+            }
           })
         );
-        await database.batch(...preparedUpdates);
+        if (preparedUpdates.length > 0) {
+          await database.batch(...preparedUpdates);
+        }
       });
     },
     'Unable to reorder days. Please try again.',
