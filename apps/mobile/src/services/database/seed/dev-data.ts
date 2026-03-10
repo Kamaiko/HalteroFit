@@ -11,6 +11,7 @@
 
 import { Q } from '@nozbe/watermelondb';
 
+import { DEFAULT_TARGET_REPS, DEFAULT_TARGET_SETS } from '@/constants';
 import { database } from '../local';
 import { exerciseUuid } from '../local/generateId';
 import type WorkoutPlan from '../local/models/WorkoutPlan';
@@ -21,18 +22,14 @@ import type PlanDayExercise from '../local/models/PlanDayExercise';
 const DEV_USER_ID = 'dev-user-123';
 
 // ── Seed plan structure ─────────────────────────────────────────────────
-
-interface SeedExercise {
-  exerciseDbId: string;
-  targetSets: number;
-  targetReps: number;
-  restTimerSeconds?: number;
-}
+// All exercises use DEFAULT_TARGET_SETS (3) × DEFAULT_TARGET_REPS (10)
+// to match the UI display logic in TimelineDayCard which calculates
+// total sets as exerciseCount × DEFAULT_TARGET_SETS.
 
 interface SeedDay {
   name: string;
   dayOfWeek: string;
-  exercises: SeedExercise[];
+  exercises: string[]; // exerciseDb IDs
 }
 
 const SEED_DAYS: SeedDay[] = [
@@ -40,33 +37,33 @@ const SEED_DAYS: SeedDay[] = [
     name: 'Push',
     dayOfWeek: 'MON',
     exercises: [
-      { exerciseDbId: 'EIeI8Vf', targetSets: 3, targetReps: 10, restTimerSeconds: 120 }, // Barbell Bench Press
-      { exerciseDbId: 'ns0SIbU', targetSets: 3, targetReps: 12, restTimerSeconds: 90 }, // Dumbbell Incline Bench Press
-      { exerciseDbId: 'A6wtbuL', targetSets: 3, targetReps: 8, restTimerSeconds: 90 }, // Dumbbell Standing Overhead Press
-      { exerciseDbId: 'w4dLzSx', targetSets: 3, targetReps: 15, restTimerSeconds: 60 }, // Cable One Arm Decline Chest Fly
-      { exerciseDbId: 'qRZ5S1N', targetSets: 3, targetReps: 12, restTimerSeconds: 60 }, // Cable One Arm Tricep Pushdown
+      'EIeI8Vf', // Barbell Bench Press
+      'ns0SIbU', // Dumbbell Incline Bench Press
+      'A6wtbuL', // Dumbbell Standing Overhead Press
+      'w4dLzSx', // Cable One Arm Decline Chest Fly
+      'qRZ5S1N', // Cable One Arm Tricep Pushdown
     ],
   },
   {
     name: 'Pull',
     dayOfWeek: 'WED',
     exercises: [
-      { exerciseDbId: 'eZyBC3j', targetSets: 3, targetReps: 10, restTimerSeconds: 120 }, // Barbell Bent Over Row
-      { exerciseDbId: '0V2YQjW', targetSets: 3, targetReps: 8, restTimerSeconds: 90 }, // Pull Up (neutral Grip)
-      { exerciseDbId: 'LEprlgG', targetSets: 3, targetReps: 12, restTimerSeconds: 90 }, // Cable Lat Pulldown Full Range Of Motion
-      { exerciseDbId: 'wqNPGCg', targetSets: 3, targetReps: 15, restTimerSeconds: 60 }, // Cable Rear Delt Row (with Rope)
-      { exerciseDbId: '25GPyDY', targetSets: 3, targetReps: 12, restTimerSeconds: 60 }, // Barbell Curl
+      'eZyBC3j', // Barbell Bent Over Row
+      '0V2YQjW', // Pull Up (neutral Grip)
+      'LEprlgG', // Cable Lat Pulldown Full Range Of Motion
+      'wqNPGCg', // Cable Rear Delt Row (with Rope)
+      '25GPyDY', // Barbell Curl
     ],
   },
   {
     name: 'Legs',
     dayOfWeek: 'FRI',
     exercises: [
-      { exerciseDbId: 'qXTaZnJ', targetSets: 4, targetReps: 8, restTimerSeconds: 150 }, // Barbell Full Squat
-      { exerciseDbId: 'wQ2c4XD', targetSets: 3, targetReps: 10, restTimerSeconds: 120 }, // Barbell Romanian Deadlift
-      { exerciseDbId: 'yn2lLSI', targetSets: 3, targetReps: 12, restTimerSeconds: 90 }, // Sled 45° Leg Press
-      { exerciseDbId: '17lJ1kr', targetSets: 3, targetReps: 12, restTimerSeconds: 60 }, // Lever Lying Leg Curl
-      { exerciseDbId: '8ozhUIZ', targetSets: 4, targetReps: 15, restTimerSeconds: 60 }, // Barbell Standing Calf Raise
+      'qXTaZnJ', // Barbell Full Squat
+      'wQ2c4XD', // Barbell Romanian Deadlift
+      'yn2lLSI', // Sled 45° Leg Press
+      '17lJ1kr', // Lever Lying Leg Curl
+      '8ozhUIZ', // Barbell Standing Calf Raise
     ],
   },
 ];
@@ -120,15 +117,14 @@ export async function seedDevData(): Promise<void> {
       });
       dayRecords.push(day);
 
-      for (const [exIndex, seedEx] of seedDay.exercises.entries()) {
+      for (const [exIndex, exerciseDbId] of seedDay.exercises.entries()) {
         exerciseRecords.push(
           exercisesCollection.prepareCreate((record) => {
             record.planDayId = day.id;
-            record.exerciseId = exerciseUuid(seedEx.exerciseDbId);
+            record.exerciseId = exerciseUuid(exerciseDbId);
             record.orderIndex = exIndex;
-            record.targetSets = seedEx.targetSets;
-            record.targetReps = seedEx.targetReps;
-            record.restTimerSeconds = seedEx.restTimerSeconds;
+            record.targetSets = DEFAULT_TARGET_SETS;
+            record.targetReps = DEFAULT_TARGET_REPS;
             const raw = record._raw as Record<string, unknown>;
             raw.created_at = now;
             raw.updated_at = now;
