@@ -43,6 +43,8 @@ import { SwipeableContext, type SwipeableContextValue } from './SwipeableContext
 
 // ── Constants ───────────────────────────────────────────────────────────
 const MUSCLE_ICON_SIZE = ICON_SIZE_3XL; // 64px
+const PILL_WIDTH = 110; // Measured: "Start Workout" pill natural width
+const PILL_MARGIN_LEFT = 8;
 const CARD_BORDER_RADIUS = 14;
 const COLLAPSED_BG = Colors.background.surface;
 const EXPANDED_BORDER_COLOR = Colors.border.light;
@@ -105,6 +107,14 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     isExpandedSV.value = isExpanded;
   }, [isExpanded, isExpandedSV]);
 
+  // ── Pill visibility shared value ──
+  // Combines all 3 conditions so the animation drives off a single boolean.
+  const pillVisible = isExpanded && exerciseCount > 0 && !isActiveWorkout;
+  const pillVisibleSV = useSharedValue(pillVisible);
+  useEffect(() => {
+    pillVisibleSV.value = pillVisible;
+  }, [pillVisible, pillVisibleSV]);
+
   // ── Deferred exercise rendering ──
   // Defer mounting 16+ DayExerciseCards until AFTER the icon width collapse
   // (DURATION_FAST) so the expand animation plays smoothly without JS thread
@@ -148,6 +158,33 @@ export const TimelineDayCard = memo(function TimelineDayCard({
       marginRight: expanded
         ? withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST }))
         : withTiming(12, { duration: DURATION_FAST }),
+      overflow: 'hidden' as const,
+    };
+  });
+
+  // ── Start Workout pill animation ──
+  // Same pattern as the muscle icon: always-mounted wrapper with animated
+  // width/opacity driven by shared value. The pill slides in from the right
+  // starting when the icon width begins collapsing (T=DURATION_FAST).
+  const pillAnimStyle = useAnimatedStyle(() => {
+    const visible = pillVisibleSV.value;
+    return {
+      opacity: visible
+        ? withDelay(DURATION_FAST, withTiming(1, { duration: DURATION_FAST }))
+        : withTiming(0, { duration: DURATION_INSTANT }),
+      transform: [
+        {
+          translateX: visible
+            ? withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST }))
+            : withTiming(20, { duration: DURATION_INSTANT }),
+        },
+      ],
+      width: visible
+        ? withDelay(DURATION_FAST, withTiming(PILL_WIDTH, { duration: DURATION_FAST }))
+        : withTiming(0, { duration: DURATION_FAST }),
+      marginLeft: visible
+        ? withDelay(DURATION_FAST, withTiming(PILL_MARGIN_LEFT, { duration: DURATION_FAST }))
+        : withTiming(0, { duration: DURATION_FAST }),
       overflow: 'hidden' as const,
     };
   });
@@ -269,18 +306,22 @@ export const TimelineDayCard = memo(function TimelineDayCard({
             />
           </Pressable>
 
-          {/* Start Workout pill (expanded only, when has exercises) */}
-          {isExpanded && exerciseCount > 0 && !isActiveWorkout && (
+          {/* Start Workout pill — always mounted, animated width/opacity */}
+          <Animated.View style={pillAnimStyle}>
             <Pressable
               onPress={onStartWorkout}
               style={styles.startPill}
               className="active:opacity-80"
               accessibilityRole="button"
               accessibilityLabel="Start workout"
+              disabled={!pillVisible}
+              accessibilityElementsHidden={!pillVisible}
             >
-              <Text style={styles.startPillText}>Start Workout</Text>
+              <Text style={styles.startPillText} numberOfLines={1}>
+                Start Workout
+              </Text>
             </Pressable>
-          )}
+          </Animated.View>
         </Animated.View>
       </Pressable>
 
@@ -397,7 +438,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 8,
-    marginRight: 4,
+    flexShrink: 0,
   },
   startPillText: {
     color: Colors.primary.foreground,
