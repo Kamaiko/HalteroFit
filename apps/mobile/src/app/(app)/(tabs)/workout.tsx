@@ -26,8 +26,7 @@ export default function WorkoutScreen() {
     user,
     activePlan,
     planDays,
-    selectedDayExercises,
-    loadingExercises,
+    allExercises,
     loading,
     expandedDayId,
     exerciseCounts,
@@ -88,8 +87,7 @@ export default function WorkoutScreen() {
           exerciseCount={exerciseCounts[day.id] ?? 0}
           dominantMuscleGroupId={dominantMuscleGroups[day.id]}
           isExpanded={isExpanded}
-          exercises={isExpanded ? (selectedDayExercises?.exercises ?? []) : []}
-          loadingExercises={isExpanded && loadingExercises}
+          exercises={allExercises[day.id] ?? []}
           onPress={handleDayPress}
           onMenuPress={handleDayMenuPress}
           onStartWorkout={() => {
@@ -112,8 +110,7 @@ export default function WorkoutScreen() {
       expandedDayId,
       exerciseCounts,
       dominantMuscleGroups,
-      selectedDayExercises,
-      loadingExercises,
+      allExercises,
       handleDayPress,
       handleDayMenuPress,
       handleExercisePress,

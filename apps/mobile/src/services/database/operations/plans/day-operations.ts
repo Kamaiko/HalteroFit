@@ -18,7 +18,13 @@ import PlanDayExerciseModel from '../../local/models/PlanDayExercise';
 import ExerciseModel from '../../local/models/Exercise';
 import { requireAuth, validateOwnership } from '../../utils/requireAuth';
 import { withDatabaseError } from '../../utils/withDatabaseError';
-import type { PlanDay, PlanDayWithExercises, CreatePlanDay, UpdatePlanDay } from './types';
+import type {
+  DayExercise,
+  PlanDay,
+  PlanDayWithExercises,
+  CreatePlanDay,
+  UpdatePlanDay,
+} from './types';
 import {
   planDayToPlain,
   planDayExerciseWithDetailToPlain,
@@ -288,6 +294,66 @@ export function observeDominantMuscleByDays(
             for (const [dayId, muscles] of musclesByDay) {
               result[dayId] = computeDominantMuscleGroup(muscles);
             }
+            return result;
+          })
+        );
+      })
+    );
+}
+
+/**
+ * Observe all exercises for multiple plan days (Observable).
+ * Returns a grouped record keyed by day ID, with full exercise details.
+ *
+ * Follows the same pattern as observeDominantMuscleByDays: single query
+ * for all days, then fetch static Exercise reference data via cached find().
+ */
+export function observeExercisesByDays(
+  planDayIds: string[]
+): Observable<Record<string, DayExercise[]>> {
+  if (planDayIds.length === 0) return of({});
+
+  return database
+    .get<PlanDayExerciseModel>('plan_day_exercises')
+    .query(Q.where('plan_day_id', Q.oneOf(planDayIds)), Q.sortBy('order_index', Q.asc))
+    .observe()
+    .pipe(
+      switchMap((dayExercises) => {
+        // Initialize with empty arrays for every day
+        const empty: Record<string, DayExercise[]> = {};
+        for (const id of planDayIds) empty[id] = [];
+
+        if (dayExercises.length === 0) return of(empty);
+
+        // Collect unique exercise IDs to avoid redundant lookups
+        const exerciseIds = [...new Set(dayExercises.map((de) => de.exerciseId))];
+
+        return from(
+          Promise.all(
+            exerciseIds.map(async (id) => {
+              try {
+                return await database.get<ExerciseModel>('exercises').find(id);
+              } catch {
+                return null;
+              }
+            })
+          )
+        ).pipe(
+          map((exercises) => {
+            const exerciseMap = new Map(
+              exercises.filter((e): e is ExerciseModel => e !== null).map((e) => [e.id, e])
+            );
+
+            const result: Record<string, DayExercise[]> = {};
+            for (const id of planDayIds) result[id] = [];
+
+            for (const pde of dayExercises) {
+              const exercise = exerciseMap.get(pde.exerciseId);
+              if (exercise) {
+                result[pde.planDayId]?.push(planDayExerciseWithDetailToPlain(pde, exercise));
+              }
+            }
+
             return result;
           })
         );

@@ -3,15 +3,15 @@
  *
  * Handles both collapsed and expanded states in a single component.
  * Collapsed: muscle icon + day name/stats + menu
- * Expanded: header + exercise list (FlashList) + add exercise button
+ * Expanded: header + exercise list + add exercise button
  *
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
-import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import Animated, {
+  FadeInDown,
   LinearTransition,
   useAnimatedStyle,
   withDelay,
@@ -52,7 +52,6 @@ interface TimelineDayCardProps {
   dominantMuscleGroupId?: string | null;
   isExpanded: boolean;
   exercises: DayExercise[];
-  loadingExercises: boolean;
   isActiveWorkout?: boolean;
 
   onPress: (day: PlanDay) => void;
@@ -74,7 +73,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   dominantMuscleGroupId,
   isExpanded,
   exercises,
-  loadingExercises,
   isActiveWorkout,
   onPress,
   onMenuPress,
@@ -85,14 +83,37 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   deletingExerciseId,
   onDeleteAnimationComplete,
 }: TimelineDayCardProps) {
+  // ── Deferred exercise rendering ──
+  // Defer mounting 16+ DayExerciseCards by 1 frame so the expand animation
+  // plays immediately without JS thread being blocked by card initialization
+  // (3 shared values + ReanimatedSwipeable + GIF decode per card).
+  // Reset happens in cleanup (not sync in effect body) to satisfy React Compiler lint.
+  const [exercisesReady, setExercisesReady] = useState(false);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const timer = setTimeout(() => setExercisesReady(true), 0);
+    return () => {
+      clearTimeout(timer);
+      setExercisesReady(false);
+    };
+  }, [isExpanded]);
+
   // ── Muscle icon animation ──
-  // LinearTransition handles width/marginRight (synced with sibling reflow).
-  // useAnimatedStyle handles opacity only (LinearTransition can't animate opacity).
-  // Collapse: opacity delayed so text slides first, then icon fades in.
-  const iconOpacityStyle = useAnimatedStyle(() => ({
+  // LinearTransition on icon wrapper animates width 64→0 over 200ms.
+  // useAnimatedStyle handles opacity + translateX — icon slides left + fades
+  // BEFORE the width clipping is visible (translateX masks the clip).
+  const iconAnimStyle = useAnimatedStyle(() => ({
     opacity: isExpanded
       ? withTiming(0, { duration: DURATION_FAST })
       : withDelay(DURATION_INSTANT, withTiming(1, { duration: DURATION_FAST })),
+    transform: [
+      {
+        translateX: isExpanded
+          ? withTiming(-MUSCLE_ICON_SIZE, { duration: DURATION_FAST })
+          : withDelay(DURATION_INSTANT, withTiming(0, { duration: DURATION_FAST })),
+      },
+    ],
   }));
 
   // ── Swipeable context for exercise cards ────────────────────────────
@@ -114,22 +135,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     setOpenSwipeableId(null);
     onAddExercisePress();
   }, [onAddExercisePress]);
-
-  // ── Exercise list renderItem ────────────────────────────────────────
-  const renderExerciseItem = useCallback(
-    ({ item }: ListRenderItemInfo<DayExercise>) => (
-      <DayExerciseCard
-        exercise={item}
-        onImagePress={onExerciseImagePress}
-        onDelete={onDeleteExercise}
-        isDeleting={item.id === deletingExerciseId}
-        onDeleteAnimationComplete={onDeleteAnimationComplete}
-      />
-    ),
-    [onExerciseImagePress, onDeleteExercise, deletingExerciseId, onDeleteAnimationComplete]
-  );
-
-  const exerciseKeyExtractor = useCallback((item: DayExercise) => item.id, []);
 
   // ── Stats text ────────────────────────────────────────────────────
   const setsDisplay = exerciseCount * DEFAULT_TARGET_SETS;
@@ -156,12 +161,12 @@ export const TimelineDayCard = memo(function TimelineDayCard({
 
         {/* ── Header row ─────────────────────────────────────────── */}
         <Animated.View style={styles.headerRow} layout={LAYOUT_TRANSITION}>
-          {/* Muscle icon — LinearTransition handles layout, useAnimatedStyle handles opacity */}
+          {/* Muscle icon — width snaps via React state, LinearTransition on header handles sibling reflow */}
           <Animated.View
             style={[
               styles.muscleIconWrapper,
               isExpanded && styles.muscleIconCollapsed,
-              iconOpacityStyle,
+              iconAnimStyle,
             ]}
             layout={LAYOUT_TRANSITION}
           >
@@ -231,19 +236,31 @@ export const TimelineDayCard = memo(function TimelineDayCard({
       {/* ── Expanded exercise list ─────────────────────────────────── */}
       {isExpanded && (
         <View style={styles.expandedContent}>
-          <SwipeableContext.Provider value={swipeableCtx}>
-            <FlashList
-              data={exercises}
-              renderItem={renderExerciseItem}
-              keyExtractor={exerciseKeyExtractor}
-              contentContainerStyle={styles.exerciseListContent}
-            />
-          </SwipeableContext.Provider>
-
-          {loadingExercises && (
-            <View style={styles.spinnerOverlay}>
-              <ActivityIndicator size="small" color={Colors.primary.DEFAULT} />
-            </View>
+          {exercisesReady ? (
+            <SwipeableContext.Provider value={swipeableCtx}>
+              <View style={styles.exerciseList}>
+                {exercises.map((exercise, index) => (
+                  <Animated.View
+                    key={exercise.id}
+                    entering={FadeInDown.delay(index * 20).duration(DURATION_FAST)}
+                  >
+                    <DayExerciseCard
+                      exercise={exercise}
+                      onImagePress={onExerciseImagePress}
+                      onDelete={onDeleteExercise}
+                      isDeleting={exercise.id === deletingExerciseId}
+                      onDeleteAnimationComplete={onDeleteAnimationComplete}
+                    />
+                  </Animated.View>
+                ))}
+              </View>
+            </SwipeableContext.Provider>
+          ) : (
+            exercises.length > 0 && (
+              <View style={styles.loadingPlaceholder}>
+                <ActivityIndicator size="small" color={Colors.primary.DEFAULT} />
+              </View>
+            )
           )}
 
           {/* + Add Exercise */}
@@ -339,13 +356,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-  spinnerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLLAPSED_BG,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    zIndex: 1,
-  },
   expandedContent: {
     backgroundColor: COLLAPSED_BG,
     borderWidth: 1,
@@ -354,8 +364,12 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: CARD_BORDER_RADIUS,
     borderBottomRightRadius: CARD_BORDER_RADIUS,
   },
-  exerciseListContent: {
+  exerciseList: {
     paddingTop: 4,
+  },
+  loadingPlaceholder: {
+    alignItems: 'center' as const,
+    paddingVertical: 24,
   },
   addExerciseButton: {
     flexDirection: 'row',
