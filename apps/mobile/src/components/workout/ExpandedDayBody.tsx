@@ -7,11 +7,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
-import Animated, {
-  type AnimatedRef,
-  FadeInDown,
-  type SharedValue,
-} from 'react-native-reanimated';
+import Animated, { type AnimatedRef, FadeInDown, type SharedValue } from 'react-native-reanimated';
 
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -114,6 +110,7 @@ export const ExpandedDayBody = memo(function ExpandedDayBody({
         {exercisesReady ? (
           <SwipeableContext.Provider value={swipeableCtx}>
             <View style={styles.exerciseList}>
+              {/* eslint-disable react-hooks/refs -- one-way animation flag, safe to read during render */}
               {exercises.map((exercise, index) => (
                 <Animated.View
                   key={exercise.id}
@@ -137,6 +134,7 @@ export const ExpandedDayBody = memo(function ExpandedDayBody({
                   </DragSortableItem>
                 </Animated.View>
               ))}
+              {/* eslint-enable react-hooks/refs */}
             </View>
           </SwipeableContext.Provider>
         ) : (

@@ -305,6 +305,7 @@ export function useDragSort({
       translations,
       itemHeight,
       isSettling,
+      isResetting,
       scrollY,
       scrollYAtStart,
       triggerHaptic,

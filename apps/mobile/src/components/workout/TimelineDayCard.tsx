@@ -35,6 +35,9 @@ import type { PlanDay } from '@/services/database/operations/plans';
 
 // ── Constants ───────────────────────────────────────────────────────────
 const MUSCLE_ICON_SIZE = ICON_SIZE_3XL; // 64px
+// NOTE: Pill dimensions mirrored from ExpandedDayHeader
+const PILL_WIDTH = 110;
+const PILL_MARGIN_LEFT = 8;
 const CARD_BORDER_RADIUS = 14;
 const COLLAPSED_BG = Colors.background.surface;
 
@@ -64,14 +67,17 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   // When wasExpanded=true, start with icon collapsed (isExpandedSV=true),
   // then animate to false → icon reappears. When wasExpanded=false, static.
   const isExpandedSV = useSharedValue(wasExpanded ? true : false);
+  const pillVisible = wasExpanded && exerciseCount > 0 && !isActiveWorkout;
+  const pillVisibleSV = useSharedValue(pillVisible ? true : false);
 
   useEffect(() => {
     if (!wasExpanded) return;
     const timer = setTimeout(() => {
       isExpandedSV.value = false;
+      if (pillVisible) pillVisibleSV.value = false;
     }, 16);
     return () => clearTimeout(timer);
-  }, [wasExpanded, isExpandedSV]);
+  }, [wasExpanded, isExpandedSV, pillVisible, pillVisibleSV]);
 
   const iconAnimStyle = useAnimatedStyle(() => {
     if (!isExpandedSV.value) {
@@ -81,10 +87,7 @@ export const TimelineDayCard = memo(function TimelineDayCard({
             opacity: withDelay(DURATION_INSTANT, withTiming(1, { duration: DURATION_FAST })),
             transform: [
               {
-                translateX: withDelay(
-                  DURATION_INSTANT,
-                  withTiming(0, { duration: DURATION_FAST })
-                ),
+                translateX: withDelay(DURATION_INSTANT, withTiming(0, { duration: DURATION_FAST })),
               },
             ],
             width: withTiming(MUSCLE_ICON_SIZE, { duration: DURATION_FAST }),
@@ -106,6 +109,35 @@ export const TimelineDayCard = memo(function TimelineDayCard({
       transform: [{ translateX: withTiming(-MUSCLE_ICON_SIZE, { duration: DURATION_FAST }) }],
       width: withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST })),
       marginRight: withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST })),
+      overflow: 'hidden' as const,
+    };
+  });
+
+  // ── Ghost pill collapse animation (reverse of ExpandedDayHeader pill) ──
+  const pillAnimStyle = useAnimatedStyle(() => {
+    if (!pillVisibleSV.value) {
+      return pillVisible
+        ? {
+            opacity: withTiming(0, { duration: DURATION_INSTANT }),
+            transform: [{ translateX: withTiming(20, { duration: DURATION_INSTANT }) }],
+            width: withTiming(0, { duration: DURATION_FAST }),
+            marginLeft: withTiming(0, { duration: DURATION_FAST }),
+            overflow: 'hidden' as const,
+          }
+        : {
+            opacity: 0,
+            width: 0,
+            marginLeft: 0,
+            transform: [{ translateX: 0 }],
+            overflow: 'hidden' as const,
+          };
+    }
+    // Initial visible state (wasExpanded mount)
+    return {
+      opacity: 1,
+      transform: [{ translateX: 0 }],
+      width: PILL_WIDTH,
+      marginLeft: PILL_MARGIN_LEFT,
       overflow: 'hidden' as const,
     };
   });
@@ -181,6 +213,17 @@ export const TimelineDayCard = memo(function TimelineDayCard({
               color={Colors.foreground.secondary}
             />
           </Pressable>
+
+          {/* Ghost pill — mirrors ExpandedDayHeader pill collapse animation */}
+          {pillVisible && (
+            <Animated.View style={pillAnimStyle}>
+              <View style={styles.startPill}>
+                <Text style={styles.startPillText} numberOfLines={1}>
+                  Start Workout
+                </Text>
+              </View>
+            </Animated.View>
+          )}
         </Animated.View>
       </Pressable>
     </View>
@@ -238,5 +281,17 @@ const styles = StyleSheet.create({
   },
   infoCollapsed: {
     paddingRight: 8,
+  },
+  startPill: {
+    backgroundColor: Colors.primary.DEFAULT,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+    flexShrink: 0,
+  },
+  startPillText: {
+    color: Colors.primary.foreground,
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

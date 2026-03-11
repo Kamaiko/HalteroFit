@@ -34,6 +34,7 @@ import type { PlanDay } from '@/services/database/operations/plans';
 
 // ── Constants ───────────────────────────────────────────────────────────
 const MUSCLE_ICON_SIZE = ICON_SIZE_3XL; // 64px
+// NOTE: Pill collapse animation mirrored in TimelineDayCard (ghost pill)
 const PILL_WIDTH = 110;
 const PILL_MARGIN_LEFT = 8;
 const CARD_BORDER_RADIUS = 14;
@@ -195,11 +196,7 @@ export const ExpandedDayHeader = memo(function ExpandedDayHeader({
   return (
     <View style={styles.wrapper} onLayout={handleLayout}>
       <Animated.View
-        style={[
-          styles.card,
-          isActiveWorkout && styles.cardActiveWorkout,
-          stickyCardStyle,
-        ]}
+        style={[styles.card, isActiveWorkout && styles.cardActiveWorkout, stickyCardStyle]}
       >
         <Pressable
           onPress={handlePress}

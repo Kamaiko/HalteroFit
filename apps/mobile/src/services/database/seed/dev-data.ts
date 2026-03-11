@@ -82,7 +82,7 @@ export async function seedDevData(): Promise<void> {
     .fetchCount();
 
   if (existingCount > 0) {
-    if (__DEV__) console.log('Dev seed: skipped (plans already exist)');
+    if (__DEV__) console.warn('Dev seed: skipped (plans already exist)');
     return;
   }
 
@@ -156,7 +156,7 @@ export async function seedDevData(): Promise<void> {
   });
 
   if (__DEV__) {
-    console.log(
+    console.warn(
       `Dev seed: created "Push / Pull / Legs" plan with ${SEED_DAYS.length} days, ` +
         `${SEED_DAYS.reduce((sum, d) => sum + d.exercises.length, 0)} exercises`
     );
