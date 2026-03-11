@@ -13,11 +13,10 @@ import { Colors, DURATION_STANDARD, DURATION_FAST, ICON_SIZE_SM } from '@/consta
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { DayExercise } from '@/services/database/operations/plans';
-import React, { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { type LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
-import { SwipeableContext } from './SwipeableContext';
 import { SwipeActions } from './SwipeActions';
 import Animated, {
   runOnJS,
@@ -44,6 +43,17 @@ export interface DayExerciseCardProps {
   onDelete?: (exercise: DayExercise) => void;
   isDeleting?: boolean;
   onDeleteAnimationComplete?: () => void;
+  /** Called when this card's swipeable opens — parent closes the previous one */
+  onSwipeOpen: (id: string) => void;
+  /** Called when this card's swipeable closes */
+  onSwipeClose: (id: string) => void;
+  /** Dismiss all open swipeables (e.g. on card body press) */
+  onDismissSwipeables: () => void;
+  /** Register/unregister swipeable ref for imperative close */
+  registerSwipeable: (
+    id: string,
+    ref: React.ComponentRef<typeof ReanimatedSwipeable> | null
+  ) => void;
 }
 
 export const DayExerciseCard = memo(function DayExerciseCard({
@@ -54,10 +64,19 @@ export const DayExerciseCard = memo(function DayExerciseCard({
   onDelete,
   isDeleting,
   onDeleteAnimationComplete,
+  onSwipeOpen,
+  onSwipeClose,
+  onDismissSwipeables,
+  registerSwipeable,
 }: DayExerciseCardProps) {
-  const { openId: openSwipeableId, setOpenId: setOpenSwipeableId } = useContext(SwipeableContext);
   const swipeableRef = useRef<React.ComponentRef<typeof ReanimatedSwipeable>>(null);
   const isOpen = useRef(false);
+
+  // Register ref with parent for imperative close
+  useEffect(() => {
+    registerSwipeable(exercise.id, swipeableRef.current);
+    return () => registerSwipeable(exercise.id, null);
+  }, [exercise.id, registerSwipeable]);
 
   // Measured card height for collapse animation
   const [cardHeight, setCardHeight] = useState(0);
@@ -112,13 +131,6 @@ export const DayExerciseCard = memo(function DayExerciseCard({
     onImagePress(exercise);
   }, [exercise, onImagePress]);
 
-  // Auto-close this swipeable when another card opens or dismiss is triggered
-  useEffect(() => {
-    if (openSwipeableId !== exercise.id) {
-      swipeableRef.current?.close();
-    }
-  }, [openSwipeableId, exercise.id]);
-
   const handleEdit = useCallback(() => {
     swipeableRef.current?.close();
     onEdit?.(exercise);
@@ -148,22 +160,17 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         overshootFriction={8}
         onSwipeableWillOpen={() => {
           isOpen.current = true;
-          setOpenSwipeableId(exercise.id);
+          onSwipeOpen(exercise.id);
         }}
         onSwipeableWillClose={() => {
           if (isOpen.current) {
             isOpen.current = false;
-            // Only reset if this card is still the tracked open card
-            setOpenSwipeableId((prev) => (prev === exercise.id ? null : prev));
+            onSwipeClose(exercise.id);
           }
         }}
       >
         <Pressable
-          onPress={() => {
-            if (openSwipeableId) {
-              setOpenSwipeableId(null);
-            }
-          }}
+          onPress={onDismissSwipeables}
           className="mr-4 mb-2 flex-row items-center rounded-xl bg-background-surface py-3 pr-4"
           style={styles.cardContent}
         >

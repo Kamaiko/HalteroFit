@@ -133,22 +133,15 @@ export default function WorkoutScreen() {
             dominantMuscleGroupId={dominantMuscleGroups[day.id]}
             onPress={handleDayPress}
             onMenuPress={handleDayMenuPress}
-            onStartWorkout={() => {
-              // TODO(3.1.3): Navigate to active workout session
-            }}
             scrollY={scrollY}
           />
         );
         items.push(
           <ExpandedDayBody
             key={`${day.id}-b`}
+            dayId={day.id}
+            dayName={day.name}
             exercises={allExercises[day.id] ?? []}
-            onAddExercisePress={() => {
-              router.push({
-                pathname: '/exercise/picker',
-                params: { dayId: day.id, dayName: day.name },
-              });
-            }}
             onExerciseImagePress={handleExercisePress}
             onDeleteExercise={handleDeleteExercise}
             deletingExerciseId={deletingExerciseId}

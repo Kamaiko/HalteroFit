@@ -10,7 +10,7 @@ import { validateDayName } from '@/utils/validators';
 import { ValidationError } from '@/utils/errors';
 import { type Model, Q } from '@nozbe/watermelondb';
 import { Observable, combineLatest, of, from } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { database } from '../../local';
 import WorkoutPlanModel from '../../local/models/WorkoutPlan';
 import PlanDayModel from '../../local/models/PlanDay';
@@ -219,6 +219,38 @@ export function observePlanDays(planId: string): Observable<PlanDay[]> {
     .pipe(map((days) => days.map(planDayToPlain)));
 }
 
+// ── Observable comparators (suppress emissions when data is unchanged) ──
+
+/** Shallow-compare two Record<string, V> where V is a primitive */
+function shallowRecordEqual<V>(a: Record<string, V>, b: Record<string, V>): boolean {
+  const keysA = Object.keys(a);
+  if (keysA.length !== Object.keys(b).length) return false;
+  for (const k of keysA) {
+    if (a[k] !== b[k]) return false;
+  }
+  return true;
+}
+
+/** Compare Record<string, DayExercise[]> by array length + exercise IDs + order per day */
+function dayExercisesEqual(
+  a: Record<string, DayExercise[]>,
+  b: Record<string, DayExercise[]>
+): boolean {
+  const keysA = Object.keys(a);
+  if (keysA.length !== Object.keys(b).length) return false;
+  for (const k of keysA) {
+    const listA = a[k];
+    const listB = b[k];
+    if (!listA || !listB || listA.length !== listB.length) return false;
+    for (let i = 0; i < listA.length; i++) {
+      if (listA[i]!.id !== listB[i]!.id || listA[i]!.order_index !== listB[i]!.order_index) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 /**
  * Observe exercise counts for multiple plan days (Observable)
  * Emits whenever exercises are added or removed from any of the given days.
@@ -232,7 +264,10 @@ export function observeExerciseCountsByDays(
     .get<PlanDayExerciseModel>('plan_day_exercises')
     .query(Q.where('plan_day_id', Q.oneOf(planDayIds)))
     .observe()
-    .pipe(map((exercises) => countExercisesByDay(exercises, planDayIds)));
+    .pipe(
+      map((exercises) => countExercisesByDay(exercises, planDayIds)),
+      distinctUntilChanged(shallowRecordEqual)
+    );
 }
 
 /**
@@ -297,7 +332,8 @@ export function observeDominantMuscleByDays(
             return result;
           })
         );
-      })
+      }),
+      distinctUntilChanged(shallowRecordEqual)
     );
 }
 
@@ -357,7 +393,8 @@ export function observeExercisesByDays(
             return result;
           })
         );
-      })
+      }),
+      distinctUntilChanged(dayExercisesEqual)
     );
 }
 

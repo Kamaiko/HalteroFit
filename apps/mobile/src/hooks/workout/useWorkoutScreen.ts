@@ -177,14 +177,9 @@ export function useWorkoutScreen() {
   }, [collapsingDayId]);
 
   // ── Extracted sub-hooks ─────────────────────────────────────────────
-  const handleDayDeleted = useCallback(
-    (dayId: string) => {
-      if (expandedDayId === dayId) {
-        setExpandedDayId(null);
-      }
-    },
-    [expandedDayId]
-  );
+  const handleDayDeleted = useCallback((dayId: string) => {
+    setExpandedDayId((prev) => (prev === dayId ? null : prev));
+  }, []);
 
   const handleDayAdded = useCallback((day: PlanDay) => {
     setExpandedDayId(day.id);
