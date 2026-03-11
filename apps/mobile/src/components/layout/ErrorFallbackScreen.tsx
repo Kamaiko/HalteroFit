@@ -7,6 +7,7 @@
  */
 
 import { View, Text, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { BORDER_RADIUS_MD, Colors } from '@/constants';
 
 export function ErrorFallbackScreen() {
@@ -32,7 +33,12 @@ export function ErrorFallbackScreen() {
         padding: 24,
       }}
     >
-      <Text style={{ fontSize: 48, marginBottom: 16, color: Colors.foreground.secondary }}>!</Text>
+      <Ionicons
+        name="warning-outline"
+        size={56}
+        color={Colors.warning}
+        style={{ marginBottom: 16 }}
+      />
       <Text
         style={{
           fontSize: 20,
