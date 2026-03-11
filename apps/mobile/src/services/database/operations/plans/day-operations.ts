@@ -216,10 +216,27 @@ export function observePlanDays(planId: string): Observable<PlanDay[]> {
     .get<PlanDayModel>('plan_days')
     .query(Q.where('plan_id', planId), Q.sortBy('order_index', Q.asc))
     .observeWithColumns(['name', 'order_index'])
-    .pipe(map((days) => days.map(planDayToPlain)));
+    .pipe(
+      map((days) => days.map(planDayToPlain)),
+      distinctUntilChanged(planDaysEqual)
+    );
 }
 
 // ── Observable comparators (suppress emissions when data is unchanged) ──
+
+/** Compare PlanDay[] by id, name, and order_index */
+function planDaysEqual(a: PlanDay[], b: PlanDay[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (
+      a[i]!.id !== b[i]!.id ||
+      a[i]!.name !== b[i]!.name ||
+      a[i]!.order_index !== b[i]!.order_index
+    )
+      return false;
+  }
+  return true;
+}
 
 /** Shallow-compare two Record<string, V> where V is a primitive */
 function shallowRecordEqual<V>(a: Record<string, V>, b: Record<string, V>): boolean {
@@ -231,7 +248,11 @@ function shallowRecordEqual<V>(a: Record<string, V>, b: Record<string, V>): bool
   return true;
 }
 
-/** Compare Record<string, DayExercise[]> by array length + exercise IDs + order per day */
+/**
+ * Compare Record<string, DayExercise[]> by structure only (id + order_index).
+ * Ignores exercise detail fields (name, muscles, gif) — those are static seed data
+ * and don't change at runtime. This comparator only detects additions, removals, and reorders.
+ */
 function dayExercisesEqual(
   a: Record<string, DayExercise[]>,
   b: Record<string, DayExercise[]>
