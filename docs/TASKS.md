@@ -2,7 +2,7 @@
 
 Actionable tasks with Kanban tracking.
 
-**Last Updated:** 2026-03-08
+**Last Updated:** 2026-03-10
 
 ## Table of Contents
 
@@ -17,13 +17,13 @@ Actionable tasks with Kanban tracking.
 
 ## Kanban
 
-| TODO (Top 5)                         | DOING                                  | DONE (Last 5)                       |
-| ------------------------------------ | -------------------------------------- | ----------------------------------- |
-| **2.1.3** AllPlansScreen `[M]`       | **UX** Popup/BottomSheet visual rework | **FIX** Sync guards + dev mode      |
-| **2.1.5** CreateEditPlanScreen `[S]` |                                        | **SYNC** WatermelonDB↔Supabase sync |
-| **2.3.3** PlanCard component `[S]`   |                                        | **4.2** Auth Service & Testing      |
-|                                      |                                        | **4.1** Auth Screens                |
-|                                      |                                        | **2.1.4** EditDayScreen             |
+| TODO (Top 5)                         | DOING | DONE (Last 5)                           |
+| ------------------------------------ | ----- | --------------------------------------- |
+| **2.1.3** AllPlansScreen `[M]`       |       | **2.3.6** Exercise swipe actions revamp |
+| **2.1.5** CreateEditPlanScreen `[S]` |       | **UX** Start Workout pill animation     |
+| **2.3.3** PlanCard component `[S]`   |       | **FIX** Post-hotfix quality audit       |
+| **UX** Popup/BottomSheet rework      |       | **FIX** Sync guards + dev mode          |
+|                                      |       | **SYNC** WatermelonDB↔Supabase sync     |
 
 **Recent Milestones**: See [CHANGELOG.md](./CHANGELOG.md) for completed phases
 
@@ -160,6 +160,11 @@ Actionable tasks with Kanban tracking.
       DraggableFlatList integration, reorderPlanDays() DB operation, DragHandle cleanup.
       **Tests:** 2 unit tests in plans.test.ts (reorder + contiguous indices)
 
+- [x] **2.3.6** Exercise swipe actions revamp ✅ `[src/components/workout/DayExerciseCard.tsx]`
+      Modernized swipe-to-reveal: extracted SwipeActions component (icon + label buttons, 76px),
+      drag handle inside swipeable via render prop (DragSortableItem), overflow clip on expandedContent.
+      Files: DayExerciseCard.tsx, DragSortableItem.tsx, SwipeActions.tsx, TimelineDayCard.tsx
+
 ---
 
 ## Phase 3: Active Workout Tracking
@@ -241,6 +246,33 @@ Actionable tasks with Kanban tracking.
       Back arrow (discard confirm), elapsed timer (MM:SS), menu icon.
       Files: src/components/workout/WorkoutHeader.tsx
       Deps: 3.1.1
+
+- [ ] **3.2.6** "Last: [date]" stat line on DayCard `[S]`
+      Second stat line on collapsed DayCard: calendar icon + "Last: Mar 6".
+      Hidden if the day has never been completed. Requires querying last
+      completed workout per plan_day_id.
+      Files: src/components/workout/TimelineDayCard.tsx, src/services/database/operations/workouts.ts
+      Deps: 3.6.1
+      Ref: wireframe `docs/_local/mockups/timeline-FINAL-v3.html` State 1
+
+- [ ] **3.2.7** Duration estimate in DayCard stats `[S]`
+      Replace "X exercises" with "~XX min" in the stat line.
+      Use average duration from past workouts, or heuristic estimate (sets × 2min) if no history.
+      Files: src/components/workout/TimelineDayCard.tsx
+      Deps: 3.6.1
+
+- [ ] **3.2.8** Active workout mini-timer on collapsed card `[S]`
+      Pulsing blue dot + "12:34" timer displayed left of "..." menu on the collapsed active card.
+      Files: src/components/workout/TimelineDayCard.tsx
+      Deps: 3.1.1
+      Ref: wireframe State 3
+
+- [ ] **3.2.9** "End Workout" pill + timer on expanded active card `[S]`
+      When active + expanded: replace "Start Workout" blue pill with "■ End Workout" red pill.
+      Show "⏺ 12:34 elapsed" timer line below day name.
+      Files: src/components/workout/TimelineDayCard.tsx
+      Deps: 3.1.1
+      Ref: wireframe State 4
 
 ### 3.3: Set Logging UI & Logic
 

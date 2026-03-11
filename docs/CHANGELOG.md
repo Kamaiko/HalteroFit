@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Best-effort sync before sign-out (10s timeout)
 - `waitForInitialSync()` gate to prevent duplicate plan creation
 - Exercise re-seeding on sign-in after DB wipe
+- Dev user seed with Push/Pull/Legs plan (5 exercises per day)
+- `SwipeActions` component: exercise swipe-to-reveal with icon + label buttons (Edit/Delete)
+- Drag handle now moves with exercise content on swipe (render prop pattern in `DragSortableItem`)
+- "Start Workout" pill slide-in animation on day card expand
+- 4 new tasks documented for wireframe parity (3.2.6–3.2.9): last workout date, duration estimate, active timer, End Workout pill
 
 ### Changed
 
@@ -28,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dropped unused indexes on exercises table (local-only data)
 - Dropped exercise FK constraints (exercises not synced to Supabase)
 - Reduced dev log noise (debounced "Data changed" log, formattedLogs error-only)
+- Swipe friction reduced from 1.5 to 1.2 for smoother feel
+- Delete animation now clips within the workout day card boundary (`overflow: hidden`)
+- Seed data uses default 3×10 sets/reps to match UI display logic
 
 ### Fixed
 
@@ -37,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - User record conflict on re-login (ensureLocalUserRecord race)
 - Duplicate default plans on sign-out → sign-in
 - Day Details showing 0 exercises after sign-out → sign-in
+- Race condition, dead code, a11y, and perf issues in workout timeline (post-hotfix audit)
 
 ## [0.11.0] - 2026-03-02
 
