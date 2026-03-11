@@ -260,8 +260,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
-    paddingLeft: 12,
-    paddingRight: 8,
+    paddingLeft: 18,
+    paddingRight: 14,
     minHeight: 95,
   },
   muscleIconWrapper: {
