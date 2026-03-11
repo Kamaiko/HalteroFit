@@ -12,7 +12,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { DEFAULT_FIRST_DAY_NAME, DEFAULT_FIRST_DAY_OF_WEEK, DEFAULT_PLAN_NAME } from '@/constants';
+import {
+  DEFAULT_FIRST_DAY_NAME,
+  DEFAULT_FIRST_DAY_OF_WEEK,
+  DEFAULT_PLAN_NAME,
+  DURATION_FAST,
+} from '@/constants';
 import { useErrorHandler } from '@/hooks/ui/useErrorHandler';
 import { useObservable } from '@/hooks/ui/useObservable';
 import {
@@ -153,10 +158,23 @@ export function useWorkoutScreen() {
 
   // ── Accordion state (replaces tab selection) ──────────────────────
   const [expandedDayId, setExpandedDayId] = useState<string | null>(null);
+  const [collapsingDayId, setCollapsingDayId] = useState<string | null>(null);
 
   const handleDayPress = useCallback((day: PlanDay) => {
-    setExpandedDayId((prev) => (prev === day.id ? null : day.id));
+    setExpandedDayId((prev) => {
+      if (prev && prev === day.id) {
+        setCollapsingDayId(prev);
+      }
+      return prev === day.id ? null : day.id;
+    });
   }, []);
+
+  // Clear collapsingDayId after the reverse animation completes
+  useEffect(() => {
+    if (!collapsingDayId) return;
+    const timer = setTimeout(() => setCollapsingDayId(null), DURATION_FAST * 3);
+    return () => clearTimeout(timer);
+  }, [collapsingDayId]);
 
   // ── Extracted sub-hooks ─────────────────────────────────────────────
   const handleDayDeleted = useCallback(
@@ -236,6 +254,7 @@ export function useWorkoutScreen() {
     allExercises,
     loading,
     expandedDayId,
+    collapsingDayId,
     exerciseCounts,
     dominantMuscleGroups,
     handleDayPress,

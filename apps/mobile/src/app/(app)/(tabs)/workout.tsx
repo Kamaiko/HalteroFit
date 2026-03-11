@@ -5,7 +5,7 @@
  */
 
 import { router } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { type ReactNode, useCallback, useMemo } from 'react';
 import { ActivityIndicator, type LayoutChangeEvent, Pressable, View } from 'react-native';
 import Animated, {
   useAnimatedRef,
@@ -21,10 +21,16 @@ import { AlertDialog } from '@/components/ui/alert-dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { InputDialog } from '@/components/ui/input-dialog';
 import { Text } from '@/components/ui/text';
-import { CompactHeader, TimelineDayCard, AddDayPill, type DayExercise } from '@/components/workout';
+import {
+  AddDayPill,
+  CompactHeader,
+  ExpandedDayBody,
+  ExpandedDayHeader,
+  TimelineDayCard,
+  type DayExercise,
+} from '@/components/workout';
 import { Colors, DEFAULT_PLAN_NAME, ICON_SIZE_SM, TAB_BAR_HEIGHT } from '@/constants';
 import { useWorkoutScreen } from '@/hooks/workout';
-import type { PlanDay } from '@/services/database/operations/plans';
 
 export default function WorkoutScreen() {
   const {
@@ -34,6 +40,7 @@ export default function WorkoutScreen() {
     allExercises,
     loading,
     expandedDayId,
+    collapsingDayId,
     exerciseCounts,
     dominantMuscleGroups,
     menuDay,
@@ -110,56 +117,82 @@ export default function WorkoutScreen() {
     [exerciseCounts]
   );
 
-  const renderDayCard = useCallback(
-    (day: PlanDay) => {
-      const isExpanded = day.id === expandedDayId;
-      return (
-        <TimelineDayCard
-          key={day.id}
-          day={day}
-          exerciseCount={exerciseCounts[day.id] ?? 0}
-          dominantMuscleGroupId={dominantMuscleGroups[day.id]}
-          isExpanded={isExpanded}
-          exercises={allExercises[day.id] ?? []}
-          onPress={handleDayPress}
-          onMenuPress={handleDayMenuPress}
-          onStartWorkout={() => {
-            // TODO(3.1.3): Navigate to active workout session
-          }}
-          onAddExercisePress={() => {
-            router.push({
-              pathname: '/exercise/picker',
-              params: { dayId: day.id, dayName: day.name },
-            });
-          }}
-          onExerciseImagePress={handleExercisePress}
-          onDeleteExercise={handleDeleteExercise}
-          deletingExerciseId={deletingExerciseId}
-          onDeleteAnimationComplete={handleDeleteAnimationComplete}
-          scrollRef={scrollRef}
-          scrollY={scrollY}
-          scrollViewBounds={scrollViewBounds}
-          onReorderExercises={reorderExercisesOptimistic}
-        />
-      );
-    },
-    [
-      expandedDayId,
-      exerciseCounts,
-      dominantMuscleGroups,
-      allExercises,
-      handleDayPress,
-      handleDayMenuPress,
-      handleExercisePress,
-      handleDeleteExercise,
-      deletingExerciseId,
-      handleDeleteAnimationComplete,
-      scrollRef,
-      scrollY,
-      scrollViewBounds,
-      reorderExercisesOptimistic,
-    ]
-  );
+  // ── Build ScrollView children + sticky indices ─────────────────────
+  const { scrollChildren, stickyIndices } = useMemo(() => {
+    const items: ReactNode[] = [];
+    const sticky: number[] = [];
+
+    for (const day of planDays) {
+      if (day.id === expandedDayId) {
+        sticky.push(items.length);
+        items.push(
+          <ExpandedDayHeader
+            key={`${day.id}-h`}
+            day={day}
+            exerciseCount={exerciseCounts[day.id] ?? 0}
+            dominantMuscleGroupId={dominantMuscleGroups[day.id]}
+            onPress={handleDayPress}
+            onMenuPress={handleDayMenuPress}
+            onStartWorkout={() => {
+              // TODO(3.1.3): Navigate to active workout session
+            }}
+            scrollY={scrollY}
+          />
+        );
+        items.push(
+          <ExpandedDayBody
+            key={`${day.id}-b`}
+            exercises={allExercises[day.id] ?? []}
+            onAddExercisePress={() => {
+              router.push({
+                pathname: '/exercise/picker',
+                params: { dayId: day.id, dayName: day.name },
+              });
+            }}
+            onExerciseImagePress={handleExercisePress}
+            onDeleteExercise={handleDeleteExercise}
+            deletingExerciseId={deletingExerciseId}
+            onDeleteAnimationComplete={handleDeleteAnimationComplete}
+            scrollRef={scrollRef}
+            scrollY={scrollY}
+            scrollViewBounds={scrollViewBounds}
+            onReorderExercises={reorderExercisesOptimistic}
+          />
+        );
+      } else {
+        items.push(
+          <TimelineDayCard
+            key={day.id}
+            day={day}
+            exerciseCount={exerciseCounts[day.id] ?? 0}
+            dominantMuscleGroupId={dominantMuscleGroups[day.id]}
+            wasExpanded={collapsingDayId === day.id}
+            onPress={handleDayPress}
+            onMenuPress={handleDayMenuPress}
+          />
+        );
+      }
+    }
+
+    return { scrollChildren: items, stickyIndices: sticky };
+  }, [
+    planDays,
+    expandedDayId,
+    collapsingDayId,
+    exerciseCounts,
+    dominantMuscleGroups,
+    allExercises,
+    handleDayPress,
+    handleDayMenuPress,
+    handleExercisePress,
+    handleDeleteExercise,
+    deletingExerciseId,
+    handleDeleteAnimationComplete,
+    scrollRef,
+    scrollY,
+    scrollViewBounds,
+    reorderExercisesOptimistic,
+  ]);
 
   // ── Loading / auth guard ─────────────────────────────────────────────
   if (loading) {
@@ -200,12 +233,13 @@ export default function WorkoutScreen() {
       ) : (
         <Animated.ScrollView
           ref={scrollRef}
+          stickyHeaderIndices={stickyIndices}
           onScroll={scrollHandler}
           scrollEventThrottle={16}
           onLayout={handleScrollViewLayout}
           contentContainerStyle={{ paddingTop: 8, paddingBottom: TAB_BAR_HEIGHT + 16 }}
         >
-          {planDays.map(renderDayCard)}
+          {scrollChildren}
           <AddDayPill onPress={handleAddDayPress} />
         </Animated.ScrollView>
       )}

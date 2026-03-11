@@ -3,6 +3,8 @@
  */
 
 export { CompactHeader } from './CompactHeader';
+export { ExpandedDayBody } from './ExpandedDayBody';
+export { ExpandedDayHeader } from './ExpandedDayHeader';
 export { TimelineDayCard } from './TimelineDayCard';
 export { AddDayPill } from './AddDayPill';
 export { DragHandle } from './DragHandle';

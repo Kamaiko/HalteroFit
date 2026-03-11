@@ -1,23 +1,20 @@
 /**
- * TimelineDayCard - Accordion day card for the workout timeline
+ * TimelineDayCard - Collapsed day card for the workout timeline
  *
- * Handles both collapsed and expanded states in a single component.
- * Collapsed: muscle icon + day name/stats + menu
- * Expanded: header + exercise list + add exercise button
+ * Shows muscle icon + day name/stats + menu button.
+ * When `wasExpanded` is true (card just collapsed), plays the reverse icon
+ * reappear animation. Otherwise renders statically (initial load).
  *
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { memo, useCallback, useEffect } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
-  type AnimatedRef,
-  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withTiming,
-  type SharedValue,
 } from 'react-native-reanimated';
 
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon';
@@ -34,45 +31,22 @@ import {
   ICON_SIZE_LG,
   ICON_SIZE_3XL,
 } from '@/constants';
-import { useDragSort } from '@/hooks/workout/useDragSort';
-import type { PlanDay, PlanDayWithExercises } from '@/services/database/operations/plans';
-
-import { DayExerciseCard, type DayExercise } from './DayExerciseCard';
-import { DragSortableItem } from './DragSortableItem';
-import { SwipeableContext, type SwipeableContextValue } from './SwipeableContext';
+import type { PlanDay } from '@/services/database/operations/plans';
 
 // ── Constants ───────────────────────────────────────────────────────────
 const MUSCLE_ICON_SIZE = ICON_SIZE_3XL; // 64px
-const PILL_WIDTH = 110; // Measured: "Start Workout" pill natural width
-const PILL_MARGIN_LEFT = 8;
 const CARD_BORDER_RADIUS = 14;
 const COLLAPSED_BG = Colors.background.surface;
-const EXPANDED_BORDER_COLOR = Colors.border.light;
 
 // ── Props ───────────────────────────────────────────────────────────────
 interface TimelineDayCardProps {
   day: PlanDay;
   exerciseCount: number;
   dominantMuscleGroupId?: string | null;
-  isExpanded: boolean;
-  exercises: DayExercise[];
   isActiveWorkout?: boolean;
-
+  wasExpanded?: boolean;
   onPress: (day: PlanDay) => void;
   onMenuPress: (day: PlanDay) => void;
-  onStartWorkout?: () => void;
-  onAddExercisePress: () => void;
-  onExerciseImagePress: (exercise: DayExercise) => void;
-  onDeleteExercise?: (exercise: DayExercise) => void;
-
-  deletingExerciseId?: string | null;
-  onDeleteAnimationComplete?: () => void;
-
-  // Drag-to-reorder (passed from parent ScrollView)
-  scrollRef: AnimatedRef<Animated.ScrollView>;
-  scrollY: SharedValue<number>;
-  scrollViewBounds: SharedValue<{ top: number; bottom: number }>;
-  onReorderExercises: (reordered: PlanDayWithExercises['exercises']) => Promise<void>;
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -81,147 +55,59 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   day,
   exerciseCount,
   dominantMuscleGroupId,
-  isExpanded,
-  exercises,
   isActiveWorkout,
+  wasExpanded,
   onPress,
   onMenuPress,
-  onStartWorkout,
-  onAddExercisePress,
-  onExerciseImagePress,
-  onDeleteExercise,
-  deletingExerciseId,
-  onDeleteAnimationComplete,
-  scrollRef,
-  scrollY,
-  scrollViewBounds,
-  onReorderExercises,
 }: TimelineDayCardProps) {
-  // ── Shared value for icon animation ──
-  // Prevents useAnimatedStyle from replaying animations on every re-render
-  // (e.g., when returning to the tab triggers a re-render but isExpanded hasn't changed)
-  const isExpandedSV = useSharedValue(isExpanded);
-  useEffect(() => {
-    isExpandedSV.value = isExpanded;
-  }, [isExpanded, isExpandedSV]);
-
-  // ── Pill visibility shared value ──
-  // Combines all 3 conditions so the animation drives off a single boolean.
-  const pillVisible = isExpanded && exerciseCount > 0 && !isActiveWorkout;
-  const pillVisibleSV = useSharedValue(pillVisible);
-  useEffect(() => {
-    pillVisibleSV.value = pillVisible;
-  }, [pillVisible, pillVisibleSV]);
-
-  // ── Deferred exercise rendering ──
-  // Defer mounting 16+ DayExerciseCards until AFTER the icon width collapse
-  // (DURATION_FAST) so the expand animation plays smoothly without JS thread
-  // being blocked by card initialization (3 shared values + ReanimatedSwipeable
-  // + GIF decode per card). The extra frame (setTimeout 0) after the icon
-  // collapse ensures text reflow completes before heavy mounting begins.
-  // Reset happens in cleanup (not sync in effect body) to satisfy React Compiler lint.
-  const [exercisesReady, setExercisesReady] = useState(false);
-  // Skip FadeInDown entering animation after initial mount (prevents flash on reorder)
-  const initialAnimDone = useRef(false);
+  // ── Collapse animation (reverse of expand) ──
+  // When wasExpanded=true, start with icon collapsed (isExpandedSV=true),
+  // then animate to false → icon reappears. When wasExpanded=false, static.
+  const isExpandedSV = useSharedValue(wasExpanded ? true : false);
 
   useEffect(() => {
-    if (!isExpanded) return;
-    const timer = setTimeout(() => setExercisesReady(true), DURATION_FAST + 16);
-    return () => {
-      clearTimeout(timer);
-      setExercisesReady(false);
-      initialAnimDone.current = false;
-    };
-  }, [isExpanded]);
+    if (!wasExpanded) return;
+    const timer = setTimeout(() => {
+      isExpandedSV.value = false;
+    }, 16);
+    return () => clearTimeout(timer);
+  }, [wasExpanded, isExpandedSV]);
 
-  useEffect(() => {
-    if (exercisesReady) {
-      initialAnimDone.current = true;
-    }
-  }, [exercisesReady]);
-
-  // ── Muscle icon animation ──
-  // All icon properties animated via shared value (no React state, no LinearTransition).
-  // Expand: opacity+translateX fade out (DURATION_FAST), THEN width+margin collapse (delayed).
-  // Collapse: width+margin restore immediately, THEN opacity+translateX fade in (delayed).
-  // Using shared value ensures animations only trigger when isExpanded actually changes,
-  // not on re-renders from tab switches or other state changes.
   const iconAnimStyle = useAnimatedStyle(() => {
-    const expanded = isExpandedSV.value;
+    if (!isExpandedSV.value) {
+      // Collapsed state — icon visible
+      return wasExpanded
+        ? {
+            opacity: withDelay(DURATION_INSTANT, withTiming(1, { duration: DURATION_FAST })),
+            transform: [
+              {
+                translateX: withDelay(
+                  DURATION_INSTANT,
+                  withTiming(0, { duration: DURATION_FAST })
+                ),
+              },
+            ],
+            width: withTiming(MUSCLE_ICON_SIZE, { duration: DURATION_FAST }),
+            marginRight: withTiming(12, { duration: DURATION_FAST }),
+            overflow: 'hidden' as const,
+          }
+        : {
+            // Static — no animation
+            opacity: 1,
+            transform: [{ translateX: 0 }],
+            width: MUSCLE_ICON_SIZE,
+            marginRight: 12,
+            overflow: 'hidden' as const,
+          };
+    }
+    // Expanded state (icon hidden) — only reached when wasExpanded=true on mount
     return {
-      opacity: expanded
-        ? withTiming(0, { duration: DURATION_FAST })
-        : withDelay(DURATION_INSTANT, withTiming(1, { duration: DURATION_FAST })),
-      transform: [
-        {
-          translateX: expanded
-            ? withTiming(-MUSCLE_ICON_SIZE, { duration: DURATION_FAST })
-            : withDelay(DURATION_INSTANT, withTiming(0, { duration: DURATION_FAST })),
-        },
-      ],
-      width: expanded
-        ? withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST }))
-        : withTiming(MUSCLE_ICON_SIZE, { duration: DURATION_FAST }),
-      marginRight: expanded
-        ? withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST }))
-        : withTiming(12, { duration: DURATION_FAST }),
+      opacity: withTiming(0, { duration: DURATION_FAST }),
+      transform: [{ translateX: withTiming(-MUSCLE_ICON_SIZE, { duration: DURATION_FAST }) }],
+      width: withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST })),
+      marginRight: withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST })),
       overflow: 'hidden' as const,
     };
-  });
-
-  // ── Start Workout pill animation ──
-  // Same pattern as the muscle icon: always-mounted wrapper with animated
-  // width/opacity driven by shared value. The pill slides in from the right
-  // starting when the icon width begins collapsing (T=DURATION_FAST).
-  const pillAnimStyle = useAnimatedStyle(() => {
-    const visible = pillVisibleSV.value;
-    return {
-      opacity: visible
-        ? withDelay(DURATION_FAST, withTiming(1, { duration: DURATION_FAST }))
-        : withTiming(0, { duration: DURATION_INSTANT }),
-      transform: [
-        {
-          translateX: visible
-            ? withDelay(DURATION_FAST, withTiming(0, { duration: DURATION_FAST }))
-            : withTiming(20, { duration: DURATION_INSTANT }),
-        },
-      ],
-      width: visible
-        ? withDelay(DURATION_FAST, withTiming(PILL_WIDTH, { duration: DURATION_FAST }))
-        : withTiming(0, { duration: DURATION_FAST }),
-      marginLeft: visible
-        ? withDelay(DURATION_FAST, withTiming(PILL_MARGIN_LEFT, { duration: DURATION_FAST }))
-        : withTiming(0, { duration: DURATION_FAST }),
-      overflow: 'hidden' as const,
-    };
-  });
-
-  // ── Swipeable context for exercise cards ────────────────────────────
-  const [openSwipeableId, setOpenSwipeableId] = useState<string | null>(null);
-  const swipeableCtx = useMemo<SwipeableContextValue>(
-    () => ({ openId: openSwipeableId, setOpenId: setOpenSwipeableId }),
-    [openSwipeableId]
-  );
-
-  // ── Drag-to-reorder ────────────────────────────────────────────────
-  const handleDragStart = useCallback(() => {
-    setOpenSwipeableId(null); // Close any open swipeable when drag starts
-  }, []);
-
-  const handleReorderComplete = useCallback(
-    (reordered: DayExercise[]) => {
-      onReorderExercises(reordered);
-    },
-    [onReorderExercises]
-  );
-
-  const dragSort = useDragSort({
-    items: exercises,
-    onReorder: handleReorderComplete,
-    onDragStart: handleDragStart,
-    scrollRef,
-    scrollY,
-    scrollViewBounds,
   });
 
   const handlePress = useCallback(() => {
@@ -232,22 +118,11 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     onMenuPress(day);
   }, [day, onMenuPress]);
 
-  const handleAddExercisePress = useCallback(() => {
-    setOpenSwipeableId(null);
-    onAddExercisePress();
-  }, [onAddExercisePress]);
-
-  // ── Stats text ────────────────────────────────────────────────────
-  // TODO: Replace with sum of each exercise's real targetSets when custom sets/reps per exercise is implemented
+  // ── Stats text ──
   const setsDisplay = exerciseCount * DEFAULT_TARGET_SETS;
   const statsText = `${setsDisplay} sets · ${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}`;
 
-  // ── Card style ─────────────────────────────────────────────────────
-  const cardStyle = [
-    styles.card,
-    isExpanded && styles.cardExpanded,
-    isActiveWorkout && styles.cardActiveWorkout,
-  ];
+  const cardStyle = [styles.card, isActiveWorkout && styles.cardActiveWorkout];
 
   return (
     <View style={styles.cardWrapper}>
@@ -256,14 +131,12 @@ export const TimelineDayCard = memo(function TimelineDayCard({
         style={cardStyle}
         accessibilityRole="button"
         accessibilityLabel={`${day.name}, ${exerciseCount} exercises`}
-        accessibilityState={{ expanded: isExpanded }}
+        accessibilityState={{ expanded: false }}
       >
-        {/* Active workout accent bar (Phase 3 prep) */}
         {isActiveWorkout && <View style={styles.accentBar} />}
 
-        {/* ── Header row ─────────────────────────────────────────── */}
         <Animated.View style={styles.headerRow}>
-          {/* Muscle icon — animated width/margin replaces LinearTransition reflow */}
+          {/* Muscle icon — animated when wasExpanded, static otherwise */}
           <Animated.View style={[styles.muscleIconWrapper, iconAnimStyle]}>
             {dominantMuscleGroupId ? (
               <MuscleGroupIcon
@@ -279,10 +152,7 @@ export const TimelineDayCard = memo(function TimelineDayCard({
           </Animated.View>
 
           {/* Day info */}
-          <Animated.View
-            className="flex-1 justify-center"
-            style={isExpanded ? undefined : styles.infoCollapsed}
-          >
+          <Animated.View className="flex-1 justify-center" style={styles.infoCollapsed}>
             <Text className="text-base font-bold text-foreground" numberOfLines={1}>
               {day.name}
             </Text>
@@ -298,7 +168,7 @@ export const TimelineDayCard = memo(function TimelineDayCard({
             </View>
           </Animated.View>
 
-          {/* Menu "..." — always visible, fixed position */}
+          {/* Menu "..." */}
           <Pressable
             onPress={handleMenuPress}
             className="p-2 active:opacity-60"
@@ -311,80 +181,8 @@ export const TimelineDayCard = memo(function TimelineDayCard({
               color={Colors.foreground.secondary}
             />
           </Pressable>
-
-          {/* Start Workout pill — always mounted, animated width/opacity */}
-          <Animated.View style={pillAnimStyle}>
-            <Pressable
-              onPress={onStartWorkout}
-              style={styles.startPill}
-              className="active:opacity-80"
-              accessibilityRole="button"
-              accessibilityLabel="Start workout"
-              disabled={!pillVisible}
-              accessibilityElementsHidden={!pillVisible}
-            >
-              <Text style={styles.startPillText} numberOfLines={1}>
-                Start Workout
-              </Text>
-            </Pressable>
-          </Animated.View>
         </Animated.View>
       </Pressable>
-
-      {/* ── Expanded exercise list ─────────────────────────────────── */}
-      {isExpanded && (
-        <View style={styles.expandedContent}>
-          {exercisesReady ? (
-            <SwipeableContext.Provider value={swipeableCtx}>
-              <View style={styles.exerciseList}>
-                {exercises.map((exercise, index) => (
-                  <Animated.View
-                    key={exercise.id}
-                    entering={
-                      initialAnimDone.current
-                        ? undefined
-                        : FadeInDown.delay(index * 20).duration(DURATION_FAST)
-                    }
-                  >
-                    <DragSortableItem index={index} dragSort={dragSort}>
-                      {(dragHandle) => (
-                        <DayExerciseCard
-                          exercise={exercise}
-                          dragHandle={dragHandle}
-                          onImagePress={onExerciseImagePress}
-                          onDelete={onDeleteExercise}
-                          isDeleting={exercise.id === deletingExerciseId}
-                          onDeleteAnimationComplete={onDeleteAnimationComplete}
-                        />
-                      )}
-                    </DragSortableItem>
-                  </Animated.View>
-                ))}
-              </View>
-            </SwipeableContext.Provider>
-          ) : (
-            exercises.length > 0 && (
-              <View style={styles.loadingPlaceholder}>
-                <ActivityIndicator size="small" color={Colors.primary.DEFAULT} />
-              </View>
-            )
-          )}
-
-          {/* + Add Exercise */}
-          <Pressable
-            onPress={handleAddExercisePress}
-            style={styles.addExerciseButton}
-            className="active:opacity-60"
-            accessibilityRole="button"
-            accessibilityLabel="Add exercise"
-          >
-            <Ionicons name="add" size={ICON_SIZE_XS} color={Colors.foreground.tertiary} />
-            <Text className="ml-1 text-sm" style={{ color: Colors.foreground.tertiary }}>
-              Add Exercise
-            </Text>
-          </Pressable>
-        </View>
-      )}
     </View>
   );
 });
@@ -401,11 +199,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
     overflow: 'hidden',
-  },
-  cardExpanded: {
-    borderColor: EXPANDED_BORDER_COLOR,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
   },
   cardActiveWorkout: {
     borderColor: Colors.primary.DEFAULT,
@@ -445,46 +238,5 @@ const styles = StyleSheet.create({
   },
   infoCollapsed: {
     paddingRight: 8,
-  },
-  startPill: {
-    backgroundColor: Colors.primary.DEFAULT,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 8,
-    flexShrink: 0,
-  },
-  startPillText: {
-    color: Colors.primary.foreground,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  expandedContent: {
-    backgroundColor: COLLAPSED_BG,
-    borderWidth: 1,
-    borderTopWidth: 0,
-    borderColor: EXPANDED_BORDER_COLOR,
-    borderBottomLeftRadius: CARD_BORDER_RADIUS,
-    borderBottomRightRadius: CARD_BORDER_RADIUS,
-    overflow: 'hidden',
-  },
-  exerciseList: {
-    paddingTop: 4,
-    zIndex: 1,
-  },
-  loadingPlaceholder: {
-    alignItems: 'center' as const,
-    paddingVertical: 24,
-  },
-  addExerciseButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: Colors.border.DEFAULT,
-    borderRadius: 10,
   },
 });
