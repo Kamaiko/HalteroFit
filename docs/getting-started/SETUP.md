@@ -41,7 +41,7 @@ eas login
 ## Clone & Install
 
 ```bash
-git clone https://github.com/your-org/halterofit.git
+git clone https://github.com/Kamaiko/HalteroFit.git
 cd halterofit
 pnpm install
 ```

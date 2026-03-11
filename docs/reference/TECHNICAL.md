@@ -147,7 +147,7 @@ Sentry.init({
 **Free Tiers:**
 
 - Sentry: 5,000 errors/month
-- PostHog: 1M events/month _(planned — not yet installed)_
+- PostHog: 1M events/month _(future phase — not yet installed)_
 
 ---
 
