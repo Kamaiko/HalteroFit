@@ -252,13 +252,12 @@ export function useDragSort({
             (finished) => {
               isSettling.value = false;
 
-              // Set dropped card translation for seamless deactivation
+              // Set dropped card translation for seamless deactivation.
+              // Keep sibling translations as-is — they stay visually displaced
+              // until React re-renders with the new order, at which point the
+              // useEffect resets all translations instantly (isResetting = true).
               const newTrans = [...translations.value];
               newTrans[activeIdx] = targetTranslateY;
-              // Reset all OTHER translations — uninvolved cards won't flash
-              for (let i = 0; i < count; i++) {
-                if (i !== activeIdx) newTrans[i] = 0;
-              }
               translations.value = newTrans;
 
               // Deactivate — card switches to translations[activeIdx] = targetY (no snap)
