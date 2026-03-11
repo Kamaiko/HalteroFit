@@ -48,7 +48,7 @@ export const DragHandle = memo(function DragHandle({ onDrag }: DragHandleProps) 
 });
 
 const styles = StyleSheet.create({
-  pressable: { paddingVertical: 8, paddingHorizontal: 4 },
+  pressable: { paddingVertical: 12, paddingHorizontal: 14 },
   container: { width: 10, height: 16 },
   dotRow: { gap: DOT_GAP },
   dot: { width: DOT_SIZE, height: DOT_SIZE, backgroundColor: Colors.foreground.tertiary },
