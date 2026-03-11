@@ -175,6 +175,7 @@ export default function WorkoutScreen() {
     }
 
     return { scrollChildren: items, stickyIndices: sticky };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- scrollRef, scrollY, scrollViewBounds are stable refs from useSharedValue/useAnimatedRef
   }, [
     planDays,
     expandedDayId,
@@ -188,9 +189,6 @@ export default function WorkoutScreen() {
     handleDeleteExercise,
     deletingExerciseId,
     handleDeleteAnimationComplete,
-    scrollRef,
-    scrollY,
-    scrollViewBounds,
     reorderExercisesOptimistic,
   ]);
 

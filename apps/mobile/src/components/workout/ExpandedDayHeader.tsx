@@ -7,8 +7,10 @@
 
 import { memo, useCallback, useEffect } from 'react';
 import { type LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   type SharedValue,
+  runOnJS,
   runOnUI,
   useAnimatedStyle,
   useSharedValue,
@@ -185,6 +187,12 @@ export const ExpandedDayHeader = memo(function ExpandedDayHeader({
     onPress(day);
   }, [day, onPress]);
 
+  // Use RNGH Tap gesture instead of Pressable — native stickyHeaderIndices
+  // intercepts touch events before they reach Pressable when the header is pinned.
+  const tapGesture = Gesture.Tap().onEnd(() => {
+    runOnJS(handlePress)();
+  });
+
   const handleMenuPress = useCallback(() => {
     onMenuPress(day);
   }, [day, onMenuPress]);
@@ -195,11 +203,9 @@ export const ExpandedDayHeader = memo(function ExpandedDayHeader({
 
   return (
     <View style={styles.wrapper} onLayout={handleLayout}>
-      <Animated.View
-        style={[styles.card, isActiveWorkout && styles.cardActiveWorkout, stickyCardStyle]}
-      >
-        <Pressable
-          onPress={handlePress}
+      <GestureDetector gesture={tapGesture}>
+        <Animated.View
+          style={[styles.card, isActiveWorkout && styles.cardActiveWorkout, stickyCardStyle]}
           accessibilityRole="button"
           accessibilityLabel={`${day.name}, ${exerciseCount} exercises`}
           accessibilityState={{ expanded: true }}
@@ -270,8 +276,8 @@ export const ExpandedDayHeader = memo(function ExpandedDayHeader({
               </Pressable>
             </Animated.View>
           </Animated.View>
-        </Pressable>
-      </Animated.View>
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 });

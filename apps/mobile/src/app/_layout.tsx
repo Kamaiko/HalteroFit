@@ -9,8 +9,13 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as Linking from 'expo-linking';
 import { useFonts } from 'expo-font';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { Colors } from '@/constants';
 import { initSentry, setSentryUser, Sentry } from '@/utils/sentry';
+
+// Disable Reanimated strict mode — all .value reads in this codebase are correctly
+// inside useAnimatedStyle/runOnUI callbacks, but strict mode flags false positives.
+configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 import { ErrorFallbackScreen } from '@/components/layout';
 import { useAuthStore, enableDevMode } from '@/stores/auth/authStore';
 import { supabase } from '@/services/supabase';
