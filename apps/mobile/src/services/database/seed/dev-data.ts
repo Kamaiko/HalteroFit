@@ -12,14 +12,14 @@
 import { Q } from '@nozbe/watermelondb';
 
 import { DEFAULT_TARGET_REPS, DEFAULT_TARGET_SETS } from '@/constants';
+import { DEV_MOCK_USER } from '@/stores/auth/authStore';
 import { database } from '../local';
 import { exerciseUuid } from '../local/generateId';
 import type WorkoutPlan from '../local/models/WorkoutPlan';
 import type PlanDay from '../local/models/PlanDay';
 import type PlanDayExercise from '../local/models/PlanDayExercise';
 
-// Must match DEV_MOCK_USER.id in authStore.ts
-const DEV_USER_ID = 'dev-user-123';
+const DEV_USER_ID = DEV_MOCK_USER.id;
 
 // ── Seed plan structure ─────────────────────────────────────────────────
 // TODO: Add varied targetSets/targetReps per exercise when custom sets/reps feature is implemented

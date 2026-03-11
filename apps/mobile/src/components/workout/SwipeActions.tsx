@@ -5,10 +5,10 @@
  * Designed to be used as renderRightActions content in ReanimatedSwipeable.
  */
 
-import { Colors, ICON_SIZE_SM } from '@/constants';
+import { Colors, ICON_SIZE_SM, BORDER_RADIUS_LG } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 // ── Constants ───────────────────────────────────────────────────────────
@@ -22,14 +22,11 @@ interface SwipeActionsProps {
 
 // ── Component ───────────────────────────────────────────────────────────
 export const SwipeActions = memo(function SwipeActions({ onEdit, onDelete }: SwipeActionsProps) {
-  const handleEdit = useCallback(() => onEdit(), [onEdit]);
-  const handleDelete = useCallback(() => onDelete(), [onDelete]);
-
   return (
     <View style={styles.container}>
       {/* Edit button */}
       <Pressable
-        onPress={handleEdit}
+        onPress={onEdit}
         style={styles.editButton}
         className="active:opacity-70"
         accessibilityRole="button"
@@ -41,7 +38,7 @@ export const SwipeActions = memo(function SwipeActions({ onEdit, onDelete }: Swi
 
       {/* Delete button */}
       <Pressable
-        onPress={handleDelete}
+        onPress={onDelete}
         style={styles.deleteButton}
         className="active:opacity-70"
         accessibilityRole="button"
@@ -61,7 +58,7 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     marginBottom: 8, // match card mb-2
     marginRight: 16, // match card mr-4
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS_LG,
     overflow: 'hidden',
   },
   editButton: {

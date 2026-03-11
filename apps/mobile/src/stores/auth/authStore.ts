@@ -32,7 +32,7 @@ export interface AuthState {
   signOut: () => Promise<void>;
 }
 
-const DEV_MOCK_USER: User = {
+export const DEV_MOCK_USER: User = {
   id: 'dev-user-123',
   email: 'dev@halterofit.local',
   emailVerified: true,
