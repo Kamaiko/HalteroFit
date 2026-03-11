@@ -5,7 +5,7 @@
  */
 
 import { router } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, type LayoutChangeEvent, Pressable, View } from 'react-native';
 import Animated, {
   useAnimatedRef,
@@ -67,7 +67,6 @@ export default function WorkoutScreen() {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollY = useSharedValue(0);
   const scrollViewBounds = useSharedValue({ top: 0, bottom: 0 });
-  const [scrollEnabled, setScrollEnabled] = useState(true);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (e) => {
@@ -78,8 +77,6 @@ export default function WorkoutScreen() {
   const handleScrollViewLayout = useCallback(
     (e: LayoutChangeEvent) => {
       const { height } = e.nativeEvent.layout;
-      // measure() gives screen-relative coordinates.
-      // Cast is safe: LayoutChangeEvent.target is always a native view with measure().
       const target = e.target as unknown as {
         measure: (cb: (...args: number[]) => void) => void;
       };
@@ -143,7 +140,6 @@ export default function WorkoutScreen() {
           scrollY={scrollY}
           scrollViewBounds={scrollViewBounds}
           onReorderExercises={reorderExercisesOptimistic}
-          onScrollEnabledChange={setScrollEnabled}
         />
       );
     },
@@ -206,7 +202,6 @@ export default function WorkoutScreen() {
           ref={scrollRef}
           onScroll={scrollHandler}
           scrollEventThrottle={16}
-          scrollEnabled={scrollEnabled}
           onLayout={handleScrollViewLayout}
           contentContainerStyle={{ paddingTop: 8, paddingBottom: TAB_BAR_HEIGHT + 16 }}
         >

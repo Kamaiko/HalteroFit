@@ -69,6 +69,8 @@ export function useDragSort({
   const activeIndex = useSharedValue(-1);
   const isDragging = useSharedValue(false);
   const dragTranslateY = useSharedValue(0);
+  // Raw gesture translationY (without scroll compensation)
+  const dragGestureY = useSharedValue(0);
   // Finger's absolute Y on screen (for auto-scroll edge detection)
   const dragAbsoluteY = useSharedValue(0);
   // Scroll offset at drag start (for compensating auto-scroll movement)
@@ -99,16 +101,50 @@ export function useDragSort({
     [items, onReorder]
   );
 
-  // ── Auto-scroll ─────────────────────────────────────────────────────
-  // Uses finger's absolute screen Y to detect proximity to ScrollView edges
+  // ── Auto-scroll + drag compensation ────────────────────────────────
+  // Continuous feedback loop: scrollTo → scrollY changes → reaction re-fires.
+  // Also updates dragTranslateY and sibling reflow during auto-scroll
+  // (when the finger is still but the content is scrolling).
   useAnimatedReaction(
     () => ({
       active: activeIndex.value,
       absY: dragAbsoluteY.value,
+      sy: scrollY.value, // feedback loop: each scrollTo re-triggers this reaction
     }),
-    ({ active, absY }) => {
-      if (active < 0 || !scrollRef || !scrollRef.current) return;
+    ({ active, absY, sy }) => {
+      if (active < 0) return;
 
+      // Keep drag position compensated for scroll changes during auto-scroll
+      const scrollDelta = sy - scrollYAtStart.value;
+      dragTranslateY.value = dragGestureY.value + scrollDelta;
+
+      // Recompute target slot during auto-scroll (same logic as onUpdate)
+      if (itemHeight.value > 0) {
+        const totalDisplacement = dragGestureY.value + scrollDelta;
+        const draggedSlot = currentOrder.value.indexOf(active);
+        const targetSlot = Math.round(active + totalDisplacement / itemHeight.value);
+        const clampedTarget = Math.max(0, Math.min(count - 1, targetSlot));
+
+        if (clampedTarget !== draggedSlot) {
+          const newOrder = [...currentOrder.value];
+          newOrder.splice(draggedSlot, 1);
+          newOrder.splice(clampedTarget, 0, active);
+          currentOrder.value = newOrder;
+
+          const newTrans = [...translations.value];
+          for (let slot = 0; slot < count; slot++) {
+            const origIdx = newOrder[slot]!;
+            if (origIdx === active) {
+              newTrans[origIdx] = 0;
+            } else {
+              newTrans[origIdx] = (slot - origIdx) * itemHeight.value;
+            }
+          }
+          translations.value = newTrans;
+        }
+      }
+
+      // Auto-scroll when finger is near viewport edges
       const { top, bottom } = scrollViewBounds.value;
       const distFromTop = absY - top;
       const distFromBottom = bottom - absY;
@@ -121,7 +157,7 @@ export function useDragSort({
       }
 
       if (speed !== 0) {
-        scrollTo(scrollRef, 0, scrollY.value + speed, false);
+        scrollTo(scrollRef, 0, Math.max(0, sy + speed), false);
       }
     }
   );
@@ -146,6 +182,7 @@ export function useDragSort({
           activeIndex.value = index;
           isDragging.value = true;
           dragAbsoluteY.value = e.absoluteY;
+          dragGestureY.value = 0;
           dragTranslateY.value = 0;
           scrollYAtStart.value = scrollY.value;
 
@@ -153,10 +190,13 @@ export function useDragSort({
           runOnJS(handleDragStart)();
         })
         .onUpdate((e) => {
+          // Store raw gesture value for auto-scroll compensation
+          dragGestureY.value = e.translationY;
+          dragAbsoluteY.value = e.absoluteY;
+
           // Compensate for scroll changes during drag so the card stays under the finger
           const scrollDelta = scrollY.value - scrollYAtStart.value;
           dragTranslateY.value = e.translationY + scrollDelta;
-          dragAbsoluteY.value = e.absoluteY;
 
           if (itemHeight.value === 0) return;
 
@@ -196,6 +236,7 @@ export function useDragSort({
           // Reset all drag state
           activeIndex.value = -1;
           isDragging.value = false;
+          dragGestureY.value = 0;
           dragTranslateY.value = 0;
           dragAbsoluteY.value = 0;
           scrollYAtStart.value = 0;
@@ -212,6 +253,7 @@ export function useDragSort({
       activeIndex,
       isDragging,
       dragAbsoluteY,
+      dragGestureY,
       dragTranslateY,
       currentOrder,
       translations,

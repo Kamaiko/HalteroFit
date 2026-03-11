@@ -73,7 +73,6 @@ interface TimelineDayCardProps {
   scrollY: SharedValue<number>;
   scrollViewBounds: SharedValue<{ top: number; bottom: number }>;
   onReorderExercises: (reordered: PlanDayWithExercises['exercises']) => Promise<void>;
-  onScrollEnabledChange: (enabled: boolean) => void;
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -97,7 +96,6 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   scrollY,
   scrollViewBounds,
   onReorderExercises,
-  onScrollEnabledChange,
 }: TimelineDayCardProps) {
   // ── Shared value for icon animation ──
   // Prevents useAnimatedStyle from replaying animations on every re-render
@@ -199,15 +197,13 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   // ── Drag-to-reorder ────────────────────────────────────────────────
   const handleDragStart = useCallback(() => {
     setOpenSwipeableId(null); // Close any open swipeable when drag starts
-    onScrollEnabledChange(false); // Disable parent scroll during drag
-  }, [onScrollEnabledChange]);
+  }, []);
 
   const handleReorderComplete = useCallback(
     (reordered: DayExercise[]) => {
-      onScrollEnabledChange(true); // Re-enable scroll after drop
       onReorderExercises(reordered);
     },
-    [onReorderExercises, onScrollEnabledChange]
+    [onReorderExercises]
   );
 
   const dragSort = useDragSort({
