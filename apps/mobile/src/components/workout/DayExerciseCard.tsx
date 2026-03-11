@@ -3,12 +3,13 @@
  *
  * Shows exercise name, thumbnail, and target sets/reps.
  * Supports swipe-to-reveal for edit and delete actions.
+ * Accepts an optional drag handle via prop to include inside the swipeable.
  *
  * Delete animation is manual (shared values) for precise sequencing.
  * Sequence: slide left (200ms) → height collapse (200ms @ 150ms delay).
  */
 
-import { Colors, DURATION_STANDARD, DURATION_FAST, ICON_SIZE_MD } from '@/constants';
+import { Colors, DURATION_STANDARD, DURATION_FAST, ICON_SIZE_SM } from '@/constants';
 import { Ionicons } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { DayExercise } from '@/services/database/operations/plans';
@@ -17,6 +18,7 @@ import { type LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-nativ
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 import { SwipeableContext } from './SwipeableContext';
+import { SwipeActions } from './SwipeActions';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -26,6 +28,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ExerciseThumbnail } from './ExerciseThumbnail';
+import type { ReactNode } from 'react';
 
 // Sentinel: shared value not animating — height follows natural layout
 const ANIM_HEIGHT_AUTO = -1;
@@ -34,6 +37,8 @@ export type { DayExercise };
 
 export interface DayExerciseCardProps {
   exercise: DayExercise;
+  /** Drag handle node to render inside the swipeable row */
+  dragHandle?: ReactNode;
   onImagePress: (exercise: DayExercise) => void;
   onEdit?: (exercise: DayExercise) => void;
   onDelete?: (exercise: DayExercise) => void;
@@ -43,6 +48,7 @@ export interface DayExerciseCardProps {
 
 export const DayExerciseCard = memo(function DayExerciseCard({
   exercise,
+  dragHandle,
   onImagePress,
   onEdit,
   onDelete,
@@ -124,30 +130,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
 
   // Render right swipe actions (Edit + Delete buttons)
   const renderRightActions = useCallback(() => {
-    return (
-      <View className="mb-2 mr-4 flex-row items-stretch overflow-hidden rounded-xl">
-        {/* Edit button - flat left edge to connect with card */}
-        <Pressable
-          onPress={handleEdit}
-          className="w-16 items-center justify-center"
-          style={styles.editButton}
-          accessibilityRole="button"
-          accessibilityLabel="Edit exercise"
-        >
-          <Ionicons name="pencil-outline" size={ICON_SIZE_MD} color={Colors.foreground.DEFAULT} />
-        </Pressable>
-        {/* Delete button */}
-        <Pressable
-          onPress={handleDelete}
-          className="w-16 items-center justify-center"
-          style={styles.deleteButton}
-          accessibilityRole="button"
-          accessibilityLabel="Delete exercise"
-        >
-          <Ionicons name="trash-outline" size={ICON_SIZE_MD} color={Colors.primary.foreground} />
-        </Pressable>
-      </View>
-    );
+    return <SwipeActions onEdit={handleEdit} onDelete={handleDelete} />;
   }, [handleEdit, handleDelete]);
 
   const muscleText = exercise.exercise.target_muscles.join(', ') || 'No muscle info';
@@ -158,8 +141,8 @@ export const DayExerciseCard = memo(function DayExerciseCard({
         ref={swipeableRef}
         renderRightActions={renderRightActions}
         overshootRight={false}
-        friction={1.5}
-        rightThreshold={30}
+        friction={1.2}
+        rightThreshold={40}
         dragOffsetFromLeftEdge={5}
         dragOffsetFromRightEdge={5}
         overshootFriction={8}
@@ -181,8 +164,12 @@ export const DayExerciseCard = memo(function DayExerciseCard({
               setOpenSwipeableId(null);
             }
           }}
-          className="ml-1 mr-4 mb-2 flex-row items-center rounded-xl bg-background-surface px-4 py-3"
+          className="mr-4 mb-2 flex-row items-center rounded-xl bg-background-surface py-3 pr-4"
+          style={styles.cardContent}
         >
+          {/* Drag handle (passed from DragSortableItem) */}
+          {dragHandle}
+
           <ExerciseThumbnail
             imageUrl={exercise.exercise.gif_url}
             targetMuscles={exercise.exercise.target_muscles}
@@ -210,6 +197,7 @@ export const DayExerciseCard = memo(function DayExerciseCard({
 
 // ── Styles ──────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  editButton: { backgroundColor: Colors.background.elevated },
-  deleteButton: { backgroundColor: Colors.destructive },
+  cardContent: {
+    paddingLeft: 4, // Tight left padding — drag handle has its own hit area padding
+  },
 });

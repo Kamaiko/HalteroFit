@@ -338,13 +338,16 @@ export const TimelineDayCard = memo(function TimelineDayCard({
                     entering={FadeInDown.delay(index * 20).duration(DURATION_FAST)}
                   >
                     <DragSortableItem index={index} dragSort={dragSort}>
-                      <DayExerciseCard
-                        exercise={exercise}
-                        onImagePress={onExerciseImagePress}
-                        onDelete={onDeleteExercise}
-                        isDeleting={exercise.id === deletingExerciseId}
-                        onDeleteAnimationComplete={onDeleteAnimationComplete}
-                      />
+                      {(dragHandle) => (
+                        <DayExerciseCard
+                          exercise={exercise}
+                          dragHandle={dragHandle}
+                          onImagePress={onExerciseImagePress}
+                          onDelete={onDeleteExercise}
+                          isDeleting={exercise.id === deletingExerciseId}
+                          onDeleteAnimationComplete={onDeleteAnimationComplete}
+                        />
+                      )}
                     </DragSortableItem>
                   </Animated.View>
                 ))}
@@ -453,6 +456,7 @@ const styles = StyleSheet.create({
     borderColor: EXPANDED_BORDER_COLOR,
     borderBottomLeftRadius: CARD_BORDER_RADIUS,
     borderBottomRightRadius: CARD_BORDER_RADIUS,
+    overflow: 'hidden',
   },
   exerciseList: {
     paddingTop: 4,

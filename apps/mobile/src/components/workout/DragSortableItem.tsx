@@ -1,8 +1,8 @@
 /**
  * DragSortableItem - Wrapper that adds drag-to-reorder to an exercise card
  *
- * Renders a DragHandle on the left + children on the right.
- * The handle is wrapped in a GestureDetector (Pan.activateAfterLongPress).
+ * Passes a drag handle via render prop so the child can place it inside
+ * its own layout (e.g., inside a swipeable row).
  * Animated style provides: translateY (reflow), scale + shadow (active drag).
  */
 
@@ -22,17 +22,12 @@ const DRAG_SHADOW_OPACITY = 0.15;
 const DRAG_SHADOW_RADIUS = 8;
 const DRAG_ELEVATION = 8;
 
-// Nudge the handle right (away from card edge) and up to align with thumbnail center.
-// The card center is ~7px below the thumbnail center due to 3 lines of text below it.
-const handleOffset = StyleSheet.create({
-  wrapper: { marginLeft: 12, marginTop: -7 },
-}).wrapper;
-
 // ── Props ───────────────────────────────────────────────────────────────
 interface DragSortableItemProps {
   index: number;
   dragSort: UseDragSortReturn;
-  children: ReactNode;
+  /** Render prop: receives the drag handle node to place inside your layout */
+  children: (dragHandle: ReactNode) => ReactNode;
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -86,20 +81,27 @@ export const DragSortableItem = memo(function DragSortableItem({
     };
   });
 
+  // Build the drag handle element for the child to place in its layout
+  const dragHandle = (
+    <GestureDetector gesture={gesture}>
+      <Animated.View
+        style={handleOffset}
+        accessibilityLabel="Reorder exercise"
+        accessibilityHint="Long press then drag to reorder"
+      >
+        <DragHandle />
+      </Animated.View>
+    </GestureDetector>
+  );
+
   return (
     <Animated.View style={animatedStyle} onLayout={handleLayout}>
-      <Animated.View className="flex-row items-center">
-        <GestureDetector gesture={gesture}>
-          <Animated.View
-            style={handleOffset}
-            accessibilityLabel="Reorder exercise"
-            accessibilityHint="Long press then drag to reorder"
-          >
-            <DragHandle />
-          </Animated.View>
-        </GestureDetector>
-        <Animated.View className="flex-1">{children}</Animated.View>
-      </Animated.View>
+      {children(dragHandle)}
     </Animated.View>
   );
 });
+
+// Nudge the handle right (away from card edge) and up to align with thumbnail center.
+const handleOffset = StyleSheet.create({
+  wrapper: { marginTop: -7, marginRight: 6 },
+}).wrapper;
