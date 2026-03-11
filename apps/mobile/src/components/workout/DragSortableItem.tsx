@@ -36,7 +36,8 @@ export const DragSortableItem = memo(function DragSortableItem({
   dragSort,
   children,
 }: DragSortableItemProps) {
-  const { gestureFactory, onItemLayout, activeIndex, dragTranslateY, translations } = dragSort;
+  const { gestureFactory, onItemLayout, activeIndex, dragTranslateY, translations, isResetting } =
+    dragSort;
 
   const gesture = gestureFactory(index);
 
@@ -67,11 +68,13 @@ export const DragSortableItem = memo(function DragSortableItem({
 
     // Non-dragged: apply sibling reflow translation
     const ty = translations.value[index] ?? 0;
+    // After reorder re-render, skip animation — jump to position instantly
+    const duration = isResetting.value ? 0 : DURATION_STANDARD;
     return {
       zIndex: 0,
       transform: [
         { scale: withTiming(1, { duration: DURATION_FAST }) },
-        { translateY: withTiming(ty, { duration: DURATION_STANDARD }) },
+        { translateY: withTiming(ty, { duration }) },
       ],
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 0 },

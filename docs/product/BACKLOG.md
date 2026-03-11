@@ -177,6 +177,13 @@ function detectPlateauWithContext(exerciseHistory, user) {
   - **Requires:** `expo-audio` - Install when implementing rest timer
   - Beep sounds at 3, 2, 1 seconds before rest ends
   - User can toggle sound on/off in settings
+- **Drag-to-reorder: eliminate residual flash on swap pair** (minor visual glitch)
+  - Current: after dropping a reordered exercise, the two swapped cards may show a brief 1-2 frame flash
+  - Root cause: translations are indexed by position; when React re-renders with new item order, the swap pair reads stale translation values for 1-2 frames before `useEffect` resets them
+  - Uninvolved cards are already clean (their translations are zeroed before re-render)
+  - Possible fix: use an ID-keyed Map instead of position-indexed array for translations, or delay React re-render until translations are fully zeroed
+  - **Impact:** Minor — only visible on the 2 swapped cards, lasts <32ms
+  - **Estimated effort:** ~2-4h (requires rethinking translation indexing strategy)
 - **DayCard enhancements** (richer workout day information)
   - Last performed date per day (requires workout history query from Phase 3)
   - Estimated workout time (calculate from exercise count × avg set duration)

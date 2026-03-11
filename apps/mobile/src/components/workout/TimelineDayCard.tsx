@@ -8,7 +8,7 @@
  * @see docs/_local/mockups/timeline-FINAL-v3.html
  */
 
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   type AnimatedRef,
@@ -121,6 +121,8 @@ export const TimelineDayCard = memo(function TimelineDayCard({
   // collapse ensures text reflow completes before heavy mounting begins.
   // Reset happens in cleanup (not sync in effect body) to satisfy React Compiler lint.
   const [exercisesReady, setExercisesReady] = useState(false);
+  // Skip FadeInDown entering animation after initial mount (prevents flash on reorder)
+  const initialAnimDone = useRef(false);
 
   useEffect(() => {
     if (!isExpanded) return;
@@ -128,8 +130,15 @@ export const TimelineDayCard = memo(function TimelineDayCard({
     return () => {
       clearTimeout(timer);
       setExercisesReady(false);
+      initialAnimDone.current = false;
     };
   }, [isExpanded]);
+
+  useEffect(() => {
+    if (exercisesReady) {
+      initialAnimDone.current = true;
+    }
+  }, [exercisesReady]);
 
   // ── Muscle icon animation ──
   // All icon properties animated via shared value (no React state, no LinearTransition).
@@ -331,7 +340,11 @@ export const TimelineDayCard = memo(function TimelineDayCard({
                 {exercises.map((exercise, index) => (
                   <Animated.View
                     key={exercise.id}
-                    entering={FadeInDown.delay(index * 20).duration(DURATION_FAST)}
+                    entering={
+                      initialAnimDone.current
+                        ? undefined
+                        : FadeInDown.delay(index * 20).duration(DURATION_FAST)
+                    }
                   >
                     <DragSortableItem index={index} dragSort={dragSort}>
                       {(dragHandle) => (
@@ -456,6 +469,7 @@ const styles = StyleSheet.create({
   },
   exerciseList: {
     paddingTop: 4,
+    zIndex: 1,
   },
   loadingPlaceholder: {
     alignItems: 'center' as const,

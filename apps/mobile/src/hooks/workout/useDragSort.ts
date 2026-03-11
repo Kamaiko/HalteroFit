@@ -8,9 +8,10 @@
  * Usage: instantiate in TimelineDayCard, pass return value to DragSortableItem wrappers.
  */
 
+import { DURATION_STANDARD } from '@/constants';
 import type { DayExercise } from '@/services/database/operations/plans';
 import * as Haptics from 'expo-haptics';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 import { Gesture, type GestureType } from 'react-native-gesture-handler';
 import Animated, {
@@ -21,6 +22,7 @@ import Animated, {
   useAnimatedReaction,
   useSharedValue,
   type SharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 
 // ── Constants ───────────────────────────────────────────────────────────
@@ -43,6 +45,8 @@ export interface UseDragSortReturn {
   dragTranslateY: SharedValue<number>;
   /** Per-item translateY offsets for sibling reflow */
   translations: SharedValue<number[]>;
+  /** True when translations are being reset after reorder — skip animation */
+  isResetting: SharedValue<boolean>;
 }
 
 interface UseDragSortParams {
@@ -82,6 +86,10 @@ export function useDragSort({
   const translations = useSharedValue<number[]>([]);
   // Uniform item height (measured from first item)
   const itemHeight = useSharedValue(0);
+  // True during settle animation after drop — prevents onFinalize from resetting
+  const isSettling = useSharedValue(false);
+  // True when translations are being reset after reorder — DragSortableItem skips animation
+  const isResetting = useSharedValue(false);
 
   // ── JS-side callbacks (called via runOnJS) ────────────────────────────
 
@@ -179,6 +187,8 @@ export function useDragSort({
           currentOrder.value = order;
           translations.value = trans;
 
+          isSettling.value = false;
+          isResetting.value = false;
           activeIndex.value = index;
           isDragging.value = true;
           dragAbsoluteY.value = e.absoluteY;
@@ -228,24 +238,60 @@ export function useDragSort({
           }
         })
         .onEnd(() => {
-          // Snapshot final order for persistence
           const finalOrder = [...currentOrder.value];
-          runOnJS(handleReorder)(finalOrder);
+          const activeIdx = activeIndex.value;
+          const targetSlot = currentOrder.value.indexOf(activeIdx);
+          const targetTranslateY = (targetSlot - activeIdx) * itemHeight.value;
+
+          isSettling.value = true;
+
+          // Animate dropped card to target slot (card stays "active" during settle)
+          dragTranslateY.value = withTiming(
+            targetTranslateY,
+            { duration: DURATION_STANDARD },
+            (finished) => {
+              isSettling.value = false;
+
+              // Set dropped card translation for seamless deactivation
+              const newTrans = [...translations.value];
+              newTrans[activeIdx] = targetTranslateY;
+              // Reset all OTHER translations — uninvolved cards won't flash
+              for (let i = 0; i < count; i++) {
+                if (i !== activeIdx) newTrans[i] = 0;
+              }
+              translations.value = newTrans;
+
+              // Deactivate — card switches to translations[activeIdx] = targetY (no snap)
+              activeIndex.value = -1;
+              isDragging.value = false;
+              dragGestureY.value = 0;
+              dragTranslateY.value = 0;
+              dragAbsoluteY.value = 0;
+              scrollYAtStart.value = 0;
+
+              // Persist — triggers React re-render; useEffect handles stale translation cleanup
+              if (finished) {
+                runOnJS(handleReorder)(finalOrder);
+              }
+            }
+          );
         })
         .onFinalize(() => {
-          // Reset all drag state
-          activeIndex.value = -1;
-          isDragging.value = false;
-          dragGestureY.value = 0;
-          dragTranslateY.value = 0;
-          dragAbsoluteY.value = 0;
-          scrollYAtStart.value = 0;
+          // Only reset if onEnd didn't already handle it (cancelled or settling)
+          if (activeIndex.value >= 0 && !isSettling.value) {
+            activeIndex.value = -1;
+            isDragging.value = false;
+            dragGestureY.value = 0;
+            dragTranslateY.value = 0;
+            dragAbsoluteY.value = 0;
+            scrollYAtStart.value = 0;
 
-          const resetTrans: number[] = [];
-          for (let i = 0; i < count; i++) {
-            resetTrans.push(0);
+            const resetTrans: number[] = [];
+            for (let i = 0; i < count; i++) {
+              resetTrans.push(0);
+            }
+            translations.value = resetTrans;
           }
-          translations.value = resetTrans;
         });
     },
     [
@@ -258,6 +304,7 @@ export function useDragSort({
       currentOrder,
       translations,
       itemHeight,
+      isSettling,
       scrollY,
       scrollYAtStart,
       triggerHaptic,
@@ -265,6 +312,25 @@ export function useDragSort({
       handleReorder,
     ]
   );
+
+  // ── Reset stale translations on items reorder ─────────────────────
+  // After handleReorder → React re-render, the swap pair may have stale
+  // translations for 1-2 frames. Reset instantly via isResetting flag.
+  const prevItemsRef = useRef(items);
+  useEffect(() => {
+    if (prevItemsRef.current !== items) {
+      prevItemsRef.current = items;
+      const c = items.length;
+      const sv = translations;
+      const rv = isResetting;
+      runOnUI(() => {
+        rv.value = true;
+        const reset: number[] = [];
+        for (let i = 0; i < c; i++) reset.push(0);
+        sv.value = reset;
+      })();
+    }
+  }, [items, translations, isResetting]);
 
   // ── Layout measurement ──────────────────────────────────────────────
   // Track whether we've already set the uniform height (JS-side flag)
@@ -295,5 +361,6 @@ export function useDragSort({
     activeIndex,
     dragTranslateY,
     translations,
+    isResetting,
   };
 }
