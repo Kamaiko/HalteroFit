@@ -64,7 +64,7 @@ export default function ForgotPasswordScreen() {
             <Ionicons name="arrow-back" size={24} color={Colors.foreground.DEFAULT} />
           </Pressable>
 
-          <View className="flex-1 items-center pt-40">
+          <View className="flex-1 items-center pt-44">
             {isSent ? (
               <>
                 <Ionicons
@@ -85,10 +85,10 @@ export default function ForgotPasswordScreen() {
             ) : (
               <>
                 <Ionicons name="mail-outline" size={ICON_SIZE_3XL} color={Colors.primary.DEFAULT} />
-                <Text variant="h3" className="mt-4 mb-2 border-b-0">
+                <Text variant="h3" className="mt-6 mb-2 border-b-0">
                   Reset Password
                 </Text>
-                <Text className="text-sm text-foreground-secondary text-center mb-6 max-w-xs">
+                <Text className="text-sm text-foreground-secondary text-center mb-4 max-w-xs">
                   Enter your email and we&apos;ll send you a reset link.
                 </Text>
 

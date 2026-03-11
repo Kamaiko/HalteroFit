@@ -32,7 +32,7 @@ export function ErrorFallbackScreen() {
         padding: 24,
       }}
     >
-      <Text style={{ fontSize: 48, marginBottom: 16 }}>!</Text>
+      <Text style={{ fontSize: 48, marginBottom: 16, color: Colors.foreground.secondary }}>!</Text>
       <Text
         style={{
           fontSize: 20,
@@ -53,7 +53,7 @@ export function ErrorFallbackScreen() {
           lineHeight: 20,
         }}
       >
-        The app encountered an unexpected error. Your data is safe — please restart the app.
+        The app encountered an unexpected error. Please restart the app.
       </Text>
       <Pressable
         onPress={handleRestart}
