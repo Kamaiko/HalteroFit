@@ -73,7 +73,7 @@ export const ExpandedDayHeader = memo(function ExpandedDayHeader({
   useEffect(() => {
     const timer = setTimeout(() => {
       isExpandedSV.value = true;
-    }, 16);
+    }, 50);
     return () => clearTimeout(timer);
   }, [isExpandedSV]);
 
@@ -82,7 +82,7 @@ export const ExpandedDayHeader = memo(function ExpandedDayHeader({
   useEffect(() => {
     const timer = setTimeout(() => {
       pillVisibleSV.value = pillVisible;
-    }, 16);
+    }, 50);
     return () => clearTimeout(timer);
   }, [pillVisible, pillVisibleSV]);
 
@@ -95,7 +95,10 @@ export const ExpandedDayHeader = memo(function ExpandedDayHeader({
       const y = e.nativeEvent.layout.y;
       const sv = headerOffsetY;
       runOnUI(() => {
-        sv.value = y;
+        // Only set once — position in ScrollView content is stable
+        if (sv.value < 0) {
+          sv.value = y;
+        }
       })();
     },
     [headerOffsetY]
@@ -151,7 +154,7 @@ export const ExpandedDayHeader = memo(function ExpandedDayHeader({
 
   // ── Sticky style (shadow + full border radius when pinned) ──
   const stickyCardStyle = useAnimatedStyle(() => {
-    const isSticky = headerOffsetY.value >= 0 && scrollY.value >= headerOffsetY.value;
+    const isSticky = headerOffsetY.value >= 0 && scrollY.value >= headerOffsetY.value - 4;
     if (isSticky) {
       return {
         borderBottomLeftRadius: 0,
